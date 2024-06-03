@@ -19,6 +19,7 @@ Welcome to the documentation for the backend of our Spring Boot Blog Platform!Th
 ![Hibernate Jpa](https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=Hibernate&logoColor=white)
 ![RESTfulAPI](https://img.shields.io/badge/RESTful%20API-black?style=for-the-badge)
 ![Swagger](https://img.shields.io/badge/-Swagger-%23Clojure?style=for-the-badge&logo=swagger&logoColor=white)
+![Apache Maven](https://img.shields.io/badge/Apache%20Maven-C71A36?style=for-the-badge&logo=Apache%20Maven&logoColor=white)
 
 ## Architecture Overview
 
