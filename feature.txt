@@ -1,0 +1,16 @@
+Blog_Backend
+
+Jwt Authentication - Authorization
+Password update reset and fogot 
+email sender
+Create - getdetail - GetList
+Category CRUD
+Update Post
+DeletePOst
+
+Comment
+//Like 
+
+fontend 
+find text editor (mmaybe rich text editor)
+Tags input
