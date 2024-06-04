@@ -36,19 +36,10 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/v1/auth")
 @CrossOrigin("*")
 public class AuthController {
-
-
     private final  AuthenticationManager authenticationManager;
-
     private final UserRepository userRepository;
-
-
     private final RoleRepository roleRepository;
-
-
     private final PasswordEncoder encoder;
-
-
     private final JwtUtils jwtUtils;
 
     public AuthController(AuthenticationManager authenticationManager,
@@ -64,6 +55,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty()
+                || !loginRequest.getEmail().matches("^(.+)@(.+)$")) {
+            return ResponseEntity.badRequest().body("Invalid email format");
+        }
+
+        if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()
+                || loginRequest.getPassword().length() < 6 || loginRequest.getPassword().length() > 40) {
+            return ResponseEntity.badRequest().body("Invalid password format");
+        }
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
@@ -75,6 +75,7 @@ public class AuthController {
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                 .body(new JwtResponse(jwtToken));
     }
+
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
@@ -115,10 +116,8 @@ public class AuthController {
                 }
             });
         }
-
         user.setRoles(roles);
         userRepository.save(user);
-
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
     @PostMapping("/logout")
