@@ -2,13 +2,21 @@ package com.Nguyen.blogplatform.service;
 
 import com.Nguyen.blogplatform.exception.TokenExpiredException;
 import com.Nguyen.blogplatform.model.User;
+import com.Nguyen.blogplatform.payload.request.LoginRequest;
+import com.Nguyen.blogplatform.payload.response.JwtResponse;
 import com.Nguyen.blogplatform.repository.UserRepository;
+import com.Nguyen.blogplatform.security.JwtUtils;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,7 +40,6 @@ public class UserServices {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
-
 
     // Modify sendResetEmail method
     public void sendResetEmail(String email) throws MessagingException {
