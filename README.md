@@ -7,7 +7,7 @@
         =========|_|==============|___/=/_/_/_/
         :: Spring Boot ::                (v3.2.5)
 
-Welcome to the documentation for the backend of our Spring Boot Blog Platform!This Markdown file will provide an overview of the backend architecture, features, and usage instructions.
+Welcome to the documentation for the backend of our Spring Boot Blog Platform! This Markdown file will provide an overview of the backend architecture, features, and usage instructions.
 
 ## Tech stack
 
@@ -26,7 +26,7 @@ Welcome to the documentation for the backend of our Spring Boot Blog Platform!Th
 The backend of our Spring Boot Blog Platform is built using the Spring Boot framework, integrating various libraries and components to provide a robust and feature-rich platform. Here's an overview of the key components:
 
 - **Controllers**: Handle incoming HTTP requests and route them to the appropriate service methods.
-- **Services**: Contain the business logic of the application, including user management, post management, category management, comment management, and email sending functionality.
+- **Services**: Contain the business logic of the application, including user management, post management, category management, comment management, and email-sending functionality.
 - **Repositories**: Interface with the database using Spring Data JPA to perform CRUD (Create, Read, Update, Delete) operations on entities such as users, posts, categories, and comments.
 - **Security**: Implements security features such as authentication and authorization using Spring Security with JWT (JSON Web Tokens) support.
 - **Exception Handling**: Provides global exception handling to handle errors and exceptions gracefully.
@@ -45,7 +45,7 @@ Our backend provides a comprehensive set of features to support the functionalit
 - **Password Reset**: Provides functionality for users to reset their passwords via email.
 - **Exception Handling**: Handles exceptions and errors gracefully with custom exception handlers.
 - **API Documentation with Swagger**: Generates interactive API documentation using Swagger UI for easy reference and testing.
-- **Mail Sender**: Integrates with Spring Mail to send emails for features such as password reset, password update with MailTrap .
+- **Mail Sender**: Integrates with Spring Mail to send emails for features such as password reset, and password update with MailTrap.
 - **Spring Security**: Implements secure authentication and authorization using Spring Security.
 - **Spring Data JPA**: Utilizes Spring Data JPA for simplified data access and manipulation.
 
