@@ -10,10 +10,10 @@ import lombok.Setter;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+
 @Getter
 @Setter
 @NoArgsConstructor
-@AllArgsConstructor
 public class PostResponse {
     private String id;
     private String authorName;
@@ -25,6 +25,7 @@ public class PostResponse {
     private Set<String> categories;
     private List<CommentResponse> comments;
 
+    // Constructor without comments and featured
     public PostResponse(String id, String authorName,
                         String title, Date createdAt,
                         String content, String imageUrl,
@@ -38,17 +39,35 @@ public class PostResponse {
         this.categories = categories;
     }
 
-    public PostResponse(String id, String title,
-                        String content, Date createdAt,
-                        String imageUrl, String username,
-                        List<CommentResponse> commentResponses) {
-
+    // Constructor with comments, without featured
+    public PostResponse(String id, String authorName,
+                        String title, Date createdAt,
+                        String content, String imageUrl,
+                        Set<String> categories, List<CommentResponse> comments) {
         this.id = id;
-        this.authorName = username;
+        this.authorName = authorName;
         this.title = title;
         this.createdAt = createdAt;
         this.content = content;
         this.imageUrl = imageUrl;
-        this.comments= commentResponses;
+        this.categories = categories;
+        this.comments = comments;
+    }
+
+    // Constructor with all fields
+    public PostResponse(String id, String authorName,
+                        String title, Date createdAt,
+                        Boolean featured, String content,
+                        String imageUrl, Set<String> categories,
+                        List<CommentResponse> comments) {
+        this.id = id;
+        this.authorName = authorName;
+        this.title = title;
+        this.createdAt = createdAt;
+        this.featured = featured;
+        this.content = content;
+        this.imageUrl = imageUrl;
+        this.categories = categories;
+        this.comments = comments;
     }
 }

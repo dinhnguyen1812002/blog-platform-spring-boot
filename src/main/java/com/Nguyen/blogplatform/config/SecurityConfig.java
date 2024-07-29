@@ -1,7 +1,5 @@
 package com.Nguyen.blogplatform.config;
 
-
-import com.Nguyen.blogplatform.model.ERole;
 import com.Nguyen.blogplatform.security.AuthEntryPointJwt;
 import com.Nguyen.blogplatform.security.AuthTokenFilter;
 import com.Nguyen.blogplatform.service.UserDetailsServiceImpl;
@@ -24,13 +22,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-
 @Configuration
 @EnableMethodSecurity
-
 public class SecurityConfig {
+
     @Autowired
-    UserDetailsServiceImpl userDetailsService;
+    private UserDetailsServiceImpl userDetailsService;
 
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
@@ -43,10 +40,8 @@ public class SecurityConfig {
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
-
         return authProvider;
     }
 
@@ -63,39 +58,31 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> {
-                    cors.configurationSource(corsConfigurationSource());
-                })
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth ->
-                        auth.requestMatchers("/api/v1/auth/**").permitAll()
-                                .requestMatchers("/swagger-ui/**",
-                                        "/swagger-resources/*",
-                                        "/v3/api-docs/**")
-                                .permitAll()
-                                .requestMatchers("/api/user/update-password").authenticated()
-                                .requestMatchers("/api/user/**") .permitAll()
-
-                                .requestMatchers("/api/test/**").permitAll()
-                                .requestMatchers("/api/v1/category/**").permitAll()
-                                .requestMatchers("/api/v1/role/**").permitAll()
-                                .requestMatchers("/api/v1/post/{id}").permitAll()
-                                .requestMatchers("/api/v1/post").permitAll()
-                                .requestMatchers("/api/v1/post/featured").permitAll()
-                                .requestMatchers("/api/v1/post/search").permitAll()
-                                .requestMatchers("/api/v1/post/category/{categoryId}").permitAll()
-                                .requestMatchers("/api/v1/upload").permitAll()
-                                .requestMatchers("/api/v1/post/**")
-                                .authenticated()
-                                .requestMatchers("/api/v1/author/**").authenticated()
-                                .requestMatchers("/api/v1/author").authenticated()
-                                .requestMatchers("/api/comments/**").authenticated()
-
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/api/v1/auth/**",
+                                "/swagger-ui/**",
+                                "/swagger-resources/*",
+                                "/v3/api-docs/**",
+                                "/api/test/**",
+                                "/api/v1/category/**",
+                                "/api/v1/role/**",
+                                "/api/v1/post/{id}",
+                                "/api/v1/post/featured",
+                                "/api/v1/post/search",
+                                "/api/v1/post/category/{categoryId}",
+                                "/api/v1/upload").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/post").permitAll()
+                        .requestMatchers("/api/v1/user/update-password").authenticated()
+                        .requestMatchers("/api/v1/user/**").hasRole("USER")
+                        .requestMatchers("/api/v1/author/**").hasRole("AUTHOR")
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/comments/**").authenticated()
                 );
 
         http.authenticationProvider(authenticationProvider());
-
         http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
@@ -108,8 +95,7 @@ public class SecurityConfig {
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
         configuration.setAllowCredentials(true);
-        UrlBasedCorsConfigurationSource source = new
-                UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }

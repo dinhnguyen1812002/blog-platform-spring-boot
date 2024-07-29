@@ -1,31 +1,25 @@
 package com.Nguyen.blogplatform.controller;
 
 import com.Nguyen.blogplatform.exception.NotFoundException;
-import com.Nguyen.blogplatform.model.Category;
-import com.Nguyen.blogplatform.model.Post;
-import com.Nguyen.blogplatform.payload.request.PostRequest;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.security.JwtUtils;
-import com.Nguyen.blogplatform.service.PostServices;
+import com.Nguyen.blogplatform.service.PostService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/post")
 public class PostController {
 
     @Autowired
-    PostServices postServices;
+    PostService postServices;
     @Autowired
     private JwtUtils jwtUtils;
 

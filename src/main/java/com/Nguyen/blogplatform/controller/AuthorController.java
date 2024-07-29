@@ -2,23 +2,18 @@ package com.Nguyen.blogplatform.controller;
 
 
 import com.Nguyen.blogplatform.model.Post;
-import com.Nguyen.blogplatform.model.User;
+
 import com.Nguyen.blogplatform.payload.request.PostRequest;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.service.AuthorServices;
-import com.Nguyen.blogplatform.service.PostServices;
+import com.Nguyen.blogplatform.service.PostService;
 import com.Nguyen.blogplatform.service.UserDetailsImpl;
-import com.sun.security.auth.UserPrincipal;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,7 +26,7 @@ public class AuthorController {
     @Autowired
     AuthorServices authorServices;
     @Autowired
-    PostServices postServices;
+    PostService postServices;
     @GetMapping("/posts")
     public List<PostResponse> getMyPosts(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "10") int size) {
