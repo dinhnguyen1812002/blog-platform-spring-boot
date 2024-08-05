@@ -50,8 +50,10 @@ public class AuthService {
             return ResponseEntity.badRequest().body("Invalid email format");
         }
 
-        if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()
-                || loginRequest.getPassword().length() < 6 || loginRequest.getPassword().length() > 40) {
+        if (loginRequest.getPassword() == null
+                || loginRequest.getPassword().isEmpty()
+                || loginRequest.getPassword().length() < 6
+                || loginRequest.getPassword().length() > 40) {
             return ResponseEntity.badRequest().body("Invalid password format");
         }
 

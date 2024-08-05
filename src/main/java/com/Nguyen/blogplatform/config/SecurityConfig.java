@@ -73,7 +73,8 @@ public class SecurityConfig {
                                 "/api/v1/post/featured",
                                 "/api/v1/post/search",
                                 "/api/v1/post/category/{categoryId}",
-                                "/api/v1/upload").permitAll()
+                                "/api/v1/upload",
+                                "/fuck").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/post").permitAll()
                         .requestMatchers("/api/v1/user/update-password").authenticated()
                         .requestMatchers("/api/v1/user/**").hasRole("USER")
