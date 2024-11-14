@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.service;
 
+import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.exception.UnauthorizedException;
@@ -38,7 +39,7 @@ public class AuthorServices {
     private JwtUtils jwtUtils;
     @Autowired
     private CategoryRepository categoryRepository;
-
+    public static final Boolean FEATURED = false;
     public List<PostResponse> getPostsForCurrentUser(int page, int size) {
         String username = getCurrentUsername();
         Pageable pageable = PageRequest.of(page, size);
@@ -51,11 +52,12 @@ public class AuthorServices {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + authorId));
         Set<Category> categories = getCategoriesFromIds(postRequest.getCategories());
-
+        String slug = SlugUtil.createSlug(postRequest.getTitle());
         Post post = new Post();
         post.setTitle(postRequest.getTitle());
+        post.setSlug(slug);
         post.setAuthor(author);
-        post.setFeatured(postRequest.getFeatured());
+        post.setFeatured(FEATURED);
         post.setContent(postRequest.getContent());
         post.setImageUrl(postRequest.getImageUrl());
         post.setCreatedAt(postRequest.getCreatedAt() != null ? postRequest.getCreatedAt() : new Date());
@@ -115,6 +117,7 @@ public class AuthorServices {
                 post.getId(),
                 post.getAuthor().getUsername(),
                 post.getTitle(),
+                post.getSlug(),
                 post.getCreatedAt(),
                 post.getContent(),
                 post.getImageUrl(),
@@ -123,6 +126,10 @@ public class AuthorServices {
     }
 
     private PostResponse convertToPostResponse(Post post) {
+        return getPostResponse(post);
+    }
+
+    static PostResponse getPostResponse(Post post) {
         List<CommentResponse> commentResponses = post.getComments().stream()
                 .map(comment -> new CommentResponse(
                         comment.getId(),
@@ -136,6 +143,7 @@ public class AuthorServices {
                 post.getId(),
                 post.getAuthor().getUsername(),
                 post.getTitle(),
+                post.getSlug(),
                 post.getCreatedAt(),
                 post.getFeatured(),
                 post.getContent(),

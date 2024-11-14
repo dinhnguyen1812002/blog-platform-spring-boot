@@ -9,12 +9,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BlogPlatformApplication 	{
-//		implements CommandLineRunner
+public class BlogPlatformApplication  {
+//implements CommandLineRunner
 
 
-	@Autowired
-	RoleRepository roleRepo;
 
 	public static void main(String[] args) {
 		SpringApplication.run(BlogPlatformApplication.class, args);

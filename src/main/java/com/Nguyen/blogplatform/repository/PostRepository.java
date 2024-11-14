@@ -32,4 +32,5 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
 //
 //    @Query("SELECT p FROM Post p JOIN p.categories c WHERE p.title LIKE %:title% AND c.id = :categoryId")
 //    List<Post> findByTitleContainingAndCategoryId(@Param("title") String title, @Param("categoryId") Long categoryId);
+    Optional<Post> findBySlug(String slug);
 }

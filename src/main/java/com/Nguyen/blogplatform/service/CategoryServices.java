@@ -2,6 +2,7 @@ package com.Nguyen.blogplatform.service;
 
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.model.Category;
+import com.Nguyen.blogplatform.payload.request.CategoryRequest;
 import com.Nguyen.blogplatform.repository.CategoryRepository;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +21,7 @@ public class CategoryServices {
         return categoryRepository.findAll();
     }
 
-    public boolean isCategoryExit(Category category){
+    public boolean isCategoryExit(CategoryRequest category){
         Optional<Category> existingCategory = categoryRepository.findByCategory(category.getCategory());
         return existingCategory.isPresent();
     }
@@ -28,7 +29,7 @@ public class CategoryServices {
         return categoryRepository.findById(id)
                 .orElseThrow(()->new NotFoundException("Not found "+ id));
     }
-    public Category saveCategory(Category category){
+    public Category saveCategory(Category category) {
         return categoryRepository.save(category);
     }
 

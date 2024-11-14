@@ -62,25 +62,26 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auth/**",
-                                "/swagger-ui/**",
-                                "/swagger-resources/*",
-                                "/v3/api-docs/**",
-                                "/api/test/**",
-                                "/api/v1/category/**",
-                                "/api/v1/role/**",
-                                "/api/v1/post/{id}",
-                                "/api/v1/post/featured",
-                                "/api/v1/post/search",
-                                "/api/v1/post/category/{categoryId}",
-                                "/api/v1/upload",
-                                "/fuck").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/post").permitAll()
-                        .requestMatchers("/api/v1/user/update-password").authenticated()
-                        .requestMatchers("/api/v1/user/**").hasRole("USER")
-                        .requestMatchers("/api/v1/author/**").hasRole("AUTHOR")
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/comments/**").authenticated()
+                                .requestMatchers("/**").permitAll()
+//                        .requestMatchers("/api/v1/auth/**",
+//                                "/swagger-ui/**",
+//                                "/swagger-resources/**",
+//                                "/v3/api-docs/**",
+//                                "/api/test/**",
+//                                "/api/v1/category/**",
+//                                "/api/v1/role/**",
+//                                "/api/v1/post/{id}",
+//                                "/api/v1/post/featured",
+//                                "/api/v1/post/search",
+//                                "/api/v1/post/category/{categoryId}",
+//                                "/api/v1/upload",
+//                                "/fuck").permitAll()
+//                        .requestMatchers(HttpMethod.GET, "/api/v1/post").permitAll()
+//                        .requestMatchers("/api/v1/user/update-password").authenticated()
+//                        .requestMatchers("/api/v1/user/**").hasRole("USER")
+//                        .requestMatchers("/api/v1/author/**").hasRole("AUTHOR")
+//                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+//                        .requestMatchers("/api/comments/**").authenticated()
                 );
 
         http.authenticationProvider(authenticationProvider());

@@ -27,6 +27,7 @@ public class AuthorController {
     AuthorServices authorServices;
     @Autowired
     PostService postServices;
+
     @GetMapping("/posts")
     public List<PostResponse> getMyPosts(@RequestParam(defaultValue = "0") int page,
                                          @RequestParam(defaultValue = "10") int size) {

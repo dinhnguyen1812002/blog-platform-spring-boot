@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.controller;
 
 import com.Nguyen.blogplatform.model.Category;
+import com.Nguyen.blogplatform.payload.request.CategoryRequest;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
 import com.Nguyen.blogplatform.service.CategoryServices;
 import org.springframework.http.HttpStatus;
@@ -30,23 +31,32 @@ public class CategoryController {
         return ResponseEntity.ok(cate);
     }
     @PostMapping("/add")
-    public ResponseEntity<MessageResponse> createCategory(@RequestBody Category category){
-        if(categoryServices.isCategoryExit(category)){
+    public ResponseEntity<MessageResponse> createCategory(@RequestBody CategoryRequest categoryRequest) {
+        if (categoryServices.isCategoryExit(categoryRequest)) {
             return ResponseEntity
                     .status(HttpStatus.CONFLICT)
-                    .body(new MessageResponse("category is exit"));
+                    .body(new MessageResponse("Category already exists"));
         }
-        Category saveCategory =  categoryServices.saveCategory(category);
+        Category newCategory = new Category();
+        newCategory.setCategory(categoryRequest.getCategory());
+        newCategory.setDescription(categoryRequest.getDescription());
+        newCategory.setBackgroundColor(categoryRequest.getBackgroundColor());
 
-        return ResponseEntity.ok(new MessageResponse("Ok"));
+        categoryServices.saveCategory(newCategory);
+
+        return ResponseEntity.ok(new MessageResponse("Category created successfully"));
     }
+
     @PutMapping("/{id}")
-    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody Category category)
-    {
+    public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody CategoryRequest categoryRequest) {
         Optional<Category> categoryUpdate = Optional.ofNullable(categoryServices.getCategoryById(id));
-        return  categoryUpdate.map(category1->{
-            category.setId(category.getId());
-            return new ResponseEntity<>(categoryServices.saveCategory(category),HttpStatus.OK);
+        return categoryUpdate.map(existingCategory -> {
+            existingCategory.setCategory(categoryRequest.getCategory());
+            existingCategory.setDescription(categoryRequest.getDescription());
+            existingCategory.setBackgroundColor(categoryRequest.getBackgroundColor());
+
+            Category updatedCategory = categoryServices.saveCategory(existingCategory);
+            return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
         }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
     @DeleteMapping("/{id}")

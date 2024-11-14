@@ -27,7 +27,9 @@ public class Post {
     @Size(min = 5, message = "*Your title must have at least 5 characters")
     @NotEmpty(message = "*Please provide a title")
     private String title;
-
+    @Size(min = 5, message = "*Your title must have at least 5 characters")
+    @NotEmpty(message = "*Please provide a title")
+    private String slug;
     @Column(name = "content", columnDefinition = "TEXT")
     private String content;
 
@@ -61,11 +63,13 @@ public class Post {
         this.createdAt = new Date();
     }
 
-    public Post(String title, String content, String imageUrl, User author) {
+    public Post(String title, String slug, String content, String imageUrl, User author) {
         this.title = title;
+        this.slug = slug;
         this.content = content;
         this.imageUrl = imageUrl;
         this.createdAt = new Date();
         this.author = author;
     }
+
 }

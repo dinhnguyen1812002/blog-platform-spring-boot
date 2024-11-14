@@ -32,6 +32,16 @@ public class PostController {
             throw new NotFoundException("Not found");
         }
     }
+
+    @GetMapping("/slug/{slug}")
+    public PostResponse getPostBySlug(@PathVariable String slug) {
+        try {
+            PostResponse postDetail = postServices.getPostBySlug(slug);
+            return ResponseEntity.ok(postDetail).getBody();
+        }catch (Exception e){
+            throw new NotFoundException("Not found");
+        }
+    }
     @GetMapping("/latest")
     public ResponseEntity<Page<PostResponse>> getLatestPosts(
             @RequestParam(defaultValue = "0") int page,
@@ -40,6 +50,7 @@ public class PostController {
         Page<PostResponse> latestPosts = postServices.getListPost(pageable);
         return ResponseEntity.ok(latestPosts);
     }
+
     @GetMapping("/featured")
     public ResponseEntity<List<PostResponse>> getFeaturedPosts() {
         List<PostResponse> featuredPosts = postServices.getFeaturedPosts(Pageable.ofSize(5));
@@ -57,6 +68,7 @@ public class PostController {
         List<PostResponse> posts = postServices.getPostsByCategory(categoryId);
         return ResponseEntity.ok(posts);
     }
+
     @GetMapping("/search")
     public ResponseEntity<List<PostResponse>> searchPosts(
             @RequestParam(required = false) String title,
@@ -64,4 +76,5 @@ public class PostController {
         List<PostResponse> posts = postServices.searchPosts(title, categoryId);
         return ResponseEntity.ok(posts);
     }
+
 }

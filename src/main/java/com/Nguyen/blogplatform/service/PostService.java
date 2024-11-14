@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.service;
 
+import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.model.Category;
@@ -39,12 +40,15 @@ public class PostService {
     @Autowired
     private CategoryRepository categoryRepository;
 
+
+
     public Post createPost(PostRequest postRequest) {
+        String slug = SlugUtil.createSlug(postRequest.getTitle());
         User author = getCurrentUser();
         Set<Category> categories = getCategoriesFromIds(postRequest.getCategories());
-
         Post post = new Post();
         post.setTitle(postRequest.getTitle());
+        post.setSlug(slug);
         post.setContent(postRequest.getContent());
         post.setImageUrl(postRequest.getImageUrl());
         post.setAuthor(author);
@@ -69,6 +73,11 @@ public class PostService {
     public PostResponse getPostByIdWithComments(String postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
+        return mapPostToResponse(post);
+    }
+
+    public PostResponse getPostBySlug(String postId) {
+        Post post = postRepository.findBySlug(postId).orElseThrow(() -> new NotFoundException("Post not found with slug: " + postId));
         return mapPostToResponse(post);
     }
 
@@ -112,7 +121,9 @@ public class PostService {
                 post.getId(),
                 post.getAuthor().getUsername(),
                 post.getTitle(),
+                post.getSlug(),
                 post.getCreatedAt(),
+                post.getFeatured(),
                 post.getContent(),
                 post.getImageUrl(),
                 post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet())
@@ -120,24 +131,12 @@ public class PostService {
     }
 
     private PostResponse mapPostToResponse(Post post) {
-        List<CommentResponse> commentResponses = post.getComments().stream()
-                .map(comment -> new CommentResponse(
-                        comment.getId(),
-                        comment.getComment(),
-                        comment.getCreatedAt(),
-                        comment.getAuthor().getUsername()))
-                .collect(Collectors.toList());
-
-        return new PostResponse(
-                post.getId(),
-                post.getAuthor().getUsername(),
-                post.getTitle(),
-                post.getCreatedAt(),
-                post.getFeatured(),
-                post.getContent(),
-                post.getImageUrl(),
-                post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()),
-                commentResponses
-        );
+        return getPostResponse(post);
     }
+    static PostResponse getPostResponse(Post post) {
+        return AuthorServices.getPostResponse(post);
+    }
+
+
+
 }

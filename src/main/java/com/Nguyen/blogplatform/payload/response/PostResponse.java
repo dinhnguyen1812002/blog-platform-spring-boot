@@ -18,6 +18,7 @@ public class PostResponse {
     private String id;
     private String authorName;
     private String title;
+    private String slug;
     private Date createdAt;
     private Boolean featured;
     private String content;
@@ -27,12 +28,13 @@ public class PostResponse {
 
     // Constructor without comments and featured
     public PostResponse(String id, String authorName,
-                        String title, Date createdAt,
+                        String title, String slug, Date createdAt,
                         String content, String imageUrl,
                         Set<String> categories) {
         this.id = id;
         this.authorName = authorName;
         this.title = title;
+        this.slug = slug;
         this.createdAt = createdAt;
         this.content = content;
         this.imageUrl = imageUrl;
@@ -41,28 +43,30 @@ public class PostResponse {
 
     // Constructor with comments, without featured
     public PostResponse(String id, String authorName,
-                        String title, Date createdAt,
+                        String title, String slug, Date createdAt, Boolean featured,
                         String content, String imageUrl,
-                        Set<String> categories, List<CommentResponse> comments) {
+                        Set<String> categories) {
         this.id = id;
         this.authorName = authorName;
         this.title = title;
+        this.slug = slug;
         this.createdAt = createdAt;
+        this.featured = featured;
         this.content = content;
         this.imageUrl = imageUrl;
         this.categories = categories;
-        this.comments = comments;
     }
 
     // Constructor with all fields
     public PostResponse(String id, String authorName,
-                        String title, Date createdAt,
+                        String title, String slug, Date createdAt,
                         Boolean featured, String content,
                         String imageUrl, Set<String> categories,
                         List<CommentResponse> comments) {
         this.id = id;
         this.authorName = authorName;
         this.title = title;
+        this.slug = slug;
         this.createdAt = createdAt;
         this.featured = featured;
         this.content = content;
@@ -70,4 +74,5 @@ public class PostResponse {
         this.categories = categories;
         this.comments = comments;
     }
+
 }
