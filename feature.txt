@@ -14,3 +14,16 @@ Comment
 fontend 
 find text editor (mmaybe rich text editor)
 Tags input
+
+Hệ thống tìm kiếm - cho phép người dùng tìm kiếm bài viết theo từ khóa, thẻ, hoặc danh mục
+Thẻ tags và danh mục (categories) - giúp phân loại và tổ chức nội dung
+Bình luận nâng cao - cho phép trả lời bình luận, thông báo khi có người trả lời
+Tích hợp mạng xã hội - chia sẻ bài viết, đăng nhập qua các nền tảng xã hội
+Hệ thống thông báo - thông báo cho người dùng khi có bài viết mới, bình luận mới
+Tùy chỉnh giao diện - theme tối/sáng, tùy chỉnh màu sắc, font chữ
+Tích hợp SEO - meta tags, URL thân thiện, sitemap
+Hệ thống phân tích - theo dõi lượt xem, thời gian đọc, tỷ lệ thoát
+Tích hợp CMS - trình soạn thảo nội dung phong phú (WYSIWYG)
+Hệ thống đăng ký newsletter - để người dùng đăng ký nhận bản tin
+Tính năng lưu bài viết - cho phép người dùng lưu bài viết yêu thích
+Tính năng đánh giá bài viết - hệ thống rating, like/dislike

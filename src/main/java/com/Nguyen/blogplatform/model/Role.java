@@ -1,8 +1,9 @@
 package com.Nguyen.blogplatform.model;
 
+import com.Nguyen.blogplatform.Enum.ERole;
 import jakarta.persistence.*;
+import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.HashSet;
@@ -12,7 +13,7 @@ import java.util.Set;
 @Table(name = "roles")
 @Getter
 @Setter
-
+@Data
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

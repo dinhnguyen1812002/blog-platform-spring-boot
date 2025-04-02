@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.GenericGenerator;
@@ -17,6 +18,7 @@ import java.util.Set;
 @Table(name = "post")
 @Getter
 @Setter
+@Data
 public class Post {
     @Id
     @GeneratedValue(generator = "uuid")
@@ -45,7 +47,7 @@ public class Post {
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     @JsonBackReference
-    private User author;
+    private User user;
 
     @ManyToMany
     @JoinTable(
@@ -56,20 +58,20 @@ public class Post {
     @JsonManagedReference
     @NotEmpty(message = "A post must have at least one category")
     private Set<Category> categories = new HashSet<>();
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonManagedReference
+    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @JsonManagedReference("post-comments")
     private Set<Comment> comments = new HashSet<>();
     public Post() {
         this.createdAt = new Date();
     }
 
-    public Post(String title, String slug, String content, String imageUrl, User author) {
+    public Post(String title, String slug, String content, String imageUrl, User user) {
         this.title = title;
         this.slug = slug;
         this.content = content;
         this.imageUrl = imageUrl;
         this.createdAt = new Date();
-        this.author = author;
+        this.user = user;
     }
 
 }

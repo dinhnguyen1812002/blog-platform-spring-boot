@@ -11,6 +11,7 @@ import com.Nguyen.blogplatform.service.UserDetailsImpl;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,11 +37,22 @@ public class AuthorController {
     @PostMapping("/write")
     public ResponseEntity<Post> createPost(@RequestBody PostRequest postDTO) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null || authentication.getPrincipal() == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
         String authorId = userDetails.getId();
 
-        Post createdPost = authorServices.newPost(postDTO, authorId);
-        return ResponseEntity.ok(createdPost);
+        try {
+            Post createdPost = authorServices.newPost(postDTO, authorId);
+            return ResponseEntity.ok(createdPost);
+        } catch (Exception e) {
+            e.printStackTrace(); // In lỗi ra console
+            // Hoặc dùng logger nếu có: logger.error("Error creating post", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
     @PutMapping("/{id}")
     public ResponseEntity<PostResponse> updatePost(

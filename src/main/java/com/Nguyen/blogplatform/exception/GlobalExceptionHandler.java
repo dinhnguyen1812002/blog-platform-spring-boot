@@ -1,8 +1,9 @@
 package com.Nguyen.blogplatform.exception;
 
+import com.Nguyen.blogplatform.service.TelegramNotificationService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -13,32 +14,76 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    @Autowired
+    private TelegramNotificationService telegramNotificationService;
+
+    // Handler for NotFoundException
     @ExceptionHandler(NotFoundException.class)
-    public ResponseEntity<Map<String, String>> resourceNotFoundException(NotFoundException ex, WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleNotFoundException(NotFoundException ex, WebRequest request) {
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
+
+        // Send formatted error to Telegram
+        telegramNotificationService.sendErrorNotification(
+                "NotFoundException",
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
+
+    // Handler for InvalidCategoryException
     @ExceptionHandler(InvalidCategoryException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidCategoryException(InvalidCategoryException ex) {
+    public ResponseEntity<Map<String, String>> handleInvalidCategoryException(InvalidCategoryException ex, WebRequest request) {
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
+
+        // Send formatted error to Telegram
+        telegramNotificationService.sendErrorNotification(
+                "InvalidCategoryException",
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
+
+    // Handler for UnauthorizedException
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidCategoryException(UnauthorizedException ex) {
+    public ResponseEntity<Map<String, String>> handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
+
+        // Send formatted error to Telegram
+        telegramNotificationService.sendErrorNotification(
+                "UnauthorizedException",
+                ex.getMessage(),
+                request.getDescription(false)
+        );
+
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
 
+    // Handler for IllegalStateException
     @ExceptionHandler(IllegalStateException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleAmbiguousMappingException(IllegalStateException ex, WebRequest request) {
+    public ErrorResponse handleIllegalStateException(IllegalStateException ex, WebRequest request) {
+        String message;
         if (ex.getMessage().contains("Ambiguous handler methods mapped")) {
-            return new ErrorResponse("Ambiguous endpoint mapping. Please check the API documentation.");
+            message = "Ambiguous endpoint mapping. Please check the API documentation.";
+        } else {
+            message = "An unexpected error occurred.";
         }
-        return new ErrorResponse("An unexpected error occurred.");
-    }
 
+        // Send formatted error to Telegram
+        telegramNotificationService.sendErrorNotification(
+                "IllegalStateException",
+                message,
+                request.getDescription(false)
+        );
+
+        return new ErrorResponse(message);
+    }
 }

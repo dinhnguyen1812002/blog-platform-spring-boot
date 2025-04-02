@@ -1,53 +1,81 @@
 package com.Nguyen.blogplatform.model;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.Nguyen.blogplatform.UuidInterdface.Identifiable;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UuidGenerator;
 
-import java.util.Date;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
-@Table(name = "comment")
-@Getter
-@Setter
-public class Comment {
-
+@Data
+@NoArgsConstructor
+public class Comment implements Identifiable {
     @Id
     @GeneratedValue(generator = "uuid")
-    @UuidGenerator
+    @GenericGenerator(name = "uuid", strategy = "uuid2")
     private String id;
 
-    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
-    @NotEmpty(message = "*Please provide content for the comment")
-    @Size(min = 1, message = "*The comment must have at least 1 character")
-    private String comment;
+    @Column(name = "content", columnDefinition = "TEXT", nullable = false)
+    @NotEmpty(message = "Comment content cannot be empty")
+    @Size(min = 1, max = 1000, message = "Comment must be between 1 and 1000 characters")
+    private String content;
 
-    @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private Date createdAt;
-
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id", nullable = false)
-    @JsonBackReference
+    @JsonIgnore
     private Post post;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
-    private User author;
+    @JsonIgnore
+    private User user;
 
-    public Comment() {
-        this.createdAt = new Date();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    @JsonIgnore
+    private Comment parentComment;
+
+    @OneToMany(mappedBy = "parentComment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Comment> replies = new ArrayList<>();
+
+    @Column(name = "depth", nullable = false)
+    private int depth = 0;
+
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private Instant updatedAt;
+
+    @Column(name = "reply_count")
+    private int replyCount = 0;
+
+    public void addReply(Comment reply) {
+        replies.add(reply);
+        replyCount++;
+    }
+    @PrePersist
+    public void prePersist() {
+        this.createdAt = Instant.now();
     }
 
-    public Comment(String comment, Post post, User author) {
-        this.comment = comment;
-        this.post = post;
-        this.author = author;
-        this.createdAt = new Date();
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = Instant.now();
     }
 }
+

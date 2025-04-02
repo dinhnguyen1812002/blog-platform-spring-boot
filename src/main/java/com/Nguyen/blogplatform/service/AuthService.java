@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.service;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
-import com.Nguyen.blogplatform.model.ERole;
+import com.Nguyen.blogplatform.Enum.ERole;
 import com.Nguyen.blogplatform.payload.request.LoginRequest;
 import com.Nguyen.blogplatform.payload.request.SignupRequest;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;

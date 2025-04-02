@@ -5,6 +5,7 @@ import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -23,8 +24,8 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
     List<Post> findByCategoriesContaining(Category category);
     @Query("SELECT p FROM Post p WHERE p.title LIKE %:title%")
     List<Post> findByTitleContaining(@Param("title") String title);
-    @Query("SELECT p FROM Post p WHERE p.author.username = :username")
-    Page<Post> findByAuthor(String username, Pageable pageable);
+    @Query("SELECT p FROM Post p WHERE p.user.username = :username")
+    Page<Post> findByUser(String username, Pageable pageable);
 
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
 //    @Query("SELECT p FROM Post p JOIN p.categories c WHERE c.id = :categoryId")
@@ -32,5 +33,7 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
 //
 //    @Query("SELECT p FROM Post p JOIN p.categories c WHERE p.title LIKE %:title% AND c.id = :categoryId")
 //    List<Post> findByTitleContainingAndCategoryId(@Param("title") String title, @Param("categoryId") Long categoryId);
-    Optional<Post> findBySlug(String slug);
+@EntityGraph(attributePaths = {"comments", "comments.user"})
+Optional<Post> findBySlug(String slug);
+
 }

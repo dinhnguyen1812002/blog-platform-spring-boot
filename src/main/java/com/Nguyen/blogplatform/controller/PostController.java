@@ -34,12 +34,12 @@ public class PostController {
     }
 
     @GetMapping("/slug/{slug}")
-    public PostResponse getPostBySlug(@PathVariable String slug) {
+    public ResponseEntity<PostResponse> getPostBySlug(@PathVariable String slug) {
         try {
-            PostResponse postDetail = postServices.getPostBySlug(slug);
-            return ResponseEntity.ok(postDetail).getBody();
-        }catch (Exception e){
-            throw new NotFoundException("Not found");
+            PostResponse postDetail = postServices.getPostBySlug(slug); // This includes comments
+            return ResponseEntity.ok(postDetail);
+        } catch (NotFoundException e) {
+            throw new NotFoundException("Not found post with slug: " + slug);
         }
     }
     @GetMapping("/latest")
@@ -76,5 +76,4 @@ public class PostController {
         List<PostResponse> posts = postServices.searchPosts(title, categoryId);
         return ResponseEntity.ok(posts);
     }
-
 }

@@ -57,46 +57,56 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+        http
+                .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
                 .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                                .requestMatchers("/**").permitAll()
-//                        .requestMatchers("/api/v1/auth/**",
-//                                "/swagger-ui/**",
-//                                "/swagger-resources/**",
-//                                "/v3/api-docs/**",
-//                                "/api/test/**",
-//                                "/api/v1/category/**",
-//                                "/api/v1/role/**",
-//                                "/api/v1/post/{id}",
-//                                "/api/v1/post/featured",
-//                                "/api/v1/post/search",
-//                                "/api/v1/post/category/{categoryId}",
-//                                "/api/v1/upload",
-//                                "/fuck").permitAll()
-//                        .requestMatchers(HttpMethod.GET, "/api/v1/post").permitAll()
-//                        .requestMatchers("/api/v1/user/update-password").authenticated()
-//                        .requestMatchers("/api/v1/user/**").hasRole("USER")
-//                        .requestMatchers("/api/v1/author/**").hasRole("AUTHOR")
-//                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-//                        .requestMatchers("/api/comments/**").authenticated()
+                        .requestMatchers("/ws/**").permitAll()
+                        // Public endpoint
+                        .requestMatchers(
+                                "/",
+                                "/api/v1/auth/**",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**",
+                                "/v3/api-docs/**",
+                                "/api/test/**"
+                        ).permitAll()
+                        .requestMatchers("/api/memes/**").permitAll()
+                        .requestMatchers("/uploads/**").permitAll()
+                        // Public GET endpoints
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/post",
+                                "/api/v1/post/featured",
+                                "/api/v1/post/search",
+                                "/api/v1/post/{id}",
+                                "/api/v1/post/category/{categoryId}",
+                                "/api/v1/category/**"
+                        ).permitAll()
+                        // Các rule khác giữ nguyên
+                        .requestMatchers("/api/v1/upload").permitAll()
+                        .requestMatchers("/api/v1/user/update-password").authenticated()
+                        .requestMatchers("/api/v1/user/**").hasRole("USER")
+                        .requestMatchers("/api/v1/author/**").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/comments/**").permitAll()
+                        .requestMatchers("/api/v1/role/**").hasRole("ADMIN")
+                        .anyRequest().authenticated()
                 );
 
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("http://localhost:3000");
+        configuration.addAllowedOrigin("*");
         configuration.addAllowedMethod("*");
         configuration.addAllowedHeader("*");
-        configuration.setAllowCredentials(true);
+        configuration.setAllowCredentials(false);
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;

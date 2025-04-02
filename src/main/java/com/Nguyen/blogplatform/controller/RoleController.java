@@ -23,6 +23,7 @@ public class RoleController {
         List<Role> role= roleServices.findAllRole();
         return ResponseEntity.ok(role);
     }
+
     @PostMapping("/add")
     public ResponseEntity<Role> createRole(@RequestBody Role role){
         Role newRole= roleServices.saveRole(role);

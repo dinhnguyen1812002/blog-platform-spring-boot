@@ -15,6 +15,7 @@ import com.Nguyen.blogplatform.repository.PostRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import jakarta.transaction.Transactional;
+import org.apache.coyote.BadRequestException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,30 +40,49 @@ public class AuthorServices {
     private JwtUtils jwtUtils;
     @Autowired
     private CategoryRepository categoryRepository;
+
+    @Autowired
+    private NotificationService notificationService;
+
+
     public static final Boolean FEATURED = false;
     public List<PostResponse> getPostsForCurrentUser(int page, int size) {
         String username = getCurrentUsername();
         Pageable pageable = PageRequest.of(page, size);
-        return postRepository.findByAuthor(username, pageable).stream()
+        return postRepository.findByUser(username, pageable).stream()
                 .map(this::convertToPostDetailDTO)
                 .collect(Collectors.toList());
     }
 
-    public Post newPost(PostRequest postRequest, String authorId) {
+    @Transactional
+    public Post newPost(PostRequest postRequest, String authorId) throws BadRequestException {
+        if (postRequest == null || postRequest.getTitle() == null || postRequest.getTitle().isBlank()) {
+            throw new BadRequestException("Dữ liệu đầu vào không hợp lệ");
+        }
+
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + authorId));
+
         Set<Category> categories = getCategoriesFromIds(postRequest.getCategories());
         String slug = SlugUtil.createSlug(postRequest.getTitle());
         Post post = new Post();
         post.setTitle(postRequest.getTitle());
         post.setSlug(slug);
-        post.setAuthor(author);
+        post.setUser(author);
         post.setFeatured(FEATURED);
-        post.setContent(postRequest.getContent());
-        post.setImageUrl(postRequest.getImageUrl());
+        post.setContent(postRequest.getContent() != null ? postRequest.getContent() : "");
+        post.setImageUrl(postRequest.getImageUrl() != null ? postRequest.getImageUrl() : "");
         post.setCreatedAt(postRequest.getCreatedAt() != null ? postRequest.getCreatedAt() : new Date());
         post.setCategories(categories);
-        return postRepository.save(post);
+
+        try {
+            Post savedPost = postRepository.save(post);
+            notificationService.sendPostNotification(savedPost.getId(), "New post created: " + postRequest.getTitle());
+            notificationService.sendGlobalNotification("New post available: " + savedPost.getTitle());
+            return savedPost;
+        } catch (Exception e) {
+            throw new RuntimeException("Error saving post", e); // Ném lại để log chi tiết
+        }
     }
 
     public PostResponse updatePost(String postId, PostRequest postRequest) {
@@ -71,7 +91,7 @@ public class AuthorServices {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
 
-        if (!post.getAuthor().getUsername().equals(currentUsername)) {
+        if (!post.getUser().getUsername().equals(currentUsername)) {
             throw new UnauthorizedException("You are not authorized to update this post");
         }
 
@@ -90,7 +110,7 @@ public class AuthorServices {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
 
-        if (!post.getAuthor().getUsername().equals(currentUsername)) {
+        if (!post.getUser().getUsername().equals(currentUsername)) {
             throw new UnauthorizedException("You are not authorized to delete this post");
         }
 
@@ -115,7 +135,7 @@ public class AuthorServices {
     private PostResponse convertToPostDetailDTO(Post post) {
         return new PostResponse(
                 post.getId(),
-                post.getAuthor().getUsername(),
+                post.getUser().getUsername(),
                 post.getTitle(),
                 post.getSlug(),
                 post.getCreatedAt(),
@@ -130,26 +150,26 @@ public class AuthorServices {
     }
 
     static PostResponse getPostResponse(Post post) {
-        List<CommentResponse> commentResponses = post.getComments().stream()
-                .map(comment -> new CommentResponse(
-                        comment.getId(),
-                        comment.getComment(),
-                        comment.getCreatedAt(),
-                        comment.getAuthor().getUsername()
-                ))
-                .collect(Collectors.toList());
+//        List<CommentResponse> commentResponses = post.getContent().stream()
+//                .map(comment -> new CommentResponse(
+//                        comment.getId(),
+//                        comment.getComment(),
+//                        comment.getCreatedAt(),
+//                        comment.getAuthor().getUsername()
+//                ))
+//                .collect(Collectors.toList());
 
         return new PostResponse(
                 post.getId(),
-                post.getAuthor().getUsername(),
+                post.getUser().getUsername(),
                 post.getTitle(),
                 post.getSlug(),
                 post.getCreatedAt(),
                 post.getFeatured(),
                 post.getContent(),
                 post.getImageUrl(),
-                post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()),
-                commentResponses
+                post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet())
+//                commentResponses
         );
     }
 }

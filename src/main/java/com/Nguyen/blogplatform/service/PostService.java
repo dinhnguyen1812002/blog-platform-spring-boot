@@ -4,6 +4,7 @@ import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.model.Category;
+import com.Nguyen.blogplatform.model.Comment;
 import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.PostRequest;
@@ -23,6 +24,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service
@@ -51,7 +53,7 @@ public class PostService {
         post.setSlug(slug);
         post.setContent(postRequest.getContent());
         post.setImageUrl(postRequest.getImageUrl());
-        post.setAuthor(author);
+        post.setUser(author);
         post.setCreatedAt(new Date());
         post.setCategories(categories);
 
@@ -76,11 +78,16 @@ public class PostService {
         return mapPostToResponse(post);
     }
 
-    public PostResponse getPostBySlug(String postId) {
-        Post post = postRepository.findBySlug(postId).orElseThrow(() -> new NotFoundException("Post not found with slug: " + postId));
-        return mapPostToResponse(post);
+//    public PostResponse getPostBySlug(String slug) {
+//        Post post = postRepository.findBySlug(slug)
+//                .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
+//        return mapPostToResponseWithComments(post);
+//    }
+    public PostResponse getPostBySlug(String slug) {
+        Post post = postRepository.findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
+        return mapPostToResponseWithComments(post);
     }
-
     public List<PostResponse> getPostsByCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId));
@@ -119,7 +126,7 @@ public class PostService {
     private PostResponse convertToPostResponse(Post post) {
         return new PostResponse(
                 post.getId(),
-                post.getAuthor().getUsername(),
+                post.getUser().getUsername(),
                 post.getTitle(),
                 post.getSlug(),
                 post.getCreatedAt(),
@@ -137,6 +144,30 @@ public class PostService {
         return AuthorServices.getPostResponse(post);
     }
 
+    private PostResponse mapPostToResponseWithComments(Post post) {
+        List<CommentResponse> comments = post.getComments().stream()
+                .map(this::convertToCommentResponse)
+                .collect(Collectors.toList());
+        return new PostResponse(
+                post.getId(),
+                post.getUser().getUsername(),
+                post.getTitle(),
+                post.getSlug(),
+                post.getCreatedAt(),
+                post.getFeatured(),
+                post.getContent(),
+                post.getImageUrl(),
+                post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()),
+                comments
+        );
+    }
 
-
+    private CommentResponse convertToCommentResponse(Comment comment) {
+        return new CommentResponse(
+                comment.getId(),
+                comment.getContent(),
+                comment.getCreatedAt(),
+                comment.getUser().getUsername()
+        );
+    }
 }
