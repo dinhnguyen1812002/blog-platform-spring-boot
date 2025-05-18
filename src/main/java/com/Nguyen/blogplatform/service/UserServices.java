@@ -40,6 +40,8 @@ public class UserServices {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Value("${base-url}")
+    private String bashUrl;
 
     // Modify sendResetEmail method
     public void sendResetEmail(String email) throws MessagingException {
@@ -51,7 +53,7 @@ public class UserServices {
         userRepository.save(user);
 
         // Use the base URL for the reset link
-        String resetUrl = "http://localhost:8080/api/user/reset-password?token=" + user.getResetToken();
+        String resetUrl =  bashUrl +  "/api/user/reset-password?token=" + user.getResetToken();
 
         Context context = new Context();
         context.setVariable("resetUrl", resetUrl);
@@ -94,5 +96,9 @@ public class UserServices {
         return userRepository.findById(id)
                 .orElseThrow(()->new UsernameNotFoundException("User not Found with email"+ id));
     }
+
+
+
+
 }
 

@@ -1,5 +1,7 @@
 package com.Nguyen.blogplatform.controller;
 
+import com.Nguyen.blogplatform.payload.response.MessageResponse;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,4 +33,10 @@ public class TestController {
     public String adminAccess() {
         return "Admin Board.";
     }
+
+    @GetMapping
+   public ResponseEntity<?> test(){
+        return ResponseEntity.ok(new MessageResponse("Hello World!"));
+   }
+
 }

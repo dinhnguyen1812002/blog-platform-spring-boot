@@ -26,7 +26,7 @@ public class PostController {
     @GetMapping("/{id}")
     public PostResponse getPostDetail(@PathVariable String id) {
         try {
-            PostResponse postDetail = postServices.getPostByIdWithComments(id);
+            PostResponse postDetail = postServices.getPostById(id);
             return ResponseEntity.ok(postDetail).getBody();
         }catch (Exception e){
             throw new NotFoundException("Not found");
@@ -42,6 +42,7 @@ public class PostController {
             throw new NotFoundException("Not found post with slug: " + slug);
         }
     }
+
     @GetMapping("/latest")
     public ResponseEntity<Page<PostResponse>> getLatestPosts(
             @RequestParam(defaultValue = "0") int page,
@@ -63,6 +64,7 @@ public class PostController {
 //        PostResponse postResponse = postServices.updatePost(id, postRequest);
 //        return ResponseEntity.ok(postResponse);
 //    }
+
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<PostResponse>> getPostsByCategory(@PathVariable Long categoryId) {
         List<PostResponse> posts = postServices.getPostsByCategory(categoryId);

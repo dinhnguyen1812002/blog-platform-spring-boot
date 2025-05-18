@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.controller;
 
 
+import com.Nguyen.blogplatform.Utils.UrlUtils;
 import com.Nguyen.blogplatform.payload.response.ResponseResult;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ import java.util.Objects;
 
 public class UploadController {
     String IMAGE_FOLDER = "./src/main/resources/images/";
-
+    private UrlUtils url;
     @PostMapping()
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile uploadfile) {
 
@@ -64,23 +65,23 @@ public class UploadController {
 
             Path path = Paths.get(IMAGE_FOLDER+filename);
             Files.write(path, bytes);
-            fileUrls[index] = getBaseEnvLinkURL() + "/images/"+filename;
+            fileUrls[index] =  url.getBaseEnvLinkURL() + "/images/"+filename;
             index++;
         }
         return fileUrls;
     }
 
-    protected String getBaseEnvLinkURL() {
-        String baseEnvLinkURL=null;
-        HttpServletRequest currentRequest =
-                ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        baseEnvLinkURL = "http://" + currentRequest.getLocalName();
-        if(currentRequest.getLocalPort() != 80) {
-            baseEnvLinkURL += ":" + currentRequest.getLocalPort();
-        }
-        if(!StringUtils.isEmpty(currentRequest.getContextPath())) {
-            baseEnvLinkURL += currentRequest.getContextPath();
-        }
-        return baseEnvLinkURL;
-    }
+//    public String getBaseEnvLinkURL() {
+//        String baseEnvLinkURL=null;
+//        HttpServletRequest currentRequest =
+//                ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+//        baseEnvLinkURL = "http://" + currentRequest.getLocalName();
+//        if(currentRequest.getLocalPort() != 80) {
+//            baseEnvLinkURL += ":" + currentRequest.getLocalPort();
+//        }
+//        if(!StringUtils.isEmpty(currentRequest.getContextPath())) {
+//            baseEnvLinkURL += currentRequest.getContextPath();
+//        }
+//        return baseEnvLinkURL;
+//    }
 }

@@ -42,6 +42,8 @@ public class User {
     @Size(min = 6, message = "*Your password must have at least 6 characters")
     @JsonIgnore
     private String password;
+    
+    private String avatar;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference

@@ -10,6 +10,7 @@ import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.PostRequest;
 import com.Nguyen.blogplatform.payload.response.CommentResponse;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
+import com.Nguyen.blogplatform.payload.response.UserResponse;
 import com.Nguyen.blogplatform.repository.CategoryRepository;
 import com.Nguyen.blogplatform.repository.PostRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
@@ -133,16 +134,7 @@ public class AuthorServices {
     }
 
     private PostResponse convertToPostDetailDTO(Post post) {
-        return new PostResponse(
-                post.getId(),
-                post.getUser().getUsername(),
-                post.getTitle(),
-                post.getSlug(),
-                post.getCreatedAt(),
-                post.getContent(),
-                post.getImageUrl(),
-                post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet())
-        );
+        return getPostResponse(post);
     }
 
     private PostResponse convertToPostResponse(Post post) {
@@ -158,10 +150,12 @@ public class AuthorServices {
 //                        comment.getAuthor().getUsername()
 //                ))
 //                .collect(Collectors.toList());
+        User user  = post.getUser();
 
+        UserResponse userResponse =  new UserResponse(user.getId(), user.getUsername(), user.getEmail());
         return new PostResponse(
                 post.getId(),
-                post.getUser().getUsername(),
+                userResponse,
                 post.getTitle(),
                 post.getSlug(),
                 post.getCreatedAt(),

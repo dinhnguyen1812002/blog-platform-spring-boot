@@ -103,5 +103,4 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse(e.getMessage()));
         }
     }
-
 }

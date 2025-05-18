@@ -10,6 +10,7 @@ import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.PostRequest;
 import com.Nguyen.blogplatform.payload.response.CommentResponse;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
+import com.Nguyen.blogplatform.payload.response.UserResponse;
 import com.Nguyen.blogplatform.repository.CategoryRepository;
 import com.Nguyen.blogplatform.repository.PostRepository;
 import com.Nguyen.blogplatform.repository.PostSpecification;
@@ -26,6 +27,8 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+
+import static com.Nguyen.blogplatform.Utils.ExcerptUtil.excerpt;
 
 @Service
 public class PostService {
@@ -72,7 +75,7 @@ public class PostService {
                 .collect(Collectors.toList());
     }
 
-    public PostResponse getPostByIdWithComments(String postId) {
+    public PostResponse getPostById(String postId) {
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
         return mapPostToResponse(post);
@@ -88,6 +91,7 @@ public class PostService {
                 .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
         return mapPostToResponseWithComments(post);
     }
+
     public List<PostResponse> getPostsByCategory(Long categoryId) {
         Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId));
@@ -124,14 +128,16 @@ public class PostService {
     }
 
     private PostResponse convertToPostResponse(Post post) {
+        User  user =  post.getUser();
+        UserResponse userResponse = new UserResponse(user.getId(), user.getUsername(), user.getEmail());
         return new PostResponse(
                 post.getId(),
-                post.getUser().getUsername(),
+               userResponse,
                 post.getTitle(),
                 post.getSlug(),
                 post.getCreatedAt(),
                 post.getFeatured(),
-                post.getContent(),
+                excerpt(post.getContent()),
                 post.getImageUrl(),
                 post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet())
         );
@@ -140,6 +146,7 @@ public class PostService {
     private PostResponse mapPostToResponse(Post post) {
         return getPostResponse(post);
     }
+
     static PostResponse getPostResponse(Post post) {
         return AuthorServices.getPostResponse(post);
     }
@@ -148,9 +155,11 @@ public class PostService {
         List<CommentResponse> comments = post.getComments().stream()
                 .map(this::convertToCommentResponse)
                 .collect(Collectors.toList());
+        User  user =  post.getUser();
+        UserResponse userResponse = new UserResponse(user.getId(), user.getUsername(), user.getEmail());
         return new PostResponse(
                 post.getId(),
-                post.getUser().getUsername(),
+                userResponse,
                 post.getTitle(),
                 post.getSlug(),
                 post.getCreatedAt(),

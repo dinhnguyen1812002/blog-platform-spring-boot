@@ -5,6 +5,7 @@ import com.Nguyen.blogplatform.payload.request.MemeRequest;
 import com.Nguyen.blogplatform.payload.response.PagedMemeResponse;
 import com.Nguyen.blogplatform.service.MemeServices;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
@@ -17,12 +18,14 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/memes")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class MemeController {
-
+    private static final Logger logger = Logger.getLogger(MemeController.class.getName());
     @Autowired
     private MemeServices memeService;
 
@@ -49,7 +52,8 @@ public class MemeController {
             List<Meme>memes = memeService.addMultipleMemes(memeRequest, file);
             return ResponseEntity.ok(memes);
         }catch (Exception e) {
-            e.printStackTrace();
+
+            logger.warning(e.getMessage());
             return ResponseEntity.badRequest().build();
         }
 

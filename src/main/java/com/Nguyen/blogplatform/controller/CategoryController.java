@@ -60,6 +60,7 @@ public class CategoryController {
             return new ResponseEntity<>(updatedCategory, HttpStatus.OK);
         }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Category> deleteCategory(@PathVariable Long id)
     {
@@ -67,4 +68,5 @@ public class CategoryController {
         categoryServices.deleteCategory(id);
         return ResponseEntity.ok(deleteCategory);
     }
+
 }

@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.payload.response;
 
+import com.Nguyen.blogplatform.model.User;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,30 +23,16 @@ public class PostResponse {
     private String imageUrl;
     private Date createdAt;
     private Boolean featured;
-    private String user;
+    private UserResponse user;
     private Set<String> categories;
     private List<CommentResponse> comments; // Thêm trường này
 
 
     // Constructor without comments and featured
-    public PostResponse(String id, String user,
-                        String title, String slug, Date createdAt,
-                        String content, String imageUrl,
-                        Set<String> categories) {
-        this.id = id;
-        this.user = user;
-        this.title = title;
-        this.slug = slug;
-        this.createdAt = createdAt;
-        this.content = content;
-        this.imageUrl = imageUrl;
-        this.categories = categories;
-    }
 
-    // Constructor with comments, without featured
-    public PostResponse(String id, String user,
-                        String title, String slug, Date createdAt, Boolean featured,
-                        String content, String imageUrl,
+    public PostResponse(String id, UserResponse user,
+                        String title, String slug, Date createdAt,
+                        Boolean featured, String content, String imageUrl,
                         Set<String> categories) {
         this.id = id;
         this.user = user;
@@ -58,8 +45,10 @@ public class PostResponse {
         this.categories = categories;
     }
 
+    // Constructor with comments, without featured
+
     // Constructor with all fields
-    public PostResponse(String id, String user,
+    public PostResponse(String id,  UserResponse user,
                         String title, String slug, Date createdAt,
                         Boolean featured, String content,
                         String imageUrl, Set<String> categories,
@@ -76,4 +65,16 @@ public class PostResponse {
         this.comments = comments;
     }
 
+    public <R> PostResponse(String id,
+                            UserResponse userResponse,
+                            @Size(min = 5,
+                                    message = "*Your title must have at least 5 characters")
+                            @NotEmpty(message = "*Please provide a title")
+                            String title, @Size(min = 5, message = "*Your title must have at least 5 characters")
+                            @NotEmpty(message = "*Please provide a title") String slug,
+                            Date createdAt,
+                            String content,
+                            String imageUrl,
+                            R collect) {
+    }
 }

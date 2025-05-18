@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.2.5'
     id 'io.spring.dependency-management' version '1.1.4'
+    id("org.openapi.generator") version "7.12.0"
 }
 
 group = 'com.Nguyen'
@@ -35,6 +36,8 @@ dependencies {
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache', version: '3.4.3'
 // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-websocket
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: '3.4.3'
+    // https://mvnrepository.com/artifact/de.huxhorn.sulky/de.huxhorn.sulky.ulid
+    implementation group: 'de.huxhorn.sulky', name: 'de.huxhorn.sulky.ulid', version: '8.3.0'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
@@ -44,6 +47,11 @@ dependencies {
     
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
+    // https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus
+// https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus
+    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.15.0-M3'
+// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '3.4.4'
 }
 
 tasks.named('test') {
