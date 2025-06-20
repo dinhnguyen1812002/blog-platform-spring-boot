@@ -31,6 +31,8 @@ public class CategoryController {
         Category cate = categoryServices.getCategoryById(id);
         return ResponseEntity.ok(cate);
     }
+
+
     @PostMapping("/add")
     public ResponseEntity<MessageResponse> createCategory(@RequestBody CategoryRequest categoryRequest) {
         if (categoryServices.isCategoryExit(categoryRequest)) {

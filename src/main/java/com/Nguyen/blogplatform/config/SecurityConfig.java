@@ -31,11 +31,16 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsServiceImpl userDetailsService;
 
+    @Autowired
+    private AuthEntryPointJwt unauthorizedHandler;
+
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
     }
+
+
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -60,13 +65,19 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(configurer -> corsConfigurationSource())
-//                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/ws/**").permitAll()
+                        .requestMatchers("/ws-logs/**").permitAll()
                         .requestMatchers("/actuator/**",
                                 "/actuator/prometheus"
                                 ).permitAll()
+                        .requestMatchers("/api/v1/post/latest").permitAll()
+                        .requestMatchers("/api/logs").permitAll()
+                        .requestMatchers("/logs/**").permitAll()
+                        .requestMatchers("/logger/**").permitAll()
+                        .requestMatchers("/api/tags/**").permitAll()
                         // Public endpoint
                         .requestMatchers(
                                 "/",
@@ -76,6 +87,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api/test/**"
                         ).permitAll()
+                        .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers("/video/**").permitAll()
                         .requestMatchers("/api/memes/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
@@ -97,12 +109,17 @@ public class SecurityConfig {
                         .requestMatchers("/api/comments/**").permitAll()
                         .requestMatchers("/api/v1/role/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
+
                 );
 
         http.authenticationProvider(authenticationProvider());
+        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
+
+
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();

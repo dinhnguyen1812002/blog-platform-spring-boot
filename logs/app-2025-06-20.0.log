@@ -1,0 +1,789 @@
+2025-06-20 00:15:06 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
+2025-06-20 00:40:16 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 11172 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 00:40:16 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 00:40:16 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 00:40:18 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-20 00:40:18 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 125 ms. Found 8 JPA repository interfaces.
+2025-06-20 00:40:19 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-20 00:40:19 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-20 00:40:19 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-20 00:40:19 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-20 00:40:19 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3500 ms
+2025-06-20 00:40:20 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-20 00:40:20 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-20 00:40:20 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-20 00:40:20 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-20 00:40:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-20 00:40:21 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@507f7cd1
+2025-06-20 00:40:21 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-20 00:40:21 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-20 00:40:22 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-20 00:40:23 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-20 00:40:23 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-20 00:40:23 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-20 00:40:25 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-20 00:40:25 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-20 00:40:26 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-20 00:40:26 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@1c244fd0, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@7c0abd1, org.springframework.security.web.context.SecurityContextHolderFilter@45970ee8, org.springframework.security.web.header.HeaderWriterFilter@12046998, org.springframework.web.filter.CorsFilter@6d60c9e6, org.springframework.security.web.authentication.logout.LogoutFilter@354aaf03, com.Nguyen.blogplatform.security.AuthTokenFilter@69815126, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@173ee8f7, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@78276d6d, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5fffbcd2, org.springframework.security.web.session.SessionManagementFilter@682d0957, org.springframework.security.web.access.ExceptionTranslationFilter@16e1a441, org.springframework.security.web.access.intercept.AuthorizationFilter@6aef33f6]
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-20 00:40:26 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-20 00:40:27 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-20 00:40:27 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-20 00:40:27 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@6e1af662]]
+2025-06-20 00:40:27 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-20 00:40:27 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 12.147 seconds (process running for 12.685)
+2025-06-20 00:41:27 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-20 00:42:22 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 10928 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 00:42:22 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 00:42:22 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 00:42:24 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-20 00:42:24 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 90 ms. Found 8 JPA repository interfaces.
+2025-06-20 00:42:25 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-20 00:42:25 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-20 00:42:25 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-20 00:42:25 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-20 00:42:25 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2891 ms
+2025-06-20 00:42:25 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-20 00:42:25 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-20 00:42:25 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-20 00:42:26 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-20 00:42:26 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-20 00:42:26 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@34cfdd84
+2025-06-20 00:42:26 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-20 00:42:27 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-20 00:42:28 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-20 00:42:29 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-20 00:42:29 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-20 00:42:29 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-20 00:42:31 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-20 00:42:31 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-20 00:42:33 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-20 00:42:33 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@664bd35e, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@33ce766b, org.springframework.security.web.context.SecurityContextHolderFilter@74a8d26c, org.springframework.security.web.header.HeaderWriterFilter@3cf828db, org.springframework.web.filter.CorsFilter@5bd8b901, org.springframework.security.web.authentication.logout.LogoutFilter@5b3915b, com.Nguyen.blogplatform.security.AuthTokenFilter@4a29520e, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@24e82f43, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5d676a02, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5390bdee, org.springframework.security.web.session.SessionManagementFilter@7d99846f, org.springframework.security.web.access.ExceptionTranslationFilter@3e99738e, org.springframework.security.web.access.intercept.AuthorizationFilter@7a0c046e]
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-20 00:42:33 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-20 00:42:34 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-20 00:42:34 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-20 00:42:34 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2ff19416]]
+2025-06-20 00:42:34 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-20 00:42:34 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 12.426 seconds (process running for 13.107)
+2025-06-20 00:42:51 [http-nio-8888-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-20 00:42:51 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-06-20 00:42:51 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-06-20 00:42:51 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/latest
+2025-06-20 00:42:51 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/latest
+2025-06-20 00:43:34 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-20 00:45:24 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/latest?page=0&size=5
+2025-06-20 00:45:24 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/latest?page=0&size=5
+2025-06-20 00:45:41 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/aa4ba3ad-4127-454a-8f93-89fa480122e6
+2025-06-20 00:45:41 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/aa4ba3ad-4127-454a-8f93-89fa480122e6
+2025-06-20 00:46:16 [http-nio-8888-exec-10] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/tghjfghjfghjfghjfghjfdhjfghjgjgghj
+2025-06-20 00:46:16 [http-nio-8888-exec-10] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/tghjfghjfghjfghjfghjfdhjfghjgjgghj
+2025-06-20 01:13:34 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
+2025-06-20 10:17:54 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 13268 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 10:17:54 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 10:17:54 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 10:17:56 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-20 10:17:56 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 163 ms. Found 9 JPA repository interfaces.
+2025-06-20 10:17:58 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-20 10:17:58 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-20 10:17:58 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-20 10:17:58 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-20 10:17:58 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 4429 ms
+2025-06-20 10:17:59 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-20 10:17:59 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-20 10:18:00 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-20 10:18:00 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-20 10:18:00 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-20 10:18:01 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@2a8e30e3
+2025-06-20 10:18:01 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-20 10:18:01 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-20 10:18:04 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-20 10:18:07 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-20 10:18:08 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-20 10:18:08 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-20 10:18:10 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-20 10:18:10 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-20 10:18:12 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-20 10:18:13 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@1a9064b7, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@91a7497, org.springframework.security.web.context.SecurityContextHolderFilter@20be2d3f, org.springframework.security.web.header.HeaderWriterFilter@453a699b, org.springframework.web.filter.CorsFilter@4403cf9a, org.springframework.security.web.authentication.logout.LogoutFilter@36bef8fb, com.Nguyen.blogplatform.security.AuthTokenFilter@346d8002, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@450897d, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@42f7523d, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@595f803, org.springframework.security.web.session.SessionManagementFilter@6642ea55, org.springframework.security.web.access.ExceptionTranslationFilter@4dac863d, org.springframework.security.web.access.intercept.AuthorizationFilter@3abc4498]
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TagController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-20 10:18:13 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-20 10:18:14 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-20 10:18:14 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-20 10:18:14 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@6c49db66]]
+2025-06-20 10:18:14 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-20 10:18:14 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 21.852 seconds (process running for 22.729)
+2025-06-20 10:19:14 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-20 10:45:16 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 13244 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 10:45:16 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 10:45:16 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 10:45:18 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-20 10:45:18 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 84 ms. Found 9 JPA repository interfaces.
+2025-06-20 10:45:19 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-20 10:45:19 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-20 10:45:19 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-20 10:45:19 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-20 10:45:19 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 2563 ms
+2025-06-20 10:45:19 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-20 10:45:20 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-20 10:45:20 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-20 10:45:20 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-20 10:45:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-20 10:45:20 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4a18e0f1
+2025-06-20 10:45:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-20 10:45:21 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-20 10:45:22 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-20 10:45:23 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-20 10:45:23 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-20 10:45:24 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-20 10:45:25 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-20 10:45:25 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-20 10:45:27 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-20 10:45:27 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@4403cf9a, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@595f803, org.springframework.security.web.context.SecurityContextHolderFilter@23885f6a, org.springframework.security.web.header.HeaderWriterFilter@6169c15d, org.springframework.web.filter.CorsFilter@1cb991da, org.springframework.security.web.authentication.logout.LogoutFilter@5b5db3a, com.Nguyen.blogplatform.security.AuthTokenFilter@346d8002, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@23497000, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@580cb668, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@46ddf016, org.springframework.security.web.session.SessionManagementFilter@4918f4ad, org.springframework.security.web.access.ExceptionTranslationFilter@482bdb02, org.springframework.security.web.access.intercept.AuthorizationFilter@5a22eec0]
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TagController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-20 10:45:27 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-20 10:45:27 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-20 10:45:27 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-20 10:45:27 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@68955382]]
+2025-06-20 10:45:27 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-20 10:45:27 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 11.903 seconds (process running for 12.85)
+2025-06-20 10:45:43 [http-nio-8888-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-20 10:45:43 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-06-20 10:45:43 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+2025-06-20 10:45:43 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/tágs
+2025-06-20 10:45:43 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 10:45:43 [http-nio-8888-exec-1] ERROR c.N.b.security.AuthEntryPointJwt - Unauthorized error: Full authentication is required to access this resource
+2025-06-20 10:45:43 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing GET /favicon.ico
+2025-06-20 10:45:43 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 10:45:43 [http-nio-8888-exec-2] ERROR c.N.b.security.AuthEntryPointJwt - Unauthorized error: Full authentication is required to access this resource
+2025-06-20 10:45:51 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/tags
+2025-06-20 10:45:51 [http-nio-8888-exec-3] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 10:45:51 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/tags
+2025-06-20 10:45:51 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing GET /favicon.ico
+2025-06-20 10:45:51 [http-nio-8888-exec-4] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 10:45:51 [http-nio-8888-exec-4] ERROR c.N.b.security.AuthEntryPointJwt - Unauthorized error: Full authentication is required to access this resource
+2025-06-20 10:46:27 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-20 10:48:58 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 8500 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 10:48:58 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 10:48:58 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 10:49:23 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 17752 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 10:49:23 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 10:49:23 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 10:49:25 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-20 10:49:25 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 100 ms. Found 9 JPA repository interfaces.
+2025-06-20 10:49:27 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-20 10:49:27 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-20 10:49:27 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-20 10:49:27 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-20 10:49:27 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3480 ms
+2025-06-20 10:49:27 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-20 10:49:27 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-20 10:49:27 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-20 10:49:28 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-20 10:49:28 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-20 10:49:28 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@579ce2e9
+2025-06-20 10:49:28 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-20 10:49:28 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-20 10:49:30 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-20 10:49:31 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-20 10:49:31 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-20 10:49:31 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-20 10:49:33 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-20 10:49:34 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-20 10:49:36 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-20 10:49:36 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@5dac488d, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@65ec90d5, org.springframework.security.web.context.SecurityContextHolderFilter@2981a626, org.springframework.security.web.header.HeaderWriterFilter@3fa8e6ab, org.springframework.web.filter.CorsFilter@60a0094a, org.springframework.security.web.authentication.logout.LogoutFilter@ad038f8, com.Nguyen.blogplatform.security.AuthTokenFilter@3647b274, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@68f2ccb2, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@6e79cc31, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@276d957f, org.springframework.security.web.session.SessionManagementFilter@4fc23215, org.springframework.security.web.access.ExceptionTranslationFilter@10d5e2dc, org.springframework.security.web.access.intercept.AuthorizationFilter@4945b25f]
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TagController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-20 10:49:36 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-20 10:49:37 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-20 10:49:37 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-20 10:49:37 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@34ceabf1]]
+2025-06-20 10:49:37 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-20 10:49:37 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 14.894 seconds (process running for 15.714)
+2025-06-20 10:49:50 [http-nio-8888-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-20 10:49:50 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-06-20 10:49:50 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+2025-06-20 10:49:50 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/tags
+2025-06-20 10:49:50 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 10:49:50 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/tags
+2025-06-20 10:49:50 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing GET /favicon.ico
+2025-06-20 10:49:50 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 10:49:50 [http-nio-8888-exec-2] ERROR c.N.b.security.AuthEntryPointJwt - Unauthorized error: Full authentication is required to access this resource
+2025-06-20 10:50:36 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/tags/latest
+2025-06-20 10:50:36 [http-nio-8888-exec-3] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 10:50:36 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/tags/latest
+2025-06-20 10:50:36 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing GET /favicon.ico
+2025-06-20 10:50:36 [http-nio-8888-exec-4] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 10:50:36 [http-nio-8888-exec-4] ERROR c.N.b.security.AuthEntryPointJwt - Unauthorized error: Full authentication is required to access this resource
+2025-06-20 10:50:37 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-20 11:20:37 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
+2025-06-20 22:39:13 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 16480 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 22:39:14 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 22:39:14 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 22:39:16 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-20 22:39:16 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 106 ms. Found 9 JPA repository interfaces.
+2025-06-20 22:39:17 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-20 22:39:17 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-20 22:39:17 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-20 22:39:17 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-20 22:39:17 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3161 ms
+2025-06-20 22:39:18 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-20 22:39:18 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-20 22:39:18 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-20 22:39:18 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-20 22:39:18 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-20 22:39:20 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@2a8e30e3
+2025-06-20 22:39:20 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-20 22:39:20 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-20 22:39:22 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-20 22:39:22 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-20 22:39:24 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-20 22:39:25 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-20 22:39:26 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-20 22:39:27 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-20 22:39:28 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-20 22:39:28 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@4785f176, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@72c9576a, org.springframework.security.web.context.SecurityContextHolderFilter@20f4849c, org.springframework.security.web.header.HeaderWriterFilter@6bb7e609, org.springframework.web.filter.CorsFilter@2b4bcd6e, org.springframework.security.web.authentication.logout.LogoutFilter@4d089ef7, com.Nguyen.blogplatform.security.AuthTokenFilter@51617b93, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@34dcad0d, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@42eeb996, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@861bc5f, org.springframework.security.web.session.SessionManagementFilter@19f03a01, org.springframework.security.web.access.ExceptionTranslationFilter@a638f45, org.springframework.security.web.access.intercept.AuthorizationFilter@357e6334]
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TagController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-20 22:39:28 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-20 22:39:28 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-20 22:39:28 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-20 22:39:28 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@4aa007c6]]
+2025-06-20 22:39:28 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-20 22:39:28 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 16.582 seconds (process running for 17.294)
+2025-06-20 22:40:28 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-20 22:40:53 [http-nio-8888-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-20 22:40:53 [http-nio-8888-exec-2] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-06-20 22:40:53 [http-nio-8888-exec-2] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-06-20 22:40:53 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/register
+2025-06-20 22:40:53 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 22:40:53 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/register
+2025-06-20 22:40:53 [http-nio-8888-exec-2] INFO  c.N.b.controller.AuthController - Registering user ngdev ngdev@gmail.com 123456789
+2025-06-20 22:41:09 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-20 22:41:09 [http-nio-8888-exec-3] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 22:41:09 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-20 22:41:10 [http-nio-8888-exec-3] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-20 22:41:37 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/tags
+2025-06-20 22:41:37 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/tags
+2025-06-20 22:50:27 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/author/write
+2025-06-20 22:50:27 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/author/write
+2025-06-20 22:50:27 [http-nio-8888-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Ignoring exception, response committed already: org.springframework.http.converter.HttpMessageNotWritableException: Could not write JSON: Infinite recursion (StackOverflowError)
+2025-06-20 22:50:27 [http-nio-8888-exec-7] WARN  o.s.w.s.m.s.DefaultHandlerExceptionResolver - Resolved [org.springframework.http.converter.HttpMessageNotWritableException: Could not write JSON: Infinite recursion (StackOverflowError)]
+2025-06-20 22:51:08 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/latest/?limit=6&page=0&size=5
+2025-06-20 22:51:09 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/latest/?limit=6&page=0&size=5
+2025-06-20 22:51:09 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Securing GET /error?limit=6&page=0&size=5
+2025-06-20 22:51:09 [http-nio-8888-exec-8] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-20 22:51:09 [http-nio-8888-exec-8] ERROR c.N.b.security.AuthEntryPointJwt - Unauthorized error: Full authentication is required to access this resource
+2025-06-20 22:51:16 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/latest
+2025-06-20 22:51:16 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/latest
+2025-06-20 22:52:54 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 3700 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 22:52:54 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 22:52:54 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 22:52:56 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-20 22:52:56 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 133 ms. Found 9 JPA repository interfaces.
+2025-06-20 22:52:57 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-20 22:52:57 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-20 22:52:57 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-20 22:52:57 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-20 22:52:57 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3415 ms
+2025-06-20 22:52:58 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-20 22:52:58 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-20 22:52:58 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-20 22:52:58 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-20 22:52:58 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-20 22:52:59 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@2a8e30e3
+2025-06-20 22:52:59 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-20 22:52:59 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-20 22:53:01 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-20 22:53:02 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-20 22:53:03 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-20 22:53:03 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-20 22:53:05 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-20 22:53:05 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-20 22:53:06 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-20 22:53:07 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@7f1bf2db, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@4843fc3c, org.springframework.security.web.context.SecurityContextHolderFilter@2ef4e7f3, org.springframework.security.web.header.HeaderWriterFilter@6aa09c35, org.springframework.web.filter.CorsFilter@93370c5, org.springframework.security.web.authentication.logout.LogoutFilter@13e4a4a0, com.Nguyen.blogplatform.security.AuthTokenFilter@51617b93, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@1a44d89b, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@6b3eb57, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@686ae6b3, org.springframework.security.web.session.SessionManagementFilter@2a670af9, org.springframework.security.web.access.ExceptionTranslationFilter@737fd68, org.springframework.security.web.access.intercept.AuthorizationFilter@59aba6f2]
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TagController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-20 22:53:07 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-20 22:53:07 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-20 22:53:07 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-20 22:53:07 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@5a21746a]]
+2025-06-20 22:53:07 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-20 22:53:07 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 14.474 seconds (process running for 15.194)
+2025-06-20 22:54:06 [http-nio-8888-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-20 22:54:06 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-06-20 22:54:06 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 2 ms
+2025-06-20 22:54:06 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/author/write
+2025-06-20 22:54:07 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/author/write
+2025-06-20 22:54:07 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-20 22:54:19 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/latest
+2025-06-20 22:54:19 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/latest
+2025-06-20 22:59:06 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 17200 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-20 22:59:06 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-20 22:59:06 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-20 22:59:08 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-20 22:59:08 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 115 ms. Found 9 JPA repository interfaces.
+2025-06-20 22:59:09 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-20 22:59:09 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-20 22:59:09 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-20 22:59:09 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-20 22:59:09 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3609 ms
+2025-06-20 22:59:10 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-20 22:59:10 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-20 22:59:10 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-20 22:59:11 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-20 22:59:11 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-20 22:59:11 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@7646c9f5
+2025-06-20 22:59:11 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-20 22:59:11 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-20 22:59:13 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-20 22:59:14 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-20 22:59:14 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-20 22:59:14 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-20 22:59:16 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-20 22:59:16 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-20 22:59:18 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-20 22:59:18 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@6c88026b, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@1b03d582, org.springframework.security.web.context.SecurityContextHolderFilter@6087f264, org.springframework.security.web.header.HeaderWriterFilter@168b28ef, org.springframework.web.filter.CorsFilter@aa9b6a8, org.springframework.security.web.authentication.logout.LogoutFilter@76982efa, com.Nguyen.blogplatform.security.AuthTokenFilter@7cc966a9, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@77d50cde, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@705448e7, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@162304e3, org.springframework.security.web.session.SessionManagementFilter@1a445b5, org.springframework.security.web.access.ExceptionTranslationFilter@30ab1b4f, org.springframework.security.web.access.intercept.AuthorizationFilter@2a202f00]
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TagController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-20 22:59:18 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-20 22:59:19 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-20 22:59:19 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-20 22:59:19 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@1d05cbae]]
+2025-06-20 22:59:19 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-20 22:59:19 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 13.793 seconds (process running for 14.315)
+2025-06-20 23:00:19 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-20 23:00:43 [http-nio-8888-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-20 23:00:43 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-06-20 23:00:43 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+2025-06-20 23:00:43 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/latest
+2025-06-20 23:00:43 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/latest

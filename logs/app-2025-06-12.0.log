@@ -1,0 +1,186 @@
+2025-06-12 08:57:57 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 7872 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-12 08:57:58 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-12 08:57:58 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-12 08:58:02 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-12 08:58:03 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 154 ms. Found 7 JPA repository interfaces.
+2025-06-12 08:58:05 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-12 08:58:05 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-12 08:58:05 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-12 08:58:05 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-12 08:58:05 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 7002 ms
+2025-06-12 08:58:06 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-12 08:58:06 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-12 08:58:06 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-12 08:58:06 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-12 08:58:06 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-12 08:58:07 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@4ca907af
+2025-06-12 08:58:07 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-12 08:58:07 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-12 08:58:09 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-12 08:58:10 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-12 08:58:11 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-12 08:58:11 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-12 08:58:13 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-12 08:58:13 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-12 08:58:15 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-12 08:58:15 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@32b1d581, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@726e3907, org.springframework.security.web.context.SecurityContextHolderFilter@6659e7f5, org.springframework.security.web.header.HeaderWriterFilter@4c5a9ddc, org.springframework.web.filter.CorsFilter@2517d499, org.springframework.security.web.authentication.logout.LogoutFilter@5c419746, com.Nguyen.blogplatform.security.AuthTokenFilter@41dcfd0, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@3243d4ca, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@681ae1ce, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@50bae745, org.springframework.security.web.session.SessionManagementFilter@5593dd2b, org.springframework.security.web.access.ExceptionTranslationFilter@7d432f4e, org.springframework.security.web.access.intercept.AuthorizationFilter@1dbf21c5]
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-12 08:58:15 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-12 08:58:16 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-12 08:58:16 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-12 08:58:16 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-12 08:58:16 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-12 08:58:16 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-12 08:58:16 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@42593f64]]
+2025-06-12 08:58:16 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-12 08:58:16 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 22.155 seconds (process running for 23.498)
+2025-06-12 08:58:56 [http-nio-8888-exec-2] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-12 08:58:56 [http-nio-8888-exec-2] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-06-12 08:58:56 [http-nio-8888-exec-2] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 3 ms
+2025-06-12 08:58:56 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 08:58:56 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 08:58:56 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 08:58:57 [http-nio-8888-exec-2] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 08:59:16 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-12 09:05:14 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:05:14 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:05:14 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:05:15 [http-nio-8888-exec-1] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:11:55 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:11:55 [http-nio-8888-exec-5] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:11:55 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:11:55 [http-nio-8888-exec-5] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:12:29 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:12:29 [http-nio-8888-exec-6] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:12:29 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:12:29 [http-nio-8888-exec-6] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:12:55 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:12:55 [http-nio-8888-exec-7] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:12:55 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:12:55 [http-nio-8888-exec-7] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:14:01 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:14:01 [http-nio-8888-exec-9] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:14:01 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:14:01 [http-nio-8888-exec-9] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:15:26 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:15:26 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:15:26 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:15:26 [http-nio-8888-exec-2] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:17:25 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:17:25 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:17:25 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:17:25 [http-nio-8888-exec-1] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:18:45 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:18:45 [http-nio-8888-exec-5] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:18:45 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:18:45 [http-nio-8888-exec-5] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:20:13 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:20:13 [http-nio-8888-exec-7] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:20:13 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:20:14 [http-nio-8888-exec-7] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:21:36 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:21:36 [http-nio-8888-exec-9] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:21:36 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:21:36 [http-nio-8888-exec-9] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:29:16 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
+2025-06-12 09:40:43 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:40:43 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:40:43 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:40:43 [http-nio-8888-exec-2] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:40:50 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:40:50 [http-nio-8888-exec-3] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:40:50 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:40:51 [http-nio-8888-exec-3] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:41:29 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:41:29 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:41:29 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:41:29 [http-nio-8888-exec-1] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:41:29 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-12 09:41:29 [http-nio-8888-exec-4] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:41:29 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-12 09:41:30 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:41:30 [http-nio-8888-exec-5] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:41:30 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:41:31 [http-nio-8888-exec-5] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:41:31 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-12 09:41:31 [http-nio-8888-exec-6] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:41:31 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-12 09:41:37 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:41:37 [http-nio-8888-exec-7] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:41:37 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:41:37 [http-nio-8888-exec-7] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:46:05 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:46:05 [http-nio-8888-exec-9] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:46:05 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:46:06 [http-nio-8888-exec-9] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:47:19 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:47:19 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:47:19 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:47:19 [http-nio-8888-exec-2] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:48:57 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:48:57 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:48:57 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:48:58 [http-nio-8888-exec-1] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:48:58 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-12 09:48:58 [http-nio-8888-exec-4] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:48:58 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-12 09:49:23 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-12 09:49:23 [http-nio-8888-exec-5] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:49:23 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-12 09:49:59 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-12 09:49:59 [http-nio-8888-exec-6] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-12 09:49:59 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-12 09:49:59 [http-nio-8888-exec-6] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-12 09:49:59 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-12 09:50:00 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-12 09:50:17 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-12 09:50:18 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me

@@ -1,0 +1,144 @@
+2025-06-14 08:47:56 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.6 with PID 16364 (F:\Java\blog-platform\build\classes\java\main started by Admin in F:\Java\blog-platform)
+2025-06-14 08:47:56 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-06-14 08:47:56 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-06-14 08:48:01 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-06-14 08:48:01 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 177 ms. Found 7 JPA repository interfaces.
+2025-06-14 08:48:06 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-06-14 08:48:06 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-06-14 08:48:06 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-06-14 08:48:06 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-06-14 08:48:06 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 9916 ms
+2025-06-14 08:48:07 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-06-14 08:48:07 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-06-14 08:48:08 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-06-14 08:48:08 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-06-14 08:48:09 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-06-14 08:48:10 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@30a20fb3
+2025-06-14 08:48:10 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-06-14 08:48:11 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-06-14 08:48:14 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-06-14 08:48:14 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-06-14 08:48:15 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authenticationJwtTokenFilter' configured for use
+2025-06-14 08:48:16 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-06-14 08:48:19 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-06-14 08:48:19 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-06-14 08:48:23 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-06-14 08:48:24 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@7454f141, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@17699e35, org.springframework.security.web.context.SecurityContextHolderFilter@2ff660ec, org.springframework.security.web.header.HeaderWriterFilter@3e549525, org.springframework.web.filter.CorsFilter@5edf9eb1, org.springframework.security.web.authentication.logout.LogoutFilter@7cb2f534, com.Nguyen.blogplatform.security.AuthTokenFilter@240b656f, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@66d1cdea, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@2dcfa917, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@2ce1d507, org.springframework.security.web.session.SessionManagementFilter@7b80cc47, org.springframework.security.web.access.ExceptionTranslationFilter@1d17b20f, org.springframework.security.web.access.intercept.AuthorizationFilter@25ebe548]
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-06-14 08:48:24 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-06-14 08:48:28 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-06-14 08:48:28 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-06-14 08:48:28 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2b720a2c]]
+2025-06-14 08:48:28 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-06-14 08:48:28 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 34.8 seconds (process running for 36.398)
+2025-06-14 08:49:27 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-06-14 08:55:06 [http-nio-8888-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-06-14 08:55:06 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-06-14 08:55:06 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 4 ms
+2025-06-14 08:55:06 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-14 08:55:06 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 08:55:06 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-14 08:55:07 [http-nio-8888-exec-1] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-14 08:55:07 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 08:55:08 [http-nio-8888-exec-2] ERROR c.N.blogplatform.security.JwtUtils - JWT token is expired: JWT expired at 2025-06-13T02:40:51Z. Current time: 2025-06-14T01:55:08Z, a difference of 83657034 milliseconds.  Allowed clock skew: 0 milliseconds.
+2025-06-14 08:55:08 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 08:55:08 [http-nio-8888-exec-2] DEBUG o.s.s.w.s.SessionManagementFilter - Request requested invalid session id 718401D59782BBE4482A8AAC95D806E1
+2025-06-14 08:55:08 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 08:55:38 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 08:55:38 [http-nio-8888-exec-5] ERROR c.N.blogplatform.security.JwtUtils - JWT token is expired: JWT expired at 2025-06-13T02:40:51Z. Current time: 2025-06-14T01:55:38Z, a difference of 83687883 milliseconds.  Allowed clock skew: 0 milliseconds.
+2025-06-14 08:55:38 [http-nio-8888-exec-5] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 08:55:38 [http-nio-8888-exec-5] DEBUG o.s.s.w.s.SessionManagementFilter - Request requested invalid session id 718401D59782BBE4482A8AAC95D806E1
+2025-06-14 08:55:38 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 08:58:17 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-14 08:58:17 [http-nio-8888-exec-9] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 08:58:17 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-14 08:58:17 [http-nio-8888-exec-9] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-14 08:58:17 [http-nio-8888-exec-10] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 08:58:17 [http-nio-8888-exec-10] ERROR c.N.blogplatform.security.JwtUtils - JWT token is expired: JWT expired at 2025-06-13T02:40:51Z. Current time: 2025-06-14T01:58:17Z, a difference of 83846280 milliseconds.  Allowed clock skew: 0 milliseconds.
+2025-06-14 08:58:17 [http-nio-8888-exec-10] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 08:58:17 [http-nio-8888-exec-10] DEBUG o.s.s.w.s.SessionManagementFilter - Request requested invalid session id 718401D59782BBE4482A8AAC95D806E1
+2025-06-14 08:58:17 [http-nio-8888-exec-10] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 09:00:06 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 09:00:06 [http-nio-8888-exec-4] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 09:00:06 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 09:01:41 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-14 09:01:41 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 09:01:41 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-14 09:01:41 [http-nio-8888-exec-1] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-14 09:01:41 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 09:01:41 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 09:02:18 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 09:02:18 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 09:02:20 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 09:02:20 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 09:19:28 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
+2025-06-14 09:27:11 [http-nio-8888-exec-10] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 09:27:12 [http-nio-8888-exec-10] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 09:36:23 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/auth/login
+2025-06-14 09:36:23 [http-nio-8888-exec-7] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 09:36:23 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/auth/login
+2025-06-14 09:36:23 [http-nio-8888-exec-7] DEBUG o.s.s.a.d.DaoAuthenticationProvider - Authenticated user
+2025-06-14 09:36:24 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 09:36:24 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 09:49:28 [MessageBroker-2] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 3, active threads = 1, queued tasks = 0, completed tasks = 2]
+2025-06-14 10:13:07 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /auth/logout
+2025-06-14 10:13:09 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured POST /auth/logout
+2025-06-14 10:13:10 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 10:13:10 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/auth/me
+2025-06-14 10:13:10 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 10:13:12 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/auth/me
+2025-06-14 10:13:12 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing POST /error
+2025-06-14 10:13:12 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-06-14 10:13:13 [http-nio-8888-exec-1] ERROR c.N.b.security.AuthEntryPointJwt - Unauthorized error: Full authentication is required to access this resource

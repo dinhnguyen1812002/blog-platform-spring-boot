@@ -10,6 +10,7 @@ import lombok.Setter;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 @Getter
 @Setter
 public class PostRequest {
@@ -20,5 +21,6 @@ public class PostRequest {
     private String content;
     private String imageUrl;
     private Set<Long> categories = new HashSet<>();
+    private Set<UUID> tags = new HashSet<>();
 
 }

@@ -10,10 +10,10 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class TelegramNotificationService {
     private final RestTemplate restTemplate = new RestTemplate();
-    @Value("${telegram.bot.token}")
-    private String botToken ;
-    @Value("${telegram.chat.id}")
-    private String botId;
+//    @Value("${telegram.bot.token}")
+    private final String botToken ="jhdfgjkhf";
+//    @Value("${telegram.chat.id}")
+    private final String botId ="jfkdfgdffgdfgsdfg";
 
     public void sendErrorNotification(String errorType, String errorMessage, String endpoint) {
 

@@ -4,123 +4,112 @@ import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.exception.UnauthorizedException;
-import com.Nguyen.blogplatform.model.Category;
-import com.Nguyen.blogplatform.model.Post;
-import com.Nguyen.blogplatform.model.User;
+import com.Nguyen.blogplatform.model.*;
 import com.Nguyen.blogplatform.payload.request.PostRequest;
-import com.Nguyen.blogplatform.payload.response.CommentResponse;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.payload.response.UserResponse;
 import com.Nguyen.blogplatform.repository.CategoryRepository;
 import com.Nguyen.blogplatform.repository.PostRepository;
+import com.Nguyen.blogplatform.repository.TagRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.security.JwtUtils;
-import jakarta.transaction.Transactional;
+import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class AuthorServices {
-    @Autowired
-    private PostRepository postRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private JwtUtils jwtUtils;
-    @Autowired
-    private CategoryRepository categoryRepository;
+    private static final boolean DEFAULT_FEATURED = false;
 
-    @Autowired
-    private NotificationService notificationService;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final JwtUtils jwtUtils;
+    private final CategoryRepository categoryRepository;
+    private final TagRepository tagRepository;
+    private final NotificationService notificationService;
 
-
-    public static final Boolean FEATURED = false;
     public List<PostResponse> getPostsForCurrentUser(int page, int size) {
-        String username = getCurrentUsername();
-        Pageable pageable = PageRequest.of(page, size);
-        return postRepository.findByUser(username, pageable).stream()
-                .map(this::convertToPostDetailDTO)
-                .collect(Collectors.toList());
+        var username = getCurrentUsername();
+        var pageable = PageRequest.of(page, size);
+        return postRepository.findByUser(username, pageable)
+                .stream()
+                .map(this::toPostResponse)
+                .toList();
     }
 
     @Transactional
     public Post newPost(PostRequest postRequest, String authorId) throws BadRequestException {
         if (postRequest == null || postRequest.getTitle() == null || postRequest.getTitle().isBlank()) {
-            throw new BadRequestException("Dữ liệu đầu vào không hợp lệ");
+            throw new BadRequestException("Invalid input data");
         }
 
-        User author = userRepository.findById(authorId)
+        var author = userRepository.findById(authorId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + authorId));
+        var categories = getCategoriesFromIds(postRequest.getCategories());
+        var tags = getTagsFromIds(postRequest.getTags());
 
-        Set<Category> categories = getCategoriesFromIds(postRequest.getCategories());
-        String slug = SlugUtil.createSlug(postRequest.getTitle());
-        Post post = new Post();
-        post.setTitle(postRequest.getTitle());
-        post.setSlug(slug);
-        post.setUser(author);
-        post.setFeatured(FEATURED);
-        post.setContent(postRequest.getContent() != null ? postRequest.getContent() : "");
-        post.setImageUrl(postRequest.getImageUrl() != null ? postRequest.getImageUrl() : "");
-        post.setCreatedAt(postRequest.getCreatedAt() != null ? postRequest.getCreatedAt() : new Date());
-        post.setCategories(categories);
+        var post = Post.builder()
+                .title(postRequest.getTitle())
+                .slug(SlugUtil.createSlug(postRequest.getTitle()))
+                .content(Objects.requireNonNullElse(postRequest.getContent(), ""))
+                .imageUrl(Objects.requireNonNullElse(postRequest.getImageUrl(), ""))
+                .user(author)
+                .createdAt(Objects.requireNonNullElse(postRequest.getCreatedAt(), new Date()))
+                .categories(categories)
+                .tags(tags)
+                .featured(DEFAULT_FEATURED)
+                .view(0L)
+                .build();
 
-        try {
-            Post savedPost = postRepository.save(post);
-            notificationService.sendPostNotification(savedPost.getId(), "New post created: " + postRequest.getTitle());
-            notificationService.sendGlobalNotification("New post available: " + savedPost.getTitle());
-            return savedPost;
-        } catch (Exception e) {
-            throw new RuntimeException("Error saving post", e); // Ném lại để log chi tiết
-        }
+        var savedPost = postRepository.save(post);
+        notificationService.sendPostNotification(savedPost.getId(), "New post created: " + postRequest.getTitle());
+        notificationService.sendGlobalNotification("New post available: " + savedPost.getTitle());
+        return savedPost;
     }
 
+    @Transactional
     public PostResponse updatePost(String postId, PostRequest postRequest) {
-        String currentUsername = getCurrentUsername();
-
-        Post post = postRepository.findById(postId)
+        var post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
-
-        if (!post.getUser().getUsername().equals(currentUsername)) {
-            throw new UnauthorizedException("You are not authorized to update this post");
-        }
+        validateAuthorization(post);
 
         post.setTitle(postRequest.getTitle());
-        post.setContent(postRequest.getContent());
-        post.setImageUrl(postRequest.getImageUrl());
+        post.setContent(Objects.requireNonNullElse(postRequest.getContent(), ""));
+        post.setImageUrl(Objects.requireNonNullElse(postRequest.getImageUrl(), ""));
         post.setCategories(getCategoriesFromIds(postRequest.getCategories()));
+        if (postRequest.getTags() != null) {
+            post.setTags(getTagsFromIds(postRequest.getTags()));
+        }
 
-        return convertToPostResponse(postRepository.save(post));
+        return toPostResponse(postRepository.save(post));
     }
 
     @Transactional
     public void deletePost(String postId) {
-        String currentUsername = getCurrentUsername();
-
-        Post post = postRepository.findById(postId)
+        var post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
-
-        if (!post.getUser().getUsername().equals(currentUsername)) {
-            throw new UnauthorizedException("You are not authorized to delete this post");
-        }
-
+        validateAuthorization(post);
         postRepository.delete(post);
     }
 
     private String getCurrentUsername() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        return authentication.getName();
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication != null ? authentication.getName() : null;
+    }
+
+    private void validateAuthorization(Post post) {
+        var currentUsername = getCurrentUsername();
+        if (!post.getUser().getUsername().equals(currentUsername)) {
+            throw new UnauthorizedException("You are not authorized to modify this post");
+        }
     }
 
     private Set<Category> getCategoriesFromIds(Set<Long> categoryIds) {
@@ -133,37 +122,30 @@ public class AuthorServices {
                 .collect(Collectors.toSet());
     }
 
-    private PostResponse convertToPostDetailDTO(Post post) {
-        return getPostResponse(post);
+    private Set<Tags> getTagsFromIds(Set<UUID> tagIds) {
+        return tagIds == null || tagIds.isEmpty() ? new HashSet<>() :
+                tagIds.stream()
+                        .map(id -> tagRepository.findById(id)
+                                .orElseThrow(() -> new NotFoundException("Tag not found with id: " + id)))
+                        .collect(Collectors.toSet());
     }
 
-    private PostResponse convertToPostResponse(Post post) {
-        return getPostResponse(post);
-    }
-
-    static PostResponse getPostResponse(Post post) {
-//        List<CommentResponse> commentResponses = post.getContent().stream()
-//                .map(comment -> new CommentResponse(
-//                        comment.getId(),
-//                        comment.getComment(),
-//                        comment.getCreatedAt(),
-//                        comment.getAuthor().getUsername()
-//                ))
-//                .collect(Collectors.toList());
-        User user  = post.getUser();
-
-        UserResponse userResponse =  new UserResponse(user.getId(), user.getUsername(), user.getEmail());
-        return new PostResponse(
-                post.getId(),
-                userResponse,
-                post.getTitle(),
-                post.getSlug(),
-                post.getCreatedAt(),
-                post.getFeatured(),
-                post.getContent(),
-                post.getImageUrl(),
-                post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet())
-//                commentResponses
-        );
+    private PostResponse toPostResponse(Post post) {
+        return PostResponse.builder()
+                .id(post.getId())
+                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail()))
+                .title(post.getTitle())
+                .slug(post.getSlug())
+                .createdAt(post.getCreatedAt())
+                .featured(post.getFeatured())
+                .content(post.getContent())
+                .imageUrl(post.getImageUrl())
+                .categories(post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()))
+                .tags(post.getTags().stream().map(Tags::getName).collect(Collectors.toSet()))
+                .commentCount(post.getComments().size())
+                .viewCount(post.getView())
+                .likeCount((long) post.getLike().size())
+                .averageRating(post.getRatings().stream().mapToDouble(Rating::getScore).average().orElse(0.0))
+                .build();
     }
 }

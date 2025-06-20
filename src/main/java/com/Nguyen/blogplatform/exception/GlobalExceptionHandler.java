@@ -15,8 +15,8 @@ import java.util.Map;
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    @Autowired
-    private TelegramNotificationService telegramNotificationService;
+//    @Autowired
+//    private TelegramNotificationService telegramNotificationService;
 
     // Handler for NotFoundException
     @ExceptionHandler(NotFoundException.class)
@@ -25,11 +25,11 @@ public class GlobalExceptionHandler {
         response.put("error", ex.getMessage());
 
         // Send formatted error to Telegram
-        telegramNotificationService.sendErrorNotification(
-                "NotFoundException",
-                ex.getMessage(),
-                request.getDescription(false)
-        );
+//        telegramNotificationService.sendErrorNotification(
+//                "NotFoundException",
+//                ex.getMessage(),
+//                request.getDescription(false)
+//        );
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
@@ -41,11 +41,11 @@ public class GlobalExceptionHandler {
         response.put("error", ex.getMessage());
 
         // Send formatted error to Telegram
-        telegramNotificationService.sendErrorNotification(
-                "InvalidCategoryException",
-                ex.getMessage(),
-                request.getDescription(false)
-        );
+//        telegramNotificationService.sendErrorNotification(
+//                "InvalidCategoryException",
+//                ex.getMessage(),
+//                request.getDescription(false)
+//        );
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
@@ -57,11 +57,11 @@ public class GlobalExceptionHandler {
         response.put("error", ex.getMessage());
 
         // Send formatted error to Telegram
-        telegramNotificationService.sendErrorNotification(
-                "UnauthorizedException",
-                ex.getMessage(),
-                request.getDescription(false)
-        );
+//        telegramNotificationService.sendErrorNotification(
+//                "UnauthorizedException",
+//                ex.getMessage(),
+//                request.getDescription(false)
+//        );
 
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
@@ -78,11 +78,11 @@ public class GlobalExceptionHandler {
         }
 
         // Send formatted error to Telegram
-        telegramNotificationService.sendErrorNotification(
-                "IllegalStateException",
-                message,
-                request.getDescription(false)
-        );
+//        telegramNotificationService.sendErrorNotification(
+//                "IllegalStateException",
+//                message,
+//                request.getDescription(false)
+//        );
 
         return new ErrorResponse(message);
     }

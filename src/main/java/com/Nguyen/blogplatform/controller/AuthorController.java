@@ -4,6 +4,7 @@ package com.Nguyen.blogplatform.controller;
 import com.Nguyen.blogplatform.model.Post;
 
 import com.Nguyen.blogplatform.payload.request.PostRequest;
+import com.Nguyen.blogplatform.payload.response.MessageResponse;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.service.AuthorServices;
 import com.Nguyen.blogplatform.service.PostService;
@@ -35,11 +36,11 @@ public class AuthorController {
         return authorServices.getPostsForCurrentUser(page, size);
     }
     @PostMapping("/write")
-    public ResponseEntity<Post> createPost(@RequestBody PostRequest postDTO) {
+    public ResponseEntity<MessageResponse> createPost(@RequestBody PostRequest postDTO ) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null || authentication.getPrincipal() == null) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
@@ -47,7 +48,7 @@ public class AuthorController {
 
         try {
             Post createdPost = authorServices.newPost(postDTO, authorId);
-            return ResponseEntity.ok(createdPost);
+            return ResponseEntity.status(HttpStatus.OK).body(new MessageResponse("Post created successfully"));
         } catch (Exception e) {
             e.printStackTrace(); // In lỗi ra console
             // Hoặc dùng logger nếu có: logger.error("Error creating post", e);

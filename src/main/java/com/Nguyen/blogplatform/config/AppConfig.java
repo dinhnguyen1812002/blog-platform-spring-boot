@@ -18,6 +18,10 @@ public class AppConfig implements WebMvcConfigurer {
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/");
+        
+        // Thêm handler riêng cho thumbnail
+        registry.addResourceHandler("/uploads/thumbnail/**")
+                .addResourceLocations("file:uploads/thumbnail/");
     }
 //
 //    @Override

@@ -5,10 +5,7 @@ import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
@@ -35,5 +32,9 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
 //    List<Post> findByTitleContainingAndCategoryId(@Param("title") String title, @Param("categoryId") Long categoryId);
 @EntityGraph(attributePaths = {"comments", "comments.user"})
 Optional<Post> findBySlug(String slug);
+
+    @Modifying
+    @Query(value = "UPDATE post SET view = view + 1 WHERE id = :postId", nativeQuery = true)
+    void incrementViewCount(@Param("postId") String postId);
 
 }

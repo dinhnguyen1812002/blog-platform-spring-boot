@@ -3,118 +3,183 @@ package com.Nguyen.blogplatform.service;
 import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
-import com.Nguyen.blogplatform.model.Category;
-import com.Nguyen.blogplatform.model.Comment;
-import com.Nguyen.blogplatform.model.Post;
-import com.Nguyen.blogplatform.model.User;
+import com.Nguyen.blogplatform.model.*;
 import com.Nguyen.blogplatform.payload.request.PostRequest;
 import com.Nguyen.blogplatform.payload.response.CommentResponse;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.payload.response.UserResponse;
-import com.Nguyen.blogplatform.repository.CategoryRepository;
-import com.Nguyen.blogplatform.repository.PostRepository;
-import com.Nguyen.blogplatform.repository.PostSpecification;
-import com.Nguyen.blogplatform.repository.UserRepository;
+import com.Nguyen.blogplatform.repository.*;
 import com.Nguyen.blogplatform.security.JwtUtils;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collector;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import static com.Nguyen.blogplatform.Utils.ExcerptUtil.excerpt;
 
 @Service
+@RequiredArgsConstructor
 public class PostService {
+    private static final long CACHE_EXPIRY_MS = 300_000; // 5 minutes
 
-    @Autowired
-    private PostRepository postRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final JwtUtils jwtUtils;
+    private final CategoryRepository categoryRepository;
+    private final RatingRepository ratingRepository;
+    private final NotificationService notificationService;
 
-    @Autowired
-    private UserRepository userRepository;
+    private final Map<String, PostResponse> postCache = new ConcurrentHashMap<>();
+    private final Map<String, Long> cacheTimestamps = new ConcurrentHashMap<>();
 
-    @Autowired
-    private JwtUtils jwtUtils;
+//    public Post createPost(PostRequest request) {
+//        var slug = SlugUtil.createSlug(request.getTitle());
+//        var author = getCurrentUser();
+//        var categories = getCategoriesFromIds(request.getCategories());
+//
+//        var post = Post.builder()
+//                .title(request.getTitle())
+//                .slug(slug)
+//                .content(request.getContent())
+//                .imageUrl(request.getImageUrl())
+//                .user(author)
+//                .createdAt(new Date())
+//                .categories(categories)
+//                .view(0L)
+//                .featured(Objects.requireNonNullElse(request.getFeatured(), false))
+//                .build();
+//
+//        var savedPost = postRepository.save(post);
+//        notificationService.sendGlobalNotification("New post: " + post.getTitle());
+//        return savedPost;
+//    }
 
-    @Autowired
-    private CategoryRepository categoryRepository;
+    @Transactional
+    public void incrementViewCount(String postId) {
+        postRepository.incrementViewCount(postId);
+        invalidateCache(postId);
+    }
 
+    @Transactional
+    public boolean toggleLike(String postId) {
+        var post = findPostById(postId);
+        var user = getCurrentUser();
+        var isLiked = post.getLike().contains(user);
 
+        post.getLike().removeIf(u -> u.equals(user));
+        if (!isLiked) {
+            post.getLike().add(user);
+        }
+        postRepository.save(post);
+        invalidateCache(postId);
+        return !isLiked;
+    }
 
-    public Post createPost(PostRequest postRequest) {
-        String slug = SlugUtil.createSlug(postRequest.getTitle());
-        User author = getCurrentUser();
-        Set<Category> categories = getCategoriesFromIds(postRequest.getCategories());
-        Post post = new Post();
-        post.setTitle(postRequest.getTitle());
-        post.setSlug(slug);
-        post.setContent(postRequest.getContent());
-        post.setImageUrl(postRequest.getImageUrl());
-        post.setUser(author);
-        post.setCreatedAt(new Date());
-        post.setCategories(categories);
+    @Transactional
+    public Integer ratePost(String postId, Integer score) {
+        if (score < 1 || score > 5) {
+            throw new IllegalArgumentException("Score must be between 1 and 5");
+        }
 
-        return postRepository.save(post);
+        var post = findPostById(postId);
+        var user = getCurrentUser();
+        var rating = ratingRepository.findByPostAndUser(post, user)
+                .orElseGet(() -> {
+                    var newRating = new Rating(score, post, user);
+                    post.getRatings().add(newRating);
+                    return newRating;
+                });
+
+        rating.setScore(score);
+        ratingRepository.save(rating);
+        invalidateCache(postId);
+        return score;
     }
 
     public Page<PostResponse> getListPost(Pageable pageable) {
         return postRepository.findAllByOrderByCreatedAtDesc(pageable)
-                .map(this::convertToPostResponse);
+                .map(this::toPostResponse);
     }
 
-    public List<PostResponse> getFeaturedPosts(Pageable limit) {
-        List<Post> featuredPosts = postRepository.findByFeaturedTrueOrderByCreatedAtDesc(limit);
-        return featuredPosts.stream()
-                .map(this::convertToPostResponse)
-                .collect(Collectors.toList());
+    public List<PostResponse> getLatestPosts(Pageable pageable) {
+        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
+                .stream()
+                .map(this::toPostResponse)
+                .toList();
+    }
+
+    public List<PostResponse> getFeaturedPosts(Pageable pageable) {
+        return postRepository.findByFeaturedTrueOrderByCreatedAtDesc(pageable)
+                .stream()
+                .map(this::toPostResponse)
+                .toList();
     }
 
     public PostResponse getPostById(String postId) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
-        return mapPostToResponse(post);
+        var post = findPostById(postId);
+        incrementViewCount(postId);
+        return toPostResponseWithComments(post);
     }
 
-//    public PostResponse getPostBySlug(String slug) {
-//        Post post = postRepository.findBySlug(slug)
-//                .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
-//        return mapPostToResponseWithComments(post);
-//    }
     public PostResponse getPostBySlug(String slug) {
-        Post post = postRepository.findBySlug(slug)
+        var cacheKey = "slug:" + slug;
+        if (isCacheValid(cacheKey)) {
+            return postCache.get(cacheKey);
+        }
+
+        var post = postRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
-        return mapPostToResponseWithComments(post);
+        incrementViewCount(post.getId());
+        var response = toPostResponseWithComments(post);
+        cachePost(cacheKey, response);
+        return response;
     }
 
     public List<PostResponse> getPostsByCategory(Long categoryId) {
-        Category category = categoryRepository.findById(categoryId)
+        var category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId));
-        List<Post> posts = postRepository.findByCategoriesContaining(category);
-        return posts.stream()
-                .map(this::convertToPostResponse)
-                .collect(Collectors.toList());
+        return postRepository.findByCategoriesContaining(category)
+                .stream()
+                .map(this::toPostResponse)
+                .toList();
     }
 
     public List<PostResponse> searchPosts(String title, Long categoryId) {
         Specification<Post> spec = Specification.where(PostSpecification.hasTitle(title))
                 .and(PostSpecification.hasCategoryId(categoryId));
-        List<Post> posts = postRepository.findAll(spec);
-        return posts.stream()
-                .map(this::convertToPostResponse)
-                .collect(Collectors.toList());
+        return postRepository.findAll(spec)
+                .stream()
+                .map(this::toPostResponse)
+                .toList();
+    }
+
+    public List<Post> getAllPost() {
+        return postRepository.findAll();
+    }
+
+    private Post findPostById(String postId) {
+        return postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
     }
 
     private User getCurrentUser() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String jwt = (String) authentication.getCredentials();
-        String userId = jwtUtils.getUserIdFromJwtToken(jwt);
-        return userRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated() ||
+                "anonymousUser".equals(authentication.getPrincipal())) {
+            return null;
+        }
+
+        var jwt = (String) authentication.getCredentials();
+        var userId = jwtUtils.getUserIdFromJwtToken(jwt);
+        return userRepository.findById(userId).orElse(null);
     }
 
     private Set<Category> getCategoriesFromIds(Set<Long> categoryIds) {
@@ -127,56 +192,93 @@ public class PostService {
                 .collect(Collectors.toSet());
     }
 
-    private PostResponse convertToPostResponse(Post post) {
-        User  user =  post.getUser();
-        UserResponse userResponse = new UserResponse(user.getId(), user.getUsername(), user.getEmail());
-        return new PostResponse(
-                post.getId(),
-               userResponse,
-                post.getTitle(),
-                post.getSlug(),
-                post.getCreatedAt(),
-                post.getFeatured(),
-                excerpt(post.getContent()),
-                post.getImageUrl(),
-                post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet())
-        );
+    private PostResponse toPostResponse(Post post) {
+        return PostResponse.builder()
+                .id(post.getId())
+                .user(createUserResponse(post.getUser()))
+                .title(post.getTitle())
+                .slug(post.getSlug())
+                .createdAt(post.getCreatedAt())
+                .featured(post.getFeatured())
+                .content(excerpt(post.getContent()))
+                .imageUrl(post.getImageUrl())
+                .categories(post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()))
+                .tags(post.getTags().stream().map(Tags::getName).collect(Collectors.toSet()))
+                .commentCount(post.getComments().size())
+                .viewCount(post.getView())
+                .likeCount((long) post.getLike().size())
+                .averageRating(calculateAverageRating(post))
+                .isLikedByCurrentUser(isLikedByCurrentUser(post))
+                .userRating(getUserRating(post))
+                .build();
     }
 
-    private PostResponse mapPostToResponse(Post post) {
-        return getPostResponse(post);
+    private PostResponse toPostResponseWithComments(Post post) {
+        return PostResponse.builder()
+                .id(post.getId())
+                .user(createUserResponse(post.getUser()))
+                .title(post.getTitle())
+                .slug(post.getSlug())
+                .createdAt(post.getCreatedAt())
+                .featured(post.getFeatured())
+                .content(post.getContent())
+                .imageUrl(post.getImageUrl())
+                .categories(post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()))
+                .comments(post.getComments().stream().map(this::toCommentResponse).toList())
+                .viewCount(post.getView())
+                .likeCount((long) post.getLike().size())
+                .averageRating(calculateAverageRating(post))
+                .isLikedByCurrentUser(isLikedByCurrentUser(post))
+                .userRating(getUserRating(post))
+                .build();
     }
 
-    static PostResponse getPostResponse(Post post) {
-        return AuthorServices.getPostResponse(post);
+    private UserResponse createUserResponse(User user) {
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail());
     }
 
-    private PostResponse mapPostToResponseWithComments(Post post) {
-        List<CommentResponse> comments = post.getComments().stream()
-                .map(this::convertToCommentResponse)
-                .collect(Collectors.toList());
-        User  user =  post.getUser();
-        UserResponse userResponse = new UserResponse(user.getId(), user.getUsername(), user.getEmail());
-        return new PostResponse(
-                post.getId(),
-                userResponse,
-                post.getTitle(),
-                post.getSlug(),
-                post.getCreatedAt(),
-                post.getFeatured(),
-                post.getContent(),
-                post.getImageUrl(),
-                post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()),
-                comments
-        );
+    private double calculateAverageRating(Post post) {
+        return post.getRatings().stream()
+                .mapToDouble(Rating::getScore)
+                .average()
+                .orElse(0.0);
     }
 
-    private CommentResponse convertToCommentResponse(Comment comment) {
+    private boolean isLikedByCurrentUser(Post post) {
+        var currentUser = getCurrentUser();
+        return currentUser != null && post.getLike().contains(currentUser);
+    }
+
+    private Integer getUserRating(Post post) {
+        var currentUser = getCurrentUser();
+        return currentUser != null ?
+                post.getRatings().stream()
+                        .filter(r -> r.getUser().equals(currentUser))
+                        .map(Rating::getScore)
+                        .findFirst()
+                        .orElse(null) : null;
+    }
+
+    private CommentResponse toCommentResponse(Comment comment) {
         return new CommentResponse(
                 comment.getId(),
                 comment.getContent(),
                 comment.getCreatedAt(),
                 comment.getUser().getUsername()
         );
+    }
+
+    private boolean isCacheValid(String key) {
+        var timestamp = cacheTimestamps.get(key);
+        return timestamp != null && System.currentTimeMillis() - timestamp < CACHE_EXPIRY_MS && postCache.containsKey(key);
+    }
+
+    private void cachePost(String key, PostResponse response) {
+        postCache.put(key, response);
+        cacheTimestamps.put(key, System.currentTimeMillis());
+    }
+
+    private void invalidateCache(String postId) {
+        postCache.entrySet().removeIf(entry -> entry.getKey().equals(postId) || entry.getValue().getId().equals(postId));
     }
 }

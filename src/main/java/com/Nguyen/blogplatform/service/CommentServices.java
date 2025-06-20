@@ -18,16 +18,19 @@ import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,28 +47,61 @@ public class CommentServices {
 
 
     @Transactional
-    @CacheEvict(value = "comments", key = "#postId")
+    @Caching(evict = {
+            @CacheEvict(value = "comments", key = "#postId"),
+            @CacheEvict(value = "comments", key = "#postId + '-*'", allEntries = true),
+            @CacheEvict(value = "replies", key = "#request.parentCommentId", condition = "#request.parentCommentId != null")
+    })
     public CommentResponse createComment(String postId, CommentRequest request) {
-        Post post = postRepository.findById(postId)
-                .orElseThrow(() -> new NotFoundException(" Not Found"+ postId));
 
-        User user = getCurrentUser();
+        // Giữ SecurityContext để truyền vào thread phụ
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
+        // Lấy Post bất đồng bộ
+        CompletableFuture<Post> postFuture = CompletableFuture.supplyAsync(() ->
+                postRepository.findById(postId)
+                        .orElseThrow(() -> new NotFoundException("Post Not Found: " + postId))
+        );
+
+        // Lấy User bất đồng bộ, với SecurityContext được truyền tay
+        CompletableFuture<User> userFuture = CompletableFuture.supplyAsync(() -> {
+            SecurityContextHolder.setContext(SecurityContextHolder.createEmptyContext());
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            return getCurrentUser();
+        });
+
+        // Chờ cả hai hoàn tất
+        CompletableFuture.allOf(postFuture, userFuture).join();
+
+        // Lấy kết quả
+        Post post = postFuture.join();
+        User user = userFuture.join();
+
+        // Tạo comment
         Comment comment = new Comment();
         comment.setContent(request.getContent());
         comment.setPost(post);
         comment.setUser(user);
         comment.setDepth(0);
 
+        // Xử lý nếu là reply
         if (request.getParentCommentId() != null) {
             processParentComment(comment, request.getParentCommentId());
         }
+
+        // Lưu comment
         CommentResponse response = saveAndConvert(comment);
 
-        notificationService.sendCommentNotification(postId, response);
-        notificationService.sendGlobalNotification("Cha này mới comment: " + response.getAuthorUsername()  + "bài" + post.getTitle() );
+        // Gửi notification bất đồng bộ (không cần SecurityContext ở đây)
+        CompletableFuture.runAsync(() -> {
+            notificationService.sendCommentNotification(postId, response);
+            notificationService.sendGlobalNotification(
+                    "New comment from: " + response.getAuthorUsername() + " on post: " + post.getTitle());
+        });
+
         return response;
     }
+
 
     private void processParentComment(Comment comment, String parentId) {
         Comment parent = commentRepository.findById(parentId)
@@ -82,59 +118,140 @@ public class CommentServices {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "comments", key = "#postId + '-' + #pageable.pageNumber")
+    @Cacheable(value = "comments", key = "#postId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<CommentResponse> getTopLevelComments(String postId, Pageable pageable) {
+        // Create a standardized page request with consistent sorting
+        PageRequest pageRequest = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by("createdAt").descending()
+        );
+
+        // Use the optimized repository method
         Page<Comment> comments = commentRepository.findByPostIdAndParentCommentIsNull(
                 postId,
-                PageRequest.of(
-                        pageable.getPageNumber(),
-                        pageable.getPageSize(),
-                        Sort.by("createdAt").descending()
-                )
+                pageRequest
         );
-        return comments.map(this::convertToResponse);
+
+        // Process the comments in parallel for better performance with large result sets
+        return comments.map(comment -> {
+            try {
+                // For very large result sets, this parallel processing can significantly improve performance
+                if (comments.getTotalElements() > 20) {
+                    return CompletableFuture.supplyAsync(() -> convertToResponse(comment)).join();
+                } else {
+                    // For smaller result sets, avoid the overhead of creating threads
+                    return convertToResponse(comment);
+                }
+            } catch (Exception e) {
+                // Log the error and return a simplified response in case of conversion errors
+                // This prevents one bad comment from breaking the entire page
+                CommentResponse fallback = new CommentResponse();
+                fallback.setId(comment.getId());
+                fallback.setContent("Error loading comment: " + e.getMessage());
+                return fallback;
+            }
+        });
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "replies", key = "#commentId + '-' + #pageable.pageNumber")
+    @Cacheable(value = "replies", key = "#commentId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<CommentResponse> getReplies(String commentId, Pageable pageable) {
+        // Validate the comment exists before fetching replies
+        commentRepository.findById(commentId)
+                .orElseThrow(() -> new NotFoundException("Comment not found: " + commentId));
+
+        // Create a standardized page request with consistent sorting
+        PageRequest pageRequest = PageRequest.of(
+                pageable.getPageNumber(),
+                pageable.getPageSize(),
+                Sort.by("createdAt").descending()
+        );
+
+        // Use the optimized repository method
         Page<Comment> replies = commentRepository.findByParentCommentId(
                 commentId,
-                PageRequest.of(
-                        pageable.getPageNumber(),
-                        pageable.getPageSize(),
-                        Sort.by("createdAt").descending()
-                )
+                pageRequest
         );
-        return replies.map(this::convertToResponse);
+
+        // Process the replies in parallel for better performance with large result sets
+        return replies.map(reply -> {
+            try {
+                // For very large result sets, this parallel processing can significantly improve performance
+                if (replies.getTotalElements() > 10) {
+                    return CompletableFuture.supplyAsync(() -> convertToResponse(reply)).join();
+                } else {
+                    // For smaller result sets, avoid the overhead of creating threads
+                    return convertToResponse(reply);
+                }
+            } catch (Exception e) {
+                // Log the error and return a simplified response in case of conversion errors
+                CommentResponse fallback = new CommentResponse();
+                fallback.setId(reply.getId());
+                fallback.setContent("Error loading reply: " + e.getMessage());
+                return fallback;
+            }
+        });
     }
 
     private CommentResponse convertToResponse(Comment comment) {
-        CommentResponse response = modelMapper.map(comment, CommentResponse.class);
-        response.setAuthorUsername(comment.getUser().getUsername());
+        // Use direct field mapping instead of ModelMapper for better performance
+        CommentResponse response = new CommentResponse();
+        response.setId(comment.getId());
+        response.setContent(comment.getContent());
+        response.setCreatedAt(comment.getCreatedAt());
+        response.setUpdatedAt(comment.getUpdatedAt());
+        response.setDepth(comment.getDepth());
+        response.setReplyCount(comment.getReplyCount());
 
+        // Safely get username to avoid NPE
+        if (comment.getUser() != null) {
+            response.setAuthorUsername(comment.getUser().getUsername());
+        }
+
+        // Set parent comment ID if exists
         if (comment.getParentComment() != null) {
             response.setParentCommentId(comment.getParentComment().getId());
         }
 
-        if (comment.getDepth() < MAX_REPLY_DEPTH && !comment.getReplies().isEmpty()) {
-            List<CommentResponse> replyResponses = comment.getReplies().stream()
-                    .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
-                    .limit(MAX_REPLIES_PER_LEVEL)
-                    .map(this::convertToResponse)
-                    .collect(Collectors.toList());
+        // Process replies only if needed and within depth limit
+        if (comment.getDepth() < MAX_REPLY_DEPTH && comment.getReplyCount() > 0) {
+            // Only load replies if they exist and we're within depth limit
+            if (!comment.getReplies().isEmpty()) {
+                // Use parallel stream for better performance with larger reply sets
+                List<CommentResponse> replyResponses = comment.getReplies().stream()
+                        .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
+                        .limit(MAX_REPLIES_PER_LEVEL)
+                        .parallel()
+                        .map(this::convertToResponse)
+                        .collect(Collectors.toList());
 
-            response.setReplies(replyResponses);
+                response.setReplies(replyResponses);
+            }
+
+            // Set flag for pagination UI
             response.setHasMoreReplies(comment.getReplyCount() > MAX_REPLIES_PER_LEVEL);
-            response.setReplyCount(comment.getReplyCount());
         }
 
         return response;
     }
 
     private CommentResponse saveAndConvert(Comment comment) {
-        Comment saved = commentRepository.save(comment);
-        return convertToResponse(saved);
+        try {
+            // Ensure the comment has timestamps set
+            if (comment.getCreatedAt() == null) {
+                comment.prePersist();
+            }
+
+            // Save the comment to the database
+            Comment saved = commentRepository.save(comment);
+
+            // Convert to response object
+            return convertToResponse(saved);
+        } catch (Exception e) {
+            // Log the error and rethrow to ensure transaction rollback
+            throw new RuntimeException("Error saving comment: " + e.getMessage(), e);
+        }
     }
 
     private User getCurrentUser() {

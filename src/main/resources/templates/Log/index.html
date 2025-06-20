@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Log Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #controls {
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 8px 16px;
+            margin-right: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #log-container {
+            height: 600px;
+            overflow-y: auto;
+            background-color: #1e1e1e;
+            color: #dcdcdc;
+            padding: 10px;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        #log-output {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .info {
+            color: #58B7FF;
+        }
+        .debug {
+            color: #98C379;
+        }
+        .warn {
+            color: #E5C07B;
+        }
+        .error {
+            color: #E06C75;
+        }
+        .connection-status {
+            margin-bottom: 10px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            display: inline-block;
+        }
+        .connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnected {
+            background-color: #f44336;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1>Real-time Log Viewer</h1>
+
+    <div id="connection-status" class="connection-status disconnected">Disconnected</div>
+
+    <div id="controls">
+        <button id="clear-logs">Clear Logs</button>
+        <button id="test-log">Generate Test Log</button>
+        <button id="reconnect">Reconnect</button>
+    </div>
+
+    <div id="log-container">
+        <div id="log-output"></div>
+    </div>
+
+    <script>
+        let stompClient = null;
+        const logOutput = document.getElementById('log-output');
+        const connectionStatus = document.getElementById('connection-status');
+
+        function connect() {
+            const socket = new SockJS('/ws-logs');
+            stompClient = Stomp.over(socket);
+
+            // Disable debug logging from STOMP
+            stompClient.debug = null;
+
+            stompClient.connect({}, function(frame) {
+                connectionStatus.textContent = 'Connected';
+                connectionStatus.className = 'connection-status connected';
+
+                stompClient.subscribe('/topic/logs', function(message) {
+                    const logMessage = message.body;
+
+                    // Determine log level by content (simple approach)
+                    let logClass = 'info';
+                    if (logMessage.includes('ERROR') || logMessage.includes('Error')) {
+                        logClass = 'error';
+                    } else if (logMessage.includes('WARN') || logMessage.includes('Warning')) {
+                        logClass = 'warn';
+                    } else if (logMessage.includes('DEBUG') || logMessage.includes('Debug')) {
+                        logClass = 'debug';
+                    }
+
+                    const logEntry = document.createElement('div');
+                    logEntry.className = logClass;
+                    logEntry.textContent = logMessage;
+
+                    logOutput.appendChild(logEntry);
+
+                    // Auto-scroll to bottom
+                    const logContainer = document.getElementById('log-container');
+                    logContainer.scrollTop = logContainer.scrollHeight;
+                });
+
+                console.log('Connected to WebSocket');
+            }, function(error) {
+                connectionStatus.textContent = 'Disconnected: ' + error;
+                connectionStatus.className = 'connection-status disconnected';
+                console.error('STOMP error:', error);
+            });
+        }
+
+        function disconnect() {
+            if (stompClient !== null) {
+                stompClient.disconnect();
+                stompClient = null;
+                connectionStatus.textContent = 'Disconnected';
+                connectionStatus.className = 'connection-status disconnected';
+            }
+        }
+
+        // Event listeners
+        document.getElementById('clear-logs').addEventListener('click', function() {
+            logOutput.innerHTML = '';
+        });
+
+        document.getElementById('test-log').addEventListener('click', function() {
+            fetch('/logger')
+                .then(response => response.text())
+                .then(data => console.log(data))
+                .catch(error => console.error('Error:', error));
+        });
+
+        document.getElementById('reconnect').addEventListener('click', function() {
+            disconnect();
+            setTimeout(connect, 1000);
+        });
+
+        // Initial connection
+        connect();
+
+        // Handle page unload
+        window.addEventListener('beforeunload', function() {
+            disconnect();
+        });
+    </script>
+</body>
+</html>
