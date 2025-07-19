@@ -25,7 +25,7 @@ public class PostResponse {
     private Date createdAt;
     private Boolean featured;
     private String content;
-    private String imageUrl;
+    private String thumbnail;
     private Set<String> categories;
     private Set<String> tags;
     private Integer commentCount;
@@ -33,6 +33,7 @@ public class PostResponse {
     private Long likeCount;
     private Double averageRating;
     private Boolean isLikedByCurrentUser;
+    private Boolean isSavedByCurrentUser;
     private Integer userRating;
     private List<CommentResponse> comments;
 }

@@ -21,19 +21,19 @@ public class UserContextService {
         this.userRepository = userRepository;
     }
 
-    public User getCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String jwt = (String) auth.getCredentials();
-        String userId = jwtUtils.getUserIdFromJwtToken(jwt);
-        return userRepository.findById(userId)
-                .orElseThrow(() -> new NotFoundException("User not found"));
-    }
+    // public User getCurrentUser() {
+    //     Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+    //     String jwt = (String) auth.getCredentials();
+    //     String userId = jwtUtils.getUserIdFromJwtToken(jwt);
+    //     return userRepository.findById(userId)
+    //             .orElseThrow(() -> new NotFoundException("User not found"));
+    // }
 
-    public User getCurrentUserOrNull() {
-        try {
-            return getCurrentUser();
-        } catch (Exception e) {
-            return null;
-        }
-    }
+    // public User getCurrentUserOrNull() {
+    //     try {
+    //         return getCurrentUser();
+    //     } catch (Exception e) {
+    //         return null;
+    //     }
+    // }
 }

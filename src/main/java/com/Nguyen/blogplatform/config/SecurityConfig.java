@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.config;
 
+import com.Nguyen.blogplatform.Enum.ERole;
 import com.Nguyen.blogplatform.security.AuthEntryPointJwt;
 import com.Nguyen.blogplatform.security.AuthTokenFilter;
 import com.Nguyen.blogplatform.service.UserDetailsServiceImpl;
@@ -29,30 +30,30 @@ import java.util.List;
 public class SecurityConfig {
 
     @Autowired
-    private UserDetailsServiceImpl userDetailsService;
-
+    UserDetailsServiceImpl userDetailsService;
+    @Autowired
+    private AuthTokenFilter jwtAuthFilter;
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
-
 
     @Bean
     public AuthTokenFilter authenticationJwtTokenFilter() {
         return new AuthTokenFilter();
     }
 
-
-
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
+
         return authProvider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration authenticationConfiguration) throws Exception {
-        return authenticationConfiguration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(AuthenticationConfiguration authConfig) throws Exception {
+        return authConfig.getAuthenticationManager();
     }
 
     @Bean
@@ -64,20 +65,21 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(configurer -> corsConfigurationSource())
-                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/ws/**").permitAll()
-                        .requestMatchers("/ws-logs/**").permitAll()
-                        .requestMatchers("/actuator/**",
-                                "/actuator/prometheus"
-                                ).permitAll()
-                        .requestMatchers("/api/v1/post/latest").permitAll()
-                        .requestMatchers("/api/logs").permitAll()
-                        .requestMatchers("/logs/**").permitAll()
-                        .requestMatchers("/logger/**").permitAll()
-                        .requestMatchers("/api/tags/**").permitAll()
+                         .requestMatchers("/uploads/**").permitAll()
+                         .requestMatchers("/uploads/thumbnail/**").permitAll()
+                         .requestMatchers("/api/v1/upload/**").permitAll()
+                         .requestMatchers("/ws/**").permitAll()
+                         .requestMatchers("/ws-logs/**").permitAll()
+                         .requestMatchers("/actuator/**",
+                                 "/actuator/prometheus"
+                                 ).permitAll()
+                         .requestMatchers("/api/v1/post/latest").permitAll()
+                         .requestMatchers("/api/logs").permitAll()
+                         .requestMatchers("/logs/**").permitAll()
+                         .requestMatchers("/logger/**").permitAll()
+                         .requestMatchers("/api/tags/**").permitAll()
                         // Public endpoint
                         .requestMatchers(
                                 "/",
@@ -85,35 +87,63 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/swagger-resources/**",
                                 "/v3/api-docs/**",
-                                "/api/test/**"
+                                "/api/test/**",
+                                "/api/v1/auth/fix-roles"
                         ).permitAll()
-                        .requestMatchers("/api/v1/auth/me").authenticated()
-                        .requestMatchers("/video/**").permitAll()
-                        .requestMatchers("/api/memes/**").permitAll()
-                        .requestMatchers("/uploads/**").permitAll()
-                        // Public GET endpoints
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/v1/post",
-                                "/api/v1/post/featured",
-                                "/api/v1/post/search",
-                                "/api/v1/post/{id}",
-                                "/api/v1/post/category/{categoryId}",
-                                "/api/v1/category/**"
-                        ).permitAll()
-                        // Các rule khác giữ nguyên
-                        .requestMatchers("/api/v1/upload").permitAll()
-                        .requestMatchers("/api/v1/user/update-password").authenticated()
-                        .requestMatchers("/api/v1/user/**").hasRole("USER")
-                        .requestMatchers("/api/v1/author/**").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/comments/**").permitAll()
-                        .requestMatchers("/api/v1/role/**").hasRole("ADMIN")
-                        .anyRequest().authenticated()
 
-                );
+                         .requestMatchers("/api/v1/auth/fix-roles").permitAll()
+                         .requestMatchers("/api/v1/auth/me").authenticated()
+                         .requestMatchers("/api/v1/auth/debug").authenticated()
+                         .requestMatchers("/api/v1/auth/assign-default-role").authenticated()
+                         .requestMatchers("/api/debug/**").permitAll()
+                         .requestMatchers("/api/v1/auth/profile/**").permitAll()
+                         .requestMatchers("/video/**").permitAll()
+                         .requestMatchers("/api/memes/**").permitAll()
+                         .requestMatchers("/uploads/**").permitAll()
+                        .requestMatchers("/api/v1/category").permitAll()
+                         // Public GET endpoints
+                         .requestMatchers(HttpMethod.GET,
+                                 "/api/v1/post",
+                                 "/api/v1/post/featured",
+                                 "/api/v1/post/search",
+                                 "/api/v1/post/{id}",
+                                 "/api/v1/post/slug/{slug}",
+                                 "/api/v1/post/category/{categoryId}",
+                                 "/api/v1/category/**"
+                         ).permitAll()
+                         // Các rule khác giữ nguyên
+                         .requestMatchers("/api/v1/upload").permitAll()
+                         .requestMatchers("/api/v1/user/update-password").authenticated()
+                         .requestMatchers("/api/v1/user/**").hasRole("USER")
+                         .requestMatchers("/api/user/{id}").permitAll()
+                         .requestMatchers("/api/v1/author/**").permitAll()
+                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                         .requestMatchers("/api/comments/**").permitAll()
+                         .requestMatchers("/api/v1/role/**").permitAll()
+                         .requestMatchers("/api/v1/roles/**").permitAll()
+                         // Newsletter endpoints
+                         .requestMatchers("/api/v1/newsletter/subscribe").permitAll()
+                         .requestMatchers("/api/v1/newsletter/confirm").permitAll()
+                         .requestMatchers("/api/v1/newsletter/unsubscribe").permitAll()
+                         .requestMatchers("/api/v1/newsletter/subscribers/**").hasRole("ADMIN")
+                         // Saved posts endpoints
+                         .requestMatchers("/api/v1/saved-posts/**").authenticated()
+                         // JWT utility endpoints
+                         .requestMatchers("/api/v1/jwt/decode").permitAll()
+                         .requestMatchers("/api/v1/jwt/validate").permitAll()
+                         .requestMatchers("/api/v1/jwt/roles").authenticated()
+                         .anyRequest().authenticated()
+
+                )
+                // .csrf(AbstractHttpConfigurer::disable)
+                // .cors(configurer -> corsConfigurationSource())
+                .exceptionHandling(exception -> exception.authenticationEntryPoint(unauthorizedHandler))
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                ;
 
         http.authenticationProvider(authenticationProvider());
-        http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
+        // http.addFilterBefore(authenticationJwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
@@ -125,7 +155,8 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowedOriginPatterns(List.of("http://localhost:3000",
                                                 "http://localhost:5173/",
-                                                "http://localhost:5174/"
+                                                "http://localhost:5174/",
+                                                "http://localhost:5000/"
                 )
         );
         // Use allowedOrigins() if you only have exact values

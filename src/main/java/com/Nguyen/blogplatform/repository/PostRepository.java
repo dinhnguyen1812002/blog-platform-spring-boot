@@ -37,4 +37,7 @@ Optional<Post> findBySlug(String slug);
     @Query(value = "UPDATE post SET view = view + 1 WHERE id = :postId", nativeQuery = true)
     void incrementViewCount(@Param("postId") String postId);
 
+    @Query("SELECT COUNT(p) FROM Post p WHERE p.user = :user")
+    Long countByUser(@Param("user") User user);
+
 }

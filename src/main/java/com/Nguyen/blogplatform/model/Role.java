@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.model;
 
 import com.Nguyen.blogplatform.Enum.ERole;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
@@ -11,9 +12,10 @@ import java.util.Set;
 
 @Entity
 @Table(name = "roles")
+@Data
 @Getter
 @Setter
-@Data
+
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,10 +24,11 @@ public class Role {
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
     private ERole name;
-    @ManyToMany(mappedBy = "roles")
-    private Set<User> users = new HashSet<>();
 
-    public Role() {}
+    public Role() {
+
+    }
+
     public Role(ERole name) {
         this.name = name;
     }

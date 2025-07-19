@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 import io.jsonwebtoken.*;
@@ -33,31 +34,23 @@ public class JwtUtils {
     @Value("${blog.app.jwtCookieName}")
     private String jwtCookie;
 
-    public String generateJwtToken(UserDetailsImpl userPrincipal) {
-        String userId = userPrincipal.getId();
-        String username = userPrincipal.getUsername();
-        String roles = userPrincipal.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+    public String generateJwtToken(Authentication authentication) {
+
+        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+
         return Jwts.builder()
-//                .setSubject(userPrincipal.getEmail())
-                .claim("userid", userId)
-                .claim("roles", roles)
-                .claim("username", username)
+                .setSubject((userPrincipal.getUsername()))
+                .claim("userid", userPrincipal.getId())
+                .claim("roles",
+                 userPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
     }
 
-    public String getJwtFromCookies(HttpServletRequest request) {
-        return Optional
-                .ofNullable(WebUtils.getCookie(request, jwtCookie))
-                .map(Cookie::getValue).orElse(null);
-    }
-
-    public ResponseCookie generateJwtCookie(UserDetailsImpl userPrincipal) {
-        String jwt = generateJwtToken(userPrincipal);
+    public ResponseCookie generateJwtCookie(Authentication authentication) {
+        String jwt = generateJwtToken(authentication);
         return ResponseCookie.from(jwtCookie, jwt)
                 .secure(true)
                 .path("/")
@@ -66,6 +59,24 @@ public class JwtUtils {
                 .httpOnly(true).build();
 
     }
+
+    public String getJwtFromCookies(HttpServletRequest request) {
+        return Optional
+                .ofNullable(WebUtils.getCookie(request, jwtCookie))
+                .map(Cookie::getValue).orElse(null);
+    }
+
+//    public ResponseCookie generateJwtCookie(Authentication authentication) {
+//        String jwt = generateJwtToken(authentication);
+//
+//        return ResponseCookie.from(jwtCookie, jwt)
+//                .secure(true)
+//                .path("/")
+//                .maxAge(24 * 60 * 60)
+//                .sameSite("Lax")
+//                .httpOnly(true).build();
+//
+//    }
 
     public ResponseCookie getCleanJwtCookie() {
 
@@ -85,6 +96,24 @@ public class JwtUtils {
         return claims.get("userid", String.class);
     }
 
+    public String getRolesFromJwtToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("roles", String.class);
+    }
+
+    public String getUsernameFromJwtToken(String token) {
+        Claims claims = Jwts.parserBuilder()
+                .setSigningKey(key())
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+        return claims.get("username", String.class);
+    }
+
     public boolean validateJwtToken(String authToken) {
         try {
             Jwts.parserBuilder().setSigningKey(key()).build().parse(authToken);
@@ -99,5 +128,28 @@ public class JwtUtils {
             logger.error("JWT claims string is empty: {}", e.getMessage());
         }
         return false;
+    }
+
+    // Debug method to print all claims in a JWT token
+    public void debugJwtClaims(String token) {
+        try {
+            Claims claims = Jwts.parserBuilder()
+                    .setSigningKey(key())
+                    .build()
+                    .parseClaimsJws(token)
+                    .getBody();
+            
+            logger.info("=== JWT Claims Debug ===");
+            logger.info("Subject: {}", claims.getSubject());
+            logger.info("User ID: {}", claims.get("userid"));
+            logger.info("Username: {}", claims.get("username"));
+            logger.info("Roles: '{}'", claims.get("roles"));
+            logger.info("Issued At: {}", claims.getIssuedAt());
+            logger.info("Expires At: {}", claims.getExpiration());
+            logger.info("All Claims: {}", claims);
+            logger.info("========================");
+        } catch (Exception e) {
+            logger.error("Error debugging JWT claims: {}", e.getMessage());
+        }
     }
 }

@@ -1,28 +1,25 @@
 package com.Nguyen.blogplatform.service;
 
 
+import com.Nguyen.blogplatform.model.User;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.Nguyen.blogplatform.model.User;
-import lombok.Getter;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 public class UserDetailsImpl implements UserDetails {
     private static final long serialVersionUID = 1L;
 
-    @Getter
     private String id;
 
     private String username;
 
-    @Getter
     private String email;
 
     @JsonIgnore
@@ -55,6 +52,14 @@ public class UserDetailsImpl implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return authorities;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getEmail() {
+        return email;
     }
 
     @Override

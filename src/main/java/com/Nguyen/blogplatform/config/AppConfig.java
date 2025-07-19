@@ -16,19 +16,23 @@ public class AppConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // Configure for general uploads
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations("file:uploads/");
         
-        // Thêm handler riêng cho thumbnail
+        // Configure specifically for thumbnails
         registry.addResourceHandler("/uploads/thumbnail/**")
                 .addResourceLocations("file:uploads/thumbnail/");
     }
 //
 //    @Override
 //    public void addCorsMappings(CorsRegistry registry) {
-//        registry.addMapping("/api/**")
-//                .allowedOrigins("http://localhost:5173")
-//                .allowedMethods("GET", "POST", "PUT", "DELETE")
-//                .allowCredentials(true);
+//        registry.addMapping("/**")
+//                .allowedOrigins("http://localhost:5500") // adjust to your front-end origin
+//                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+//                .allowedHeaders("*")
+//                .exposedHeaders("Authorization")
+//                .allowCredentials(true)
+//                .maxAge(3600);
 //    }
 }

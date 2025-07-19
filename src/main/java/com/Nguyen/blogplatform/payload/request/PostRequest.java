@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Date;
 import java.util.HashSet;
@@ -19,8 +20,9 @@ public class PostRequest {
     private Date createdAt;
     private Boolean featured;
     private String content;
-    private String imageUrl;
+    private String thumbnail;
     private Set<Long> categories = new HashSet<>();
     private Set<UUID> tags = new HashSet<>();
+
 
 }

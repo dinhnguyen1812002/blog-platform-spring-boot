@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.service;
 
 import com.Nguyen.blogplatform.exception.TokenExpiredException;
+import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.LoginRequest;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;
@@ -25,6 +26,7 @@ import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -96,9 +98,16 @@ public class UserServices {
         return userRepository.findById(id)
                 .orElseThrow(()->new UsernameNotFoundException("User not Found with email"+ id));
     }
+//    public User findById(String id) {
+//        return userRepository.findById(id).orElse(null);
+//    }
 
+    public Set<Role> getRolesByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-
+        return user.getRoles();
+    }
 
 }
 

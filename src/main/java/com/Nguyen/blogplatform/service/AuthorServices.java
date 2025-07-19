@@ -20,8 +20,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -35,6 +38,8 @@ public class AuthorServices {
     private final CategoryRepository categoryRepository;
     private final TagRepository tagRepository;
     private final NotificationService notificationService;
+    private final FileStorageService fileStorageService;
+    private final NewsletterService newsletterService;
 
     public List<PostResponse> getPostsForCurrentUser(int page, int size) {
         var username = getCurrentUsername();
@@ -51,16 +56,25 @@ public class AuthorServices {
             throw new BadRequestException("Invalid input data");
         }
 
-        var author = userRepository.findById(authorId)
+
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        var author = userRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + authorId));
         var categories = getCategoriesFromIds(postRequest.getCategories());
         var tags = getTagsFromIds(postRequest.getTags());
-
+        String thumbnailUrl = null;
+//        if (thumbnail != null && !thumbnail.isEmpty()) {
+//            try {
+//                thumbnailUrl = fileStorageService.saveThumbnail(thumbnail);
+//            } catch (IOException e) {
+//                throw new RuntimeException("Failed to upload image: " + e.getMessage());
+//            }
+//        }
         var post = Post.builder()
                 .title(postRequest.getTitle())
                 .slug(SlugUtil.createSlug(postRequest.getTitle()))
                 .content(Objects.requireNonNullElse(postRequest.getContent(), ""))
-                .imageUrl(Objects.requireNonNullElse(postRequest.getImageUrl(), ""))
+                .thumbnail(postRequest.getThumbnail())
                 .user(author)
                 .createdAt(Objects.requireNonNullElse(postRequest.getCreatedAt(), new Date()))
                 .categories(categories)
@@ -72,18 +86,37 @@ public class AuthorServices {
         var savedPost = postRepository.save(post);
         notificationService.sendPostNotification(savedPost.getId(), "New post created: " + postRequest.getTitle());
         notificationService.sendGlobalNotification("New post available: " + savedPost.getTitle());
+
+        // Send newsletter to subscribers asynchronously
+        CompletableFuture.runAsync(() -> {
+            try {
+                newsletterService.sendNewsletterForNewPost(savedPost);
+            } catch (Exception e) {
+                // Log error but don't fail the post creation
+                System.err.println("Failed to send newsletter for post: " + savedPost.getTitle() + " - " + e.getMessage());
+            }
+        });
+
         return savedPost;
     }
 
     @Transactional
-    public PostResponse updatePost(String postId, PostRequest postRequest) {
+    public PostResponse updatePost(String postId, PostRequest postRequest, MultipartFile imageFile) {
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
         validateAuthorization(post);
+        String thumbnail = postRequest.getThumbnail();
+        if (imageFile != null && !imageFile.isEmpty()) {
+            try {
+                thumbnail = fileStorageService.saveThumbnail(imageFile);
+            } catch (IOException e) {
+                throw new RuntimeException("Failed to upload image: " + e.getMessage());
+            }
+        }
 
         post.setTitle(postRequest.getTitle());
         post.setContent(Objects.requireNonNullElse(postRequest.getContent(), ""));
-        post.setImageUrl(Objects.requireNonNullElse(postRequest.getImageUrl(), ""));
+        post.setThumbnail(Objects.requireNonNullElse(thumbnail, post.getThumbnail()));
         post.setCategories(getCategoriesFromIds(postRequest.getCategories()));
         if (postRequest.getTags() != null) {
             post.setTags(getTagsFromIds(postRequest.getTags()));
@@ -139,7 +172,7 @@ public class AuthorServices {
                 .createdAt(post.getCreatedAt())
                 .featured(post.getFeatured())
                 .content(post.getContent())
-                .imageUrl(post.getImageUrl())
+                .thumbnail(post.getThumbnail())
                 .categories(post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()))
                 .tags(post.getTags().stream().map(Tags::getName).collect(Collectors.toSet()))
                 .commentCount(post.getComments().size())

@@ -1,15 +1,21 @@
 package com.Nguyen.blogplatform.controller;
 
 import com.Nguyen.blogplatform.exception.TokenExpiredException;
+import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
+import com.Nguyen.blogplatform.payload.response.UserResponse;
+import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.service.UserDetailsImpl;
 import com.Nguyen.blogplatform.service.UserServices;
 import jakarta.mail.MessagingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,16 +23,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import java.util.Map;
+
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/api/user")
 @RestController
 public class UserController {
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private UserServices userService;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private UserRepository userRepository;
 
     @GetMapping("/forgot-password")
     public String showForgotPasswordForm() {
@@ -102,5 +113,26 @@ public class UserController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new MessageResponse(e.getMessage()));
         }
+    }
+
+
+    @GetMapping("/{id}")
+    public ResponseEntity<UserResponse> getUserInfo(@PathVariable String id) {
+        User user = userService.findById(id);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+
+
+        UserResponse response = new UserResponse(
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getRoles().stream()
+                        .map(Role::getName)
+                        .collect(Collectors.toList())
+        );
+
+        return ResponseEntity.ok(response);
     }
 }

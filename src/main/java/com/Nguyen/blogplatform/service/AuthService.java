@@ -8,6 +8,7 @@ import com.Nguyen.blogplatform.payload.request.LoginRequest;
 import com.Nguyen.blogplatform.payload.request.SignupRequest;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
+import com.Nguyen.blogplatform.payload.response.UserResponse;
 import com.Nguyen.blogplatform.repository.RoleRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.security.JwtUtils;
@@ -20,11 +21,14 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import java.util.HashSet;
-import java.util.Set;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class AuthService {
@@ -62,21 +66,49 @@ public class AuthService {
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        UserDetails userDetailss =
+                (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        System.out.println("User details abbc: " + userDetailss.getAuthorities());
 
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(userDetails);
-        String jwtToken = jwtUtils.generateJwtToken(userDetails);
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .body(new JwtResponse(jwtToken));
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
+        String jwtToken = jwtUtils.generateJwtToken(authentication);
+        jwtUtils.debugJwtClaims(jwtToken);
+
+        // Create JwtResponse with full user info
+        List<String> roles = userDetails.getAuthorities().stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+
+        if(roles.isEmpty()){
+            System.out.println("Role bị null");
+        } else {
+            System.out.println("Role: "+ roles);
+        }
+
+        JwtResponse jwtResponse = new JwtResponse(
+                jwtToken,
+                userDetails.getId(),
+                userDetails.getUsername(),
+                userDetails.getEmail(),
+                roles
+        );
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .body(jwtResponse);
     }
 
     public ResponseEntity<?> registerUser(@Valid SignupRequest signUpRequest) {
+        String err = "Password must contain at least one digit, one lowercase letter, one uppercase letter, one special character, and no whitespace";
         if (userRepository.existsByUsername(signUpRequest.getUsername())) {
             return ResponseEntity.badRequest().body(new NotFoundException("Error: Username is already taken!"));
         }
         if (userRepository.existsByEmail(signUpRequest.getEmail())) {
             return ResponseEntity.badRequest().body(new NotFoundException("Error: Email is already in use!"));
         }
-
+        if (!validatePassword(signUpRequest.getPassword())) {
+            return ResponseEntity.badRequest().body(err);
+        }
         // Create new user's account
         User user = new User(signUpRequest.getUsername(),
                 signUpRequest.getEmail(),
@@ -86,19 +118,20 @@ public class AuthService {
         Set<Role> roles = new HashSet<>();
 
         if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.USER)
+            Role userRole = roleRepository.findByName(ERole.USER )
                     .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
             roles.add(userRole);
         } else {
             strRoles.forEach(role -> {
                 switch (role) {
                     case "ADMIN":
-                        Role adminRole = roleRepository.findByName(ERole.ADMIN)
+                        Role adminRole = roleRepository.findByName(ERole.ADMIN
+                                )
                                 .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
                         roles.add(adminRole);
                         break;
                     case "AUTHOR":
-                        Role modRole = roleRepository.findByName(ERole.AUTHOR)
+                        Role modRole = roleRepository.findByName(ERole.ROLE_AUTHOR)
                                 .orElseThrow(() -> new NotFoundException("Error: Role is not found."));
                         roles.add(modRole);
                         break;
@@ -112,7 +145,18 @@ public class AuthService {
 
         user.setRoles(roles);
         userRepository.save(user);
-        return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
+
+        // Create UserResponse with username, email, and roles
+        List<ERole> roleNames = roles.stream()
+                .map(Role::getName)
+                .toList();
+
+        UserResponse userResponse = new UserResponse(user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                roleNames);
+
+        return ResponseEntity.ok(userResponse);
     }
 
     public ResponseEntity<?> logoutUser() {
@@ -121,4 +165,7 @@ public class AuthService {
                 .body(new MessageResponse("You've been signed out!"));
     }
 
+    private boolean validatePassword(String password) {
+        return password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{6,}$");
+    }
 }

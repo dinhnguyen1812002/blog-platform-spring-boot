@@ -26,10 +26,11 @@ import java.util.Objects;
 
 public class UploadController {
     String IMAGE_FOLDER = "./src/main/resources/images/";
+    private static final String THUMBNAIL_DIR = "uploads/thumbnail/";
+
     private UrlUtils url;
     @PostMapping()
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile uploadfile) {
-
         ResponseResult rr = new ResponseResult();
 
         if (uploadfile.isEmpty()) {
@@ -37,10 +38,17 @@ public class UploadController {
         }
 
         try {
+            // Create directories if they don't exist
+            Path thumbnailPath = Paths.get(THUMBNAIL_DIR);
+            if (!Files.exists(thumbnailPath)) {
+                Files.createDirectories(thumbnailPath);
+            }
+            
             String[] fileUrls = saveUploadedFiles(List.of(uploadfile));
             rr.setMessage(fileUrls[0]);
         } catch (IOException e) {
-            return ResponseEntity.badRequest().build();
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(new ResponseResult(400, "Error uploading file: " + e.getMessage()));
         }
 
         rr.setStatusCode(200);
@@ -63,25 +71,30 @@ public class UploadController {
                     .concat(Objects
                             .requireNonNull(file.getOriginalFilename()));
 
-            Path path = Paths.get(IMAGE_FOLDER+filename);
+            Path path = Paths.get(THUMBNAIL_DIR + filename);
             Files.write(path, bytes);
-            fileUrls[index] =  url.getBaseEnvLinkURL() + "/images/"+filename;
+            
+            // Return the URL that can be used to access the file
+            fileUrls[index] = getBaseEnvLinkURL() +  "/uploads/thumbnail/" + filename;
             index++;
         }
         return fileUrls;
     }
 
-//    public String getBaseEnvLinkURL() {
-//        String baseEnvLinkURL=null;
-//        HttpServletRequest currentRequest =
-//                ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-//        baseEnvLinkURL = "http://" + currentRequest.getLocalName();
-//        if(currentRequest.getLocalPort() != 80) {
-//            baseEnvLinkURL += ":" + currentRequest.getLocalPort();
-//        }
-//        if(!StringUtils.isEmpty(currentRequest.getContextPath())) {
-//            baseEnvLinkURL += currentRequest.getContextPath();
-//        }
-//        return baseEnvLinkURL;
-//    }
+    public String getBaseEnvLinkURL() {
+        String baseEnvLinkURL=null;
+        if(url == null) {
+            url = new UrlUtils();
+        }
+        HttpServletRequest currentRequest =
+                ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        baseEnvLinkURL = "http://" + currentRequest.getLocalName();
+        if(currentRequest.getLocalPort() != 80) {
+            baseEnvLinkURL += ":" + currentRequest.getLocalPort();
+        }
+        if(!StringUtils.isEmpty(currentRequest.getContextPath())) {
+            baseEnvLinkURL += currentRequest.getContextPath();
+        }
+        return baseEnvLinkURL;
+    }
 }

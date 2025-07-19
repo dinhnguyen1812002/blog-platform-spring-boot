@@ -18,7 +18,7 @@ target/
 *.iws
 *.iml
 *.ipr
-
+*.log
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
@@ -27,6 +27,7 @@ target/
 /.nb-gradle/
 build/
 !**/src/main/**/build/
+!**/src/main/resources/images/
 !**/src/test/**/build/
 /uploads/**
 ### VS Code ###

@@ -2,6 +2,7 @@ package com.Nguyen.blogplatform.repository;
 
 
 import com.Nguyen.blogplatform.model.Comment;
+import com.Nguyen.blogplatform.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,4 +50,7 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
     Page<Comment> findByPostIdAndParentCommentIsNull(String postId, PageRequest createdAt);
 
     Page<Comment> findByParentCommentId(String commentId, PageRequest createdAt);
+
+    @Query("SELECT COUNT(c) FROM Comment c WHERE c.user = :user")
+    Long countByUser(@Param("user") User user);
 }

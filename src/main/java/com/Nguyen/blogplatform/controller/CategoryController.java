@@ -6,6 +6,7 @@ import com.Nguyen.blogplatform.payload.response.MessageResponse;
 import com.Nguyen.blogplatform.service.CategoryServices;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,9 +21,10 @@ public class CategoryController {
     public CategoryController(CategoryServices categoryServices) {
         this.categoryServices = categoryServices;
     }
+
     @GetMapping
-    public List<Category> getAllBook()
-    {
+    @PreAuthorize("hasRole('ROLE_USER')") // bỏ "ROLE_" đi
+    public List<Category> getAllBook() {
         return categoryServices.getAllCategory();
     }
 

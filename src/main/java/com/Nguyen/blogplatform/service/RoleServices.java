@@ -15,13 +15,14 @@ public class RoleServices {
     public RoleServices(RoleRepository roleRepo) {
         this.roleRepo = roleRepo;
     }
+
     public List<Role> findAllRole(){
             return roleRepo.findAll();
     }
     public Role saveRole(Role role){
         return roleRepo.save(role);
     }
-    public void deleteRole(Long id){
+    public void deleteRole(Integer id){
          roleRepo.deleteById(id);
     }
 
