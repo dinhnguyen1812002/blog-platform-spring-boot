@@ -7,6 +7,7 @@ import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.CommentRequest;
 import com.Nguyen.blogplatform.payload.response.CommentResponse;
+import com.Nguyen.blogplatform.payload.response.UserResponse;
 import com.Nguyen.blogplatform.repository.CommentRepository;
 import com.Nguyen.blogplatform.repository.PostRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
@@ -24,6 +25,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -44,7 +47,7 @@ public class CommentServices {
     private final UserRepository userRepository;
     private final ModelMapper  modelMapper;
     private final NotificationService notificationService;
-
+    private Logger log = Logger.getLogger(CommentServices.class.getName());
 
     @Transactional
     @Caching(evict = {
@@ -54,19 +57,18 @@ public class CommentServices {
     })
     public CommentResponse createComment(String postId, CommentRequest request) {
 
-        // Giữ SecurityContext để truyền vào thread phụ
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Lưu lại SecurityContext hiện tại
+        SecurityContext context = SecurityContextHolder.getContext();
 
-        // Lấy Post bất đồng bộ
-        CompletableFuture<Post> postFuture = CompletableFuture.supplyAsync(() ->
-                postRepository.findById(postId)
-                        .orElseThrow(() -> new NotFoundException("Post Not Found: " + postId))
-        );
+        // Bắt đầu xử lý bất đồng bộ với context được truyền đúng
+        CompletableFuture<Post> postFuture = CompletableFuture.supplyAsync(() -> {
+            SecurityContextHolder.setContext(context);
+            return postRepository.findById(postId)
+                    .orElseThrow(() -> new NotFoundException("Post Not Found: " + postId));
+        });
 
-        // Lấy User bất đồng bộ, với SecurityContext được truyền tay
         CompletableFuture<User> userFuture = CompletableFuture.supplyAsync(() -> {
-            SecurityContextHolder.setContext(SecurityContextHolder.createEmptyContext());
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            SecurityContextHolder.setContext(context);
             return getCurrentUser();
         });
 
@@ -84,23 +86,24 @@ public class CommentServices {
         comment.setUser(user);
         comment.setDepth(0);
 
-        // Xử lý nếu là reply
+        // Nếu là reply
         if (request.getParentCommentId() != null) {
             processParentComment(comment, request.getParentCommentId());
         }
 
-        // Lưu comment
+        // Lưu và trả kết quả
         CommentResponse response = saveAndConvert(comment);
 
-        // Gửi notification bất đồng bộ (không cần SecurityContext ở đây)
+        // Gửi notification bất đồng bộ (không cần context nữa)
         CompletableFuture.runAsync(() -> {
             notificationService.sendCommentNotification(postId, response);
             notificationService.sendGlobalNotification(
-                    "New comment from: " + response.getAuthorUsername() + " on post: " + post.getTitle());
+                    "New comment from: " + response.getUser().getUsername() + " on post: " + post.getTitle());
         });
 
         return response;
     }
+
 
 
     private void processParentComment(Comment comment, String parentId) {
@@ -205,8 +208,13 @@ public class CommentServices {
         response.setReplyCount(comment.getReplyCount());
 
         // Safely get username to avoid NPE
-        if (comment.getUser() != null) {
-            response.setAuthorUsername(comment.getUser().getUsername());
+      if(comment.getUser() != null) {
+          UserResponse userResponse = new UserResponse();
+          userResponse.setId(comment.getUser().getId());
+          userResponse.setUsername(comment.getUser().getUsername());
+          userResponse.setEmail(comment.getUser().getEmail());
+          response.setUser(userResponse);
+
         }
 
         // Set parent comment ID if exists
@@ -254,9 +262,13 @@ public class CommentServices {
         }
     }
 
+
+
     private User getCurrentUser() {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new NotFoundException("User not found: " + username));
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        String userId = userDetails.getId(); // Lấy id từ UserDetailsImpl
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found: " + userId));
     }
 }

@@ -13,6 +13,7 @@ public class UserResponse {
     private String id;
     private String username;
     private String email;
+    private String avatar;
     private List<ERole> roles;
 
     public UserResponse(String id, String username, String email) {
@@ -27,4 +28,6 @@ public class UserResponse {
         this.email = email;
         this.roles = roles;
     }
+
+
 }

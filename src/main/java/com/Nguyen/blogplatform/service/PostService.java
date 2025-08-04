@@ -1,13 +1,10 @@
 package com.Nguyen.blogplatform.service;
 
-import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
+import com.Nguyen.blogplatform.mapper.PostMapper;
 import com.Nguyen.blogplatform.model.*;
-import com.Nguyen.blogplatform.payload.request.PostRequest;
-import com.Nguyen.blogplatform.payload.response.CommentResponse;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
-import com.Nguyen.blogplatform.payload.response.UserResponse;
 import com.Nguyen.blogplatform.repository.*;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +20,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static com.Nguyen.blogplatform.Utils.ExcerptUtil.excerpt;
-
 @Service
 @RequiredArgsConstructor
 public class PostService {
@@ -37,31 +32,11 @@ public class PostService {
     private final RatingRepository ratingRepository;
     private final NotificationService notificationService;
     private final BookmarkRepository savedPostRepository;
+    private final CommentServices commentServices;
+    private final PostMapper postMapper;
 
     private final Map<String, PostResponse> postCache = new ConcurrentHashMap<>();
     private final Map<String, Long> cacheTimestamps = new ConcurrentHashMap<>();
-
-//    public Post createPost(PostRequest request) {
-//        var slug = SlugUtil.createSlug(request.getTitle());
-//        var author = getCurrentUser();
-//        var categories = getCategoriesFromIds(request.getCategories());
-//
-//        var post = Post.builder()
-//                .title(request.getTitle())
-//                .slug(slug)
-//                .content(request.getContent())
-//                .imageUrl(request.getImageUrl())
-//                .user(author)
-//                .createdAt(new Date())
-//                .categories(categories)
-//                .view(0L)
-//                .featured(Objects.requireNonNullElse(request.getFeatured(), false))
-//                .build();
-//
-//        var savedPost = postRepository.save(post);
-//        notificationService.sendGlobalNotification("New post: " + post.getTitle());
-//        return savedPost;
-//    }
 
     @Transactional
     public void incrementViewCount(String postId) {
@@ -71,10 +46,6 @@ public class PostService {
 
     @Transactional
     public boolean toggleLike(String postId) {
-        var authentication = SecurityContextHolder.getContext().getAuthentication();
-        System.out.println("Auth = " + authentication);
-        System.out.println("Principal = " + authentication.getPrincipal());
-
         var post = findPostById(postId);
         var user = getUser();
         var isLiked = post.getLike().contains(user);
@@ -111,44 +82,46 @@ public class PostService {
 
     public Page<PostResponse> getListPost(Pageable pageable) {
         return postRepository.findAllByOrderByCreatedAtDesc(pageable)
-                .map(this::toPostResponse);
+                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository));
     }
 
     public List<PostResponse> getLatestPosts(Pageable pageable) {
         return postRepository.findAllByOrderByCreatedAtDesc(pageable)
                 .stream()
-                .map(this::toPostResponse)
+                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))
                 .toList();
     }
 
     public List<PostResponse> getFeaturedPosts(Pageable pageable) {
         return postRepository.findByFeaturedTrueOrderByCreatedAtDesc(pageable)
                 .stream()
-                .map(this::toPostResponse)
+                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))
                 .toList();
     }
-
-    public PostResponse getPostById(String postId) {
-        var post = findPostById(postId);
-        incrementViewCount(postId);
-        return toPostResponseWithComments(post);
-    }
+//
+//    public PostResponse getPostById(String postId) {
+//        var post = findPostById(postId);
+//        incrementViewCount(postId);
+//        return postMapper.toPostResponseWithComments(post, getCurrentUser());
+//    }
 
     public PostResponse getPostResponseById(String postId) {
         var post = findPostById(postId);
-        return toPostResponse(post);
+        return postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository);
     }
 
+    @Transactional
     public PostResponse getPostBySlug(String slug) {
         var cacheKey = "slug:" + slug;
+
         if (isCacheValid(cacheKey)) {
             return postCache.get(cacheKey);
         }
 
         var post = postRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
-//        incrementViewCount(post.getId());
-        var response = toPostResponseWithComments(post);
+        incrementViewCount(post.getId());
+        var response = postMapper.toPostResponseWithComments(post, getCurrentUser(), savedPostRepository);
         cachePost(cacheKey, response);
         return response;
     }
@@ -158,7 +131,7 @@ public class PostService {
                 .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId));
         return postRepository.findByCategoriesContaining(category)
                 .stream()
-                .map(this::toPostResponse)
+                .map(post -> postMapper.toPostResponse(post, getCurrentUser(),  savedPostRepository))
                 .toList();
     }
 
@@ -167,7 +140,7 @@ public class PostService {
                 .and(PostSpecification.hasCategoryId(categoryId));
         return postRepository.findAll(spec)
                 .stream()
-                .map(this::toPostResponse)
+                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))
                 .toList();
     }
 
@@ -191,19 +164,18 @@ public class PostService {
         if (jwt == null) {
             return null;
         }
-        
+
         var userId = jwtUtils.getUserIdFromJwtToken(jwt);
         if (userId == null) {
-           System.out.println("User id is null");
-
+            System.out.println("User id is null");
         }
         return userRepository.findById(userId).orElse(null);
     }
+
     private User getUser() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         return userRepository.findById(userDetails.getId()).orElse(null);
     }
-
 
     private Set<Category> getCategoriesFromIds(Set<Long> categoryIds) {
         if (categoryIds == null || categoryIds.isEmpty()) {
@@ -215,90 +187,6 @@ public class PostService {
                 .collect(Collectors.toSet());
     }
 
-    private PostResponse toPostResponse(Post post) {
-        return PostResponse.builder()
-                .id(post.getId())
-                .user(createUserResponse(post.getUser()))
-                .title(post.getTitle())
-                .slug(post.getSlug())
-                .createdAt(post.getCreatedAt())
-                .featured(post.getFeatured())
-                .content(excerpt(post.getContent()))
-                .thumbnail(post.getThumbnail())
-                .categories(post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()))
-                .tags(post.getTags().stream().map(Tags::getName).collect(Collectors.toSet()))
-                .commentCount(post.getComments().size())
-                .viewCount(post.getView())
-                .likeCount((long) post.getLike().size())
-                .averageRating(calculateAverageRating(post))
-                .isLikedByCurrentUser(isLikedByCurrentUser(post))
-                .isSavedByCurrentUser(isSavedByCurrentUser(post))
-                .userRating(getUserRating(post))
-                .build();
-    }
-
-    private PostResponse toPostResponseWithComments(Post post) {
-        return PostResponse.builder()
-                .id(post.getId())
-                .user(createUserResponse(post.getUser()))
-                .title(post.getTitle())
-                .slug(post.getSlug())
-                .createdAt(post.getCreatedAt())
-                .featured(post.getFeatured())
-                .content(post.getContent())
-                .thumbnail(post.getThumbnail())
-                .categories(post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()))
-                .tags(post.getTags().stream().map(Tags::getName).collect(Collectors.toSet()))
-                .comments(post.getComments().stream().map(this::toCommentResponse).toList())
-                .viewCount(post.getView())
-                .likeCount((long) post.getLike().size())
-                .averageRating(calculateAverageRating(post))
-                .isLikedByCurrentUser(isLikedByCurrentUser(post))
-                .isSavedByCurrentUser(isSavedByCurrentUser(post))
-                .userRating(getUserRating(post))
-                .build();
-    }
-
-    private UserResponse createUserResponse(User user) {
-        return new UserResponse(user.getId(), user.getUsername(), user.getEmail());
-    }
-
-    private double calculateAverageRating(Post post) {
-        return post.getRatings().stream()
-                .mapToDouble(Rating::getScore)
-                .average()
-                .orElse(0.0);
-    }
-
-    private boolean isLikedByCurrentUser(Post post) {
-        var currentUser = getCurrentUser();
-        return currentUser != null && post.getLike().contains(currentUser);
-    }
-
-    private Integer getUserRating(Post post) {
-        var currentUser = getCurrentUser();
-        return currentUser != null ?
-                post.getRatings().stream()
-                        .filter(r -> r.getUser().equals(currentUser))
-                        .map(Rating::getScore)
-                        .findFirst()
-                        .orElse(null) : null;
-    }
-
-    private CommentResponse toCommentResponse(Comment comment) {
-        return new CommentResponse(
-                comment.getId(),
-                comment.getContent(),
-                comment.getCreatedAt(),
-                comment.getUser().getUsername()
-        );
-    }
-
-    private boolean isCacheValid(String key) {
-        var timestamp = cacheTimestamps.get(key);
-        return timestamp != null && System.currentTimeMillis() - timestamp < CACHE_EXPIRY_MS && postCache.containsKey(key);
-    }
-
     private void cachePost(String key, PostResponse response) {
         postCache.put(key, response);
         cacheTimestamps.put(key, System.currentTimeMillis());
@@ -308,12 +196,8 @@ public class PostService {
         postCache.entrySet().removeIf(entry -> entry.getKey().equals(postId) || entry.getValue().getId().equals(postId));
     }
 
-    private boolean isSavedByCurrentUser(Post post) {
-        try {
-            var user = getUser();
-            return savedPostRepository.existsByUserAndPost(user, post);
-        } catch (Exception e) {
-            return false;
-        }
+    private boolean isCacheValid(String key) {
+        var timestamp = cacheTimestamps.get(key);
+        return timestamp != null && System.currentTimeMillis() - timestamp < CACHE_EXPIRY_MS && postCache.containsKey(key);
     }
 }

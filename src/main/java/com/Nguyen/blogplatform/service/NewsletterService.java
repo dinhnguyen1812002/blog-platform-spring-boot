@@ -39,7 +39,7 @@ public class NewsletterService {
                 return new MessageResponse("You are already subscribed to our newsletter!");
             }
             
-            if (existing.getIsActive() && !existing.getIsConfirmed()) {
+            if (existing.getIsActive()) {
                 // Resend confirmation email
                 try {
                     emailServices.sendNewsletterConfirmationEmail(

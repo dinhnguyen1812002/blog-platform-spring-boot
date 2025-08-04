@@ -20,7 +20,7 @@ import java.util.List;
 public class CommentResponse {
     private String id;
     private String content;
-    private String authorUsername;
+    private UserResponse user;
     private Instant createdAt;
     private Instant updatedAt;
     private int depth;
@@ -35,12 +35,11 @@ public class CommentResponse {
                            @Size(min = 1, message = "*Your comment must not be empty")
                            String content,
                            Instant createdAt,
-                           @Size(min = 3, message = "*Your username must have at least 3 characters")
-                           @NotEmpty(message = "*Please provide a username")
-                           String username) {
+
+                           UserResponse user) {
         this.id = id;
         this.content = content;
         this.createdAt = createdAt;
-        this.authorUsername = username;
+        this.user = user;
     }
 }

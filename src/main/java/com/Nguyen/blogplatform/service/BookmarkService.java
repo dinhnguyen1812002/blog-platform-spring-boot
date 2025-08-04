@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.service;
 
 import com.Nguyen.blogplatform.exception.NotFoundException;
+import com.Nguyen.blogplatform.mapper.PostMapper;
 import com.Nguyen.blogplatform.model.Bookmark;
 import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.model.User;
@@ -34,7 +35,8 @@ public class BookmarkService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final PostService postService;
-    
+    private final PostMapper postMapper;
+
     @Transactional
     public MessageResponse savePost(String postId, SavePostRequest request) {
         User currentUser = getCurrentUser();
@@ -151,7 +153,7 @@ public class BookmarkService {
     private SavedPostResponse toSavedPostResponse(Bookmark savedPost) {
         // Get the full post response using PostService
         PostResponse postResponse = postService.getPostResponseById(savedPost.getPost().getId());
-        
+
         return SavedPostResponse.builder()
                 .id(savedPost.getId())
                 .post(postResponse)

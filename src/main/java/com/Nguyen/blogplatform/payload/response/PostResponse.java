@@ -26,8 +26,8 @@ public class PostResponse {
     private Boolean featured;
     private String content;
     private String thumbnail;
-    private Set<String> categories;
-    private Set<String> tags;
+    private Set<CategoryResponse> categories;
+    private Set<TagResponse> tags;
     private Integer commentCount;
     private Long viewCount;
     private Long likeCount;

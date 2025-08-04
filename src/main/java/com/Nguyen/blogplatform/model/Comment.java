@@ -15,6 +15,7 @@ import org.springframework.data.annotation.LastModifiedDate;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Entity
@@ -76,6 +77,11 @@ public class Comment implements Identifiable {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = Instant.now();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id); // Chỉ dùng ID
     }
 }
 

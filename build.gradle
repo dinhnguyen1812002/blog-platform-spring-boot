@@ -9,8 +9,8 @@ group = 'com.Nguyen'
 version = '0.0.1-SNAPSHOT'
 
 java {
-    sourceCompatibility = '21'
-    targetCompatibility = '21'
+    sourceCompatibility = '20'
+    targetCompatibility = '20'
 }
 
 repositories {

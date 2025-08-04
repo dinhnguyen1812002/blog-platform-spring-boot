@@ -18,7 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/comments")
+@RequestMapping("/api/v1/comments")
 
 public class CommentController {
     @Autowired
@@ -28,7 +28,13 @@ public class CommentController {
     public ResponseEntity<CommentResponse> createComment(
             @PathVariable String postId,
             @Valid @RequestBody CommentRequest request) {
-        return ResponseEntity.ok(commentService.createComment(postId, request));
+        try {
+            return ResponseEntity.ok(commentService.createComment(postId, request));
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new CommentResponse());
+        }
+
     }
 
     @GetMapping("/posts/{postId}")

@@ -7,13 +7,13 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class CommentMapper {
-    public CommentResponse toCommentResponse(Comment comment) {
-        return new CommentResponse(
-                comment.getId(),
-                comment.getContent(),
-                comment.getCreatedAt(),
-                comment.getUser().getUsername()
-        );
-    }
+//    public CommentResponse toCommentResponse(Comment comment) {
+//        return new CommentResponse(
+//                comment.getId(),
+//                comment.getContent(),
+//                comment.getCreatedAt(),
+//                comment.getUser().getUsername()
+//        );
+//    }
 }
 

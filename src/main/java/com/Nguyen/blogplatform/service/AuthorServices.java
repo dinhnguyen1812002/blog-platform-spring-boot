@@ -6,7 +6,9 @@ import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.exception.UnauthorizedException;
 import com.Nguyen.blogplatform.model.*;
 import com.Nguyen.blogplatform.payload.request.PostRequest;
+import com.Nguyen.blogplatform.payload.response.CategoryResponse;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
+import com.Nguyen.blogplatform.payload.response.TagResponse;
 import com.Nguyen.blogplatform.payload.response.UserResponse;
 import com.Nguyen.blogplatform.repository.CategoryRepository;
 import com.Nguyen.blogplatform.repository.PostRepository;
@@ -55,8 +57,9 @@ public class AuthorServices {
         if (postRequest == null || postRequest.getTitle() == null || postRequest.getTitle().isBlank()) {
             throw new BadRequestException("Invalid input data");
         }
-
-
+         if (postRepository.existsByTitleIgnoreCase(postRequest.getTitle())) {
+        throw new BadRequestException("Title already exists");
+    }
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         var author = userRepository.findById(userDetails.getId())
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + authorId));
@@ -173,8 +176,20 @@ public class AuthorServices {
                 .featured(post.getFeatured())
                 .content(post.getContent())
                 .thumbnail(post.getThumbnail())
-                .categories(post.getCategories().stream().map(Category::getCategory).collect(Collectors.toSet()))
-                .tags(post.getTags().stream().map(Tags::getName).collect(Collectors.toSet()))
+                .categories(post.getCategories().stream()
+                        .map(category -> new CategoryResponse(
+                                category.getId(),
+                                category.getCategory(),
+                                category.getBackgroundColor()))
+                        .collect(Collectors.toSet()))
+                .tags(post.getTags().stream()
+                        .map(tag -> new TagResponse(
+                                tag.getUuid(),
+                                tag.getName(),
+                                tag.getSlug(),
+                                tag.getDescription(),
+                                tag.getColor()))
+                        .collect(Collectors.toSet()))
                 .commentCount(post.getComments().size())
                 .viewCount(post.getView())
                 .likeCount((long) post.getLike().size())

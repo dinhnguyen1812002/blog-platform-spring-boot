@@ -34,20 +34,36 @@ public class JwtUtils {
     @Value("${blog.app.jwtCookieName}")
     private String jwtCookie;
 
+//    public String generateJwtToken(Authentication authentication) {
+//
+//        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+//
+//        return Jwts.builder()
+//
+//                .setSubject((userPrincipal.getUsername()))
+//                .claim("userid", userPrincipal.getId())
+//                .claim("roles",
+//                 userPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+//                .setIssuedAt(new Date())
+//                .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
+//                .signWith(key(), SignatureAlgorithm.HS256)
+//                .compact();
+//    }
+
     public String generateJwtToken(Authentication authentication) {
-
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
-
         return Jwts.builder()
-                .setSubject((userPrincipal.getUsername()))
-                .claim("userid", userPrincipal.getId())
-                .claim("roles",
-                 userPrincipal.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
+                .setSubject(userPrincipal.getId()) // Sử dụng id làm subject
+                .claim("email", userPrincipal.getEmail()) // Thêm email vào token nếu cần
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)
                 .compact();
     }
+
+//    public String getUserIdFromJwtToken(String token) {
+//        return Jwts.parser().setSigningKey(jwtSecret).parseClaimsJws(token).getBody().getSubject();
+//    }
 
     public ResponseCookie generateJwtCookie(Authentication authentication) {
         String jwt = generateJwtToken(authentication);
@@ -93,8 +109,9 @@ public class JwtUtils {
                 .build()
                 .parseClaimsJws(token)
                 .getBody();
-        return claims.get("userid", String.class);
+        return claims.getSubject(); // ✅ Đúng chỗ bạn đã ghi id
     }
+
 
     public String getRolesFromJwtToken(String token) {
         Claims claims = Jwts.parserBuilder()

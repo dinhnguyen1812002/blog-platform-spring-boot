@@ -39,5 +39,5 @@ Optional<Post> findBySlug(String slug);
 
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user = :user")
     Long countByUser(@Param("user") User user);
-
+    boolean existsByTitleIgnoreCase(String title);
 }

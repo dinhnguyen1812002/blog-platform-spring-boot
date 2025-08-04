@@ -4,6 +4,7 @@ import com.Nguyen.blogplatform.service.TelegramNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -86,4 +87,20 @@ public class GlobalExceptionHandler {
 
         return new ErrorResponse(message);
     }
+
+    @ExceptionHandler(ConflictException.class)
+    public ResponseEntity<Map<String, String>> handleConflictException(ConflictException ex) {
+        Map<String, String> error = new HashMap<>();
+        error.put("error", ex.getMessage());
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+//    @ExceptionHandler(MethodArgumentNotValidException.class)
+//    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
+//        Map<String, String> errors = new HashMap<>();
+//        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+//            errors.put(error.getField(), error.getDefaultMessage());
+//        }
+//        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+//    }
 }

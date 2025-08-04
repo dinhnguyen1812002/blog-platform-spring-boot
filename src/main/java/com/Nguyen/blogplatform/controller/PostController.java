@@ -25,15 +25,15 @@ public class PostController {
     @Autowired
     private JwtUtils jwtUtils;
 
-    @GetMapping("/{id}")
-    public ResponseEntity<PostResponse> getPostDetail(@PathVariable String id) {
-        try {
-            PostResponse postDetail = postServices.getPostById(id);
-            return ResponseEntity.ok(postDetail);
-        } catch (Exception e) {
-            throw new NotFoundException("Post not found with id: " + id);
-        }
-    }
+    // @GetMapping("/{id}")
+    // public ResponseEntity<PostResponse> getPostDetail(@PathVariable String id) {
+    //     try {
+    //         PostResponse postDetail = postServices.getPostById(id);
+    //         return ResponseEntity.ok(postDetail);
+    //     } catch (Exception e) {
+    //         throw new NotFoundException("Post not found with id: " + id);
+    //     }
+    // }
 
     @PostMapping("/{id}/like")
     public ResponseEntity<Boolean> toggleLike(@PathVariable String id) {
@@ -57,8 +57,8 @@ public class PostController {
         return ResponseEntity.ok(posts);
     }
 
-    @GetMapping("/slug/{slug}")
-    public ResponseEntity<PostResponse> getPostBySlug(@PathVariable String slug) {
+    @GetMapping("/{slug}")
+    public ResponseEntity<PostResponse> getPostBySlug(@PathVariable(name = "slug") String slug) {
         try {
             PostResponse postDetail = postServices.getPostBySlug(slug);
             return ResponseEntity.ok(postDetail);

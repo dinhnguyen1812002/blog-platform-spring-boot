@@ -11,13 +11,13 @@ import org.hibernate.annotations.GenericGenerator;
 
 import java.util.Date;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
 @Table(name = "post")
 @Getter
 @Setter
-@Data
 @AllArgsConstructor
 @Builder
 public class Post {
@@ -73,7 +73,7 @@ public class Post {
     @Builder.Default
     private Set<Category> categories = new HashSet<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     @Builder.Default
     @JsonManagedReference("post-comments")
     private Set<Comment> comments = new HashSet<>();
@@ -106,5 +106,8 @@ public class Post {
         this.user = user;
     }
 
-
+    @Override
+    public int hashCode() {
+        return Objects.hash(id); // Chỉ dùng ID
+    }
 }

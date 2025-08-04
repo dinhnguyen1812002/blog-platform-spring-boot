@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 
@@ -17,7 +18,7 @@ import java.util.Set;
 @Table(name = "user")
 @Data
 public class User {
-    
+
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -40,6 +41,13 @@ public class User {
     private String password;
 
     private String avatar;
+    private String bio;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private Set<SocialMediaLink> socialMediaLinks = new HashSet<>();
+
+
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -86,4 +94,5 @@ public class User {
         this.password = password;
         this.roles = (Set<Role>) role;
     }
+
 }

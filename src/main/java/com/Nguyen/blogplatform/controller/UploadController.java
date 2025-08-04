@@ -27,6 +27,8 @@ import java.util.Objects;
 public class UploadController {
     String IMAGE_FOLDER = "./src/main/resources/images/";
     private static final String THUMBNAIL_DIR = "uploads/thumbnail/";
+    public static final String PUBLIC_UPLOAD_PATH = "/uploads/thumbnail/";
+
 
     private UrlUtils url;
     @PostMapping()
@@ -75,26 +77,35 @@ public class UploadController {
             Files.write(path, bytes);
             
             // Return the URL that can be used to access the file
-            fileUrls[index] = getBaseEnvLinkURL() +  "/uploads/thumbnail/" + filename;
+            fileUrls[index] = getBaseEnvLinkURL() + "/uploads/thumbnail/" + filename;
             index++;
         }
         return fileUrls;
     }
 
+    // public String getBaseEnvLinkURL() {
+    //     String baseEnvLinkURL=null;
+    //     if(url == null) {
+    //         url = new UrlUtils();
+    //     }
+    //     HttpServletRequest currentRequest =
+    //             ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+    //     baseEnvLinkURL = "http://" + currentRequest.getLocalName();
+    //     if(currentRequest.getLocalPort() != 80) {
+    //         baseEnvLinkURL += ":" + currentRequest.getLocalPort();
+    //     }
+    //     if(!StringUtils.isEmpty(currentRequest.getContextPath())) {
+    //         baseEnvLinkURL += currentRequest.getContextPath();
+    //     }
+    //     return baseEnvLinkURL;
+    // }
     public String getBaseEnvLinkURL() {
-        String baseEnvLinkURL=null;
-        if(url == null) {
-            url = new UrlUtils();
-        }
-        HttpServletRequest currentRequest =
-                ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        baseEnvLinkURL = "http://" + currentRequest.getLocalName();
-        if(currentRequest.getLocalPort() != 80) {
-            baseEnvLinkURL += ":" + currentRequest.getLocalPort();
-        }
-        if(!StringUtils.isEmpty(currentRequest.getContextPath())) {
-            baseEnvLinkURL += currentRequest.getContextPath();
-        }
-        return baseEnvLinkURL;
-    }
+    HttpServletRequest request =
+            ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+    String url = request.getRequestURL().toString();
+    String uri = request.getRequestURI();
+    return url.replace(uri, request.getContextPath());
+}
+
 }

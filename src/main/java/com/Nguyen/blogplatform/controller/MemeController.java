@@ -22,7 +22,7 @@ import java.util.logging.Logger;
 
 @Slf4j
 @RestController
-@RequestMapping("/api/memes")
+@RequestMapping("/api/v1/memes")
 @CrossOrigin(origins = "*", allowedHeaders = "*")
 public class MemeController {
     private static final Logger logger = Logger.getLogger(MemeController.class.getName());

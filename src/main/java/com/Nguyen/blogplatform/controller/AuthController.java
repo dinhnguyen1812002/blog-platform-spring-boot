@@ -114,7 +114,7 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
 
-        logger.info("Registering user {} {} {}", signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getPassword());
+        // logger.info("Registering user {} {} {}", signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getPassword());
         return authService.registerUser(signUpRequest);
     }
 
@@ -123,151 +123,14 @@ public class AuthController {
         return authService.logoutUser();
     }
 
-    @GetMapping("/debug-roles")
-    public ResponseEntity<?> debugRoles() {
-        Map<String, Object> debug = new HashMap<>();
-
-        // Check all roles in database
-        List<Role> allRoles = roleRepository.findAll();
-        debug.put("allRolesInDatabase", allRoles.stream()
-                .map(role -> Map.of("id", role.getId(), "name", role.getName()))
-                .collect(Collectors.toList()));
-
-        // Check all users and their roles
-        List<User> allUsers = userRepository.findAll();
-        debug.put("allUsersWithRoles", allUsers.stream()
-                .map(user -> Map.of(
-                        "id", user.getId(),
-                        "username", user.getUsername(),
-                        "email", user.getEmail(),
-                        "roles", user.getRoles().stream()
-                                .map(role -> role.getName().name())
-                                .collect(Collectors.toList())
-                ))
-                .collect(Collectors.toList()));
-
-        return ResponseEntity.ok(debug);
-    }
-
-    @PostMapping("/fix-user-roles")
-    public ResponseEntity<?> fixUserRoles() {
-        logger.info("Starting to fix users without roles");
-
-        // Get all users
-        List<User> allUsers = userRepository.findAll();
-        int fixedCount = 0;
-
-        // Find ROLE_USER in database
-        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                .orElseThrow(() -> new RuntimeException("ROLE_USER not found in database"));
-
-        for (User user : allUsers) {
-            if (user.getRoles() == null || user.getRoles().isEmpty()) {
-                logger.info("Assigning ROLE_USER to user: {} ({})", user.getUsername(), user.getId());
-                Set<Role> roles = new HashSet<>();
-                roles.add(userRole);
-                user.setRoles(roles);
-                userRepository.save(user);
-                fixedCount++;
-            }
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("message", "Fixed users without roles");
-        result.put("usersFixed", fixedCount);
-        result.put("totalUsers", allUsers.size());
-
-        return ResponseEntity.ok(result);
-    }
-
-    @PostMapping("/ensure-roles")
-    public ResponseEntity<?> ensureRoles() {
-        logger.info("Ensuring all required roles exist in database");
-
-        List<ERole> requiredRoles = List.of(ERole.ROLE_USER, ERole.ROLE_AUTHOR, ERole.ROLE_ADMIN);
-        List<String> createdRoles = new ArrayList<>();
-        List<String> existingRoles = new ArrayList<>();
-
-        for (ERole roleEnum : requiredRoles) {
-            Optional<Role> existingRole = roleRepository.findByName(roleEnum);
-            if (existingRole.isEmpty()) {
-                Role newRole = new Role(roleEnum);
-                roleRepository.save(newRole);
-                createdRoles.add(roleEnum.name());
-                logger.info("Created role: {}", roleEnum);
-            } else {
-                existingRoles.add(roleEnum.name());
-                logger.info("Role already exists: {}", roleEnum);
-            }
-        }
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("message", "Role check completed");
-        result.put("createdRoles", createdRoles);
-        result.put("existingRoles", existingRoles);
-
-        return ResponseEntity.ok(result);
-    }
-
-    @PostMapping("/complete-role-fix")
-    @Transactional
-    public ResponseEntity<?> completeRoleFix() {
-        logger.info("Starting complete role fix process");
-
-        Map<String, Object> result = new HashMap<>();
-
-        // Step 1: Ensure all roles exist
-        List<ERole> requiredRoles = List.of(ERole.ROLE_USER, ERole.ROLE_AUTHOR, ERole.ROLE_ADMIN);
-        List<String> createdRoles = new ArrayList<>();
-
-        for (ERole roleEnum : requiredRoles) {
-            Optional<Role> existingRole = roleRepository.findByName(roleEnum);
-            if (existingRole.isEmpty()) {
-                Role newRole = new Role(roleEnum);
-                roleRepository.save(newRole);
-                createdRoles.add(roleEnum.name());
-                logger.info("Created role: {}", roleEnum);
-            }
-        }
-
-        // Step 2: Fix users without roles
-        List<User> allUsers = userRepository.findAll();
-        int fixedCount = 0;
-
-        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                .orElseThrow(() -> new RuntimeException("ROLE_USER not found after creation"));
-
-        for (User user : allUsers) {
-            if (user.getRoles() == null || user.getRoles().isEmpty()) {
-                logger.info("Assigning ROLE_USER to user: {} ({})", user.getUsername(), user.getId());
-                Set<Role> roles = new HashSet<>();
-                roles.add(userRole);
-                user.setRoles(roles);
-                userRepository.save(user);
-                fixedCount++;
-            }
-        }
-
-        // Step 3: Verify the fix
-        List<User> usersWithoutRoles = userRepository.findAll().stream()
-                .filter(user -> user.getRoles() == null || user.getRoles().isEmpty())
-                .toList();
-
-        result.put("message", "Complete role fix completed");
-        result.put("createdRoles", createdRoles);
-        result.put("usersFixed", fixedCount);
-        result.put("totalUsers", allUsers.size());
-        result.put("usersStillWithoutRoles", usersWithoutRoles.size());
-
-        return ResponseEntity.ok(result);
-    }
+    
 
 
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-        if (userDetails == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-        }
+//        if (userDetails == null) {
+//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
+//        }
 
         // Fetch user from database (optional, only if additional data is needed)
         User user = userRepository.findById(userDetails.getId())
