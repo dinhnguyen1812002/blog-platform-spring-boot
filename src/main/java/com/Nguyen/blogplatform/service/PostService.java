@@ -112,19 +112,41 @@ public class PostService {
 
     @Transactional
     public PostResponse getPostBySlug(String slug) {
-        var cacheKey = "slug:" + slug;
-
-        if (isCacheValid(cacheKey)) {
-            return postCache.get(cacheKey);
-        }
-
+        // Step 1: Find the post by its slug.
         var post = postRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
+
+        // Step 2: Increment the view count in the database.
+        // The existing incrementViewCount method also invalidates the cache, which is fine.
         incrementViewCount(post.getId());
-        var response = postMapper.toPostResponseWithComments(post, getCurrentUser(), savedPostRepository);
-        cachePost(cacheKey, response);
-        return response;
+
+        // Step 3: Refetch the post to get the updated view count.
+        // This is necessary because the increment is a direct database update,
+        // and the 'post' object we currently have is stale.
+        var updatedPost = postRepository.findById(post.getId())
+                .orElseThrow(() -> new NotFoundException("Could not refetch post with id: " + post.getId()));
+
+        // Step 4: Map the updated post to a response DTO and return it.
+        // No caching is performed here to ensure the view count is incremented on every call.
+        return postMapper.toPostResponseWithComments(updatedPost, getCurrentUser(), savedPostRepository);
     }
+
+//    @Transactional
+//    public PostResponse getPostBySlug(String slug) {
+//        var cacheKey = "slug:" + slug;
+//
+//        if (isCacheValid(cacheKey)) {
+//            return postCache.get(cacheKey);
+//        }
+//
+//        var post = postRepository.findBySlug(slug)
+//                .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
+//        incrementViewCount(post.getId());
+//        var response = postMapper.toPostResponseWithComments(post, getCurrentUser(), savedPostRepository);
+//        cachePost(cacheKey, response);
+//        return response;
+//    }
+
 
     public List<PostResponse> getPostsByCategory(Long categoryId) {
         var category = categoryRepository.findById(categoryId)

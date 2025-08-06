@@ -166,4 +166,12 @@ public class UserController {
         UserProfileResponse response = userProfileService.getUserProfileById(userId);
         return ResponseEntity.ok(response);
     }
+
+    // @PutMapping("/profile/custom")
+    // public ResponseEntity<UserProfileResponse> updateCustomProfile(
+    //         @AuthenticationPrincipal UserDetailsImpl userDetails,
+    //         @Valid @RequestBody com.Nguyen.blogplatform.payload.request.CustomProfileRequest request) {
+    //     UserProfileResponse response = userProfileService.updateUserProfileMarkdown(userDetails.getId(), request.getMarkdownContent());
+    //     return ResponseEntity.ok(response);
+    // }
 }

@@ -12,4 +12,5 @@ public class MemeRequest {
     private String name;
     private String description;
     private String memeUrl;
+    private String userId;
 }

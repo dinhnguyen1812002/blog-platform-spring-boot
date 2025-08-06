@@ -81,6 +81,10 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Bookmark> savedPosts = new HashSet<>();
 
+    @Lob
+    @Column(name = "custom_profile_markdown", columnDefinition = "TEXT")
+    private String customProfileMarkdown;
+
     public User() {
     }
     public User(String username, String email, String password) {

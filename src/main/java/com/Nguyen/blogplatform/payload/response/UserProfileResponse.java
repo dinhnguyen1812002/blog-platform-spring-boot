@@ -22,5 +22,6 @@ public class UserProfileResponse {
     private Long postsCount;
     private Long savedPostsCount;
     private Long commentsCount;
+    private String customProfileMarkdown;
 
 }

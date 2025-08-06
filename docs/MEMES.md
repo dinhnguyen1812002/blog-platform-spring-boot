@@ -11,7 +11,7 @@ Tài liệu này mô tả các API liên quan đến việc quản lý và truy 
 API này cho phép upload một file ảnh kèm theo thông tin (dưới dạng JSON) để tạo thành một meme.
 
 -   **Method:** `POST`
--   **URL:** `http://localhost:8080/api/memes/upload`
+-   **URL:** `http://localhost:8080/api/v1/memes/upload`
 -   **Authorization:** Yêu cầu xác thực (tùy theo cấu hình security của bạn).
 -   **Body:** `form-data`
     -   **Key 1:** `file`
@@ -32,7 +32,7 @@ API này cho phép upload một file ảnh kèm theo thông tin (dưới dạng 
 Cho phép upload nhiều file và thông tin tương ứng trong cùng một request.
 
 -   **Method:** `POST`
--   **URL:** `http://localhost:8080/api/memes/upload/multiple`
+-   **URL:** `http://localhost:8080/api/v1/memes/upload/multiple`
 -   **Authorization:** Yêu cầu xác thực.
 -   **Body:** `form-data`
     -   **Key 1:** `file`
@@ -63,11 +63,11 @@ Cho phép upload nhiều file và thông tin tương ứng trong cùng một req
 Lấy danh sách các meme trong hệ thống, có phân trang.
 
 -   **Method:** `GET`
--   **URL:** `http://localhost:8080/api/memes`
+-   **URL:** `http://localhost:8080/api/v1/memes`
 -   **Authorization:** Không bắt buộc.
 -   **Query Param:**
     -   `page`: Số trang (mặc định: `0`).
--   **Ví dụ:** `http://localhost:8080/api/memes?page=1`
+-   **Ví dụ:** `http://localhost:8080/api/v1/memes?page=1`
 
 -   **Phản hồi thành công (200 OK):** Trả về một đối tượng chứa danh sách meme và thông tin phân trang.
 
@@ -76,11 +76,11 @@ Lấy danh sách các meme trong hệ thống, có phân trang.
 Lấy thông tin chi tiết của một meme dựa vào `slug` của nó.
 
 -   **Method:** `GET`
--   **URL:** `http://localhost:8080/api/memes/{slug}`
+-   **URL:** `http://localhost:8080/api/v1/memes/{slug}`
 -   **Authorization:** Không bắt buộc.
 -   **Path Variable:**
     -   `slug`: Slug của meme (ví dụ: `khi-ban-fix-duoc-bug-luc-nua-dem`).
--   **Ví dụ:** `http://localhost:8080/api/memes/khi-ban-fix-duoc-bug-luc-nua-dem`
+-   **Ví dụ:** `http://localhost:8080/api/v1/memes/khi-ban-fix-duoc-bug-luc-nua-dem`
 
 -   **Phản hồi thành công (200 OK):** Trả về chi tiết của meme.
 
@@ -91,7 +91,7 @@ Lấy thông tin chi tiết của một meme dựa vào `slug` của nó.
 API này sử dụng công nghệ Server-Sent Events (SSE) để đẩy (push) một meme ngẫu nhiên tới client mỗi 5 phút. Client chỉ cần kết nối một lần và sẽ liên tục nhận được dữ liệu mới.
 
 -   **Method:** `GET`
--   **URL:** `http://localhost:8080/api/memes/random-stream`
+-   **URL:** `http://localhost:8080/api/v1/memes/random-stream`
 -   **Authorization:** Không bắt buộc.
 -   **Media Type:** `text/event-stream`
 

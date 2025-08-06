@@ -23,7 +23,6 @@ public class CategoryController {
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_USER')") // bỏ "ROLE_" đi
     public List<Category> getAllBook() {
         return categoryServices.getAllCategory();
     }

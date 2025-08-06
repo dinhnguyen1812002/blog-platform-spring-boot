@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.model;
 
+import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +28,9 @@ public class Category {
     @Size(max = 100)
     private String category;
 
+    @NotNull
+    @Size(max = 100)
+    private String slug;
     @Size(max = 7)
     private String backgroundColor;
 
@@ -42,6 +46,13 @@ public class Category {
     @JsonBackReference
     private Set<Post> posts = new HashSet<>();
 
+
+    @PrePersist
+    public void generateSlug() {
+        if (this.category != null && !this.category.isEmpty()) {
+            this.slug = SlugUtil.createSlug(this.category);
+        }
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -49,6 +60,7 @@ public class Category {
         Category category1 = (Category) o;
         return Objects.equals(id, category1.id) &&
                 Objects.equals(category, category1.category) &&
+
                 Objects.equals(backgroundColor, category1.backgroundColor) &&
                 Objects.equals(description, category1.description);
     }

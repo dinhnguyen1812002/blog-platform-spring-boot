@@ -18,7 +18,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 @RestController
 
@@ -31,6 +33,7 @@ public class UploadController {
 
 
     private UrlUtils url;
+
     @PostMapping()
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile uploadfile) {
         ResponseResult rr = new ResponseResult();
@@ -54,7 +57,11 @@ public class UploadController {
         }
 
         rr.setStatusCode(200);
-        return ResponseEntity.ok(rr);
+        Map<String, String> response = new HashMap<>();
+        response.put("url", rr.getMessage());
+        response.put("message", "File uploaded successfully");
+        response.put("statusCode", "200");
+        return ResponseEntity.ok(response);
     }
 
     //save file

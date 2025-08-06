@@ -80,6 +80,7 @@ public class MemeServices {
         Pageable pageable = PageRequest.of(page, 10);
         return memeRepository.findAll(pageable);
     }
+    
     public Meme getMemeBySlug(String slug) {
         return memeRepository.findBySlug(slug)
                 .orElseThrow(() -> new RuntimeException("Meme not found with slug: " + slug));
