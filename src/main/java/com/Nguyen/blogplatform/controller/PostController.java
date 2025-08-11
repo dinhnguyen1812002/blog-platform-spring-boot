@@ -80,6 +80,7 @@ public class PostController {
 //
 //        return ResponseEntity.ok(postServices.getAllPost());
 //    }
+
     @GetMapping("/featured")
     public ResponseEntity<List<PostResponse>> getFeaturedPosts() {
         List<PostResponse> featuredPosts = postServices.getFeaturedPosts(Pageable.ofSize(5));

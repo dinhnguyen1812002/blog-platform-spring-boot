@@ -1,25 +1,132 @@
-2025-08-07 00:12:36 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 5, active threads = 1, queued tasks = 0, completed tasks = 4]
-2025-08-07 00:42:37 [MessageBroker-2] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 6, active threads = 1, queued tasks = 0, completed tasks = 5]
-2025-08-07 01:12:37 [MessageBroker-2] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 7, active threads = 1, queued tasks = 0, completed tasks = 6]
-2025-08-07 01:13:08 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Securing OPTIONS /api/v1/post/featured
-2025-08-07 01:13:08 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing OPTIONS /api/v1/post?page=0&size=6
-2025-08-07 01:13:08 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/featured
-2025-08-07 01:13:08 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post?page=0&size=6
-2025-08-07 01:13:08 [http-nio-8888-exec-8] INFO  c.N.b.security.AuthTokenFilter - Authenticated user ID: 833fc957-2ec6-4981-8aa8-dd8cf9f3a413
-2025-08-07 01:13:08 [http-nio-8888-exec-5] INFO  c.N.b.security.AuthTokenFilter - Authenticated user ID: 833fc957-2ec6-4981-8aa8-dd8cf9f3a413
-2025-08-07 01:13:08 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post?page=0&size=6
-2025-08-07 01:13:08 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/featured
-2025-08-07 01:13:08 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Securing GET /uploads/thumbnail/638895310663530000_YUNZII YZ87 75_ Gasket Mechanical Keyboard.jpg
-2025-08-07 01:13:08 [http-nio-8888-exec-3] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
-2025-08-07 01:13:08 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Secured GET /uploads/thumbnail/638895310663530000_YUNZII YZ87 75_ Gasket Mechanical Keyboard.jpg
-2025-08-07 01:13:29 [http-nio-8888-exec-7] DEBUG o.s.security.web.FilterChainProxy - Securing OPTIONS /api/v1/api/v1/newsletter/subscribe
-2025-08-07 01:13:29 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/api/v1/newsletter/subscribe
-2025-08-07 01:13:29 [http-nio-8888-exec-4] INFO  c.N.b.security.AuthTokenFilter - Authenticated user ID: 833fc957-2ec6-4981-8aa8-dd8cf9f3a413
-2025-08-07 01:13:29 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/api/v1/newsletter/subscribe
-2025-08-07 01:13:29 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing POST /error
-2025-08-07 01:13:29 [http-nio-8888-exec-4] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
-2025-08-07 01:13:29 [http-nio-8888-exec-4] DEBUG o.s.s.w.a.Http403ForbiddenEntryPoint - Pre-authenticated entry point called. Rejecting access
-2025-08-07 01:15:14 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing OPTIONS /api/v1/newsletter/subscribe
-2025-08-07 01:15:14 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing POST /api/v1/newsletter/subscribe
-2025-08-07 01:15:14 [http-nio-8888-exec-5] INFO  c.N.b.security.AuthTokenFilter - Authenticated user ID: 833fc957-2ec6-4981-8aa8-dd8cf9f3a413
-2025-08-07 01:15:14 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured POST /api/v1/newsletter/subscribe
+2025-08-11 09:46:00 [main] INFO  c.N.b.BlogPlatformApplication - Starting BlogPlatformApplication using Java 21.0.8 with PID 5732 (F:\Java\blog\blog-platform\build\classes\java\main started by Admin in F:\Java\blog\blog-platform)
+2025-08-11 09:46:00 [main] DEBUG c.N.b.BlogPlatformApplication - Running with Spring Boot v3.2.5, Spring v6.1.6
+2025-08-11 09:46:00 [main] INFO  c.N.b.BlogPlatformApplication - No active profile set, falling back to 1 default profile: "default"
+2025-08-11 09:46:02 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-08-11 09:46:02 [main] INFO  o.s.d.r.c.RepositoryConfigurationDelegate - Finished Spring Data repository scanning in 122 ms. Found 12 JPA repository interfaces.
+2025-08-11 09:46:03 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat initialized with port 8888 (http)
+2025-08-11 09:46:03 [main] INFO  o.a.catalina.core.StandardService - Starting service [Tomcat]
+2025-08-11 09:46:03 [main] INFO  o.a.catalina.core.StandardEngine - Starting Servlet engine: [Apache Tomcat/10.1.20]
+2025-08-11 09:46:03 [main] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring embedded WebApplicationContext
+2025-08-11 09:46:03 [main] INFO  o.s.b.w.s.c.ServletWebServerApplicationContext - Root WebApplicationContext: initialization completed in 3208 ms
+2025-08-11 09:46:04 [main] INFO  o.h.jpa.internal.util.LogHelper - HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-08-11 09:46:04 [main] INFO  org.hibernate.Version - HHH000412: Hibernate ORM core version 6.4.4.Final
+2025-08-11 09:46:04 [main] INFO  o.h.c.i.RegionFactoryInitiator - HHH000026: Second-level cache disabled
+2025-08-11 09:46:04 [main] INFO  o.s.o.j.p.SpringPersistenceUnitInfo - No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-08-11 09:46:04 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Starting...
+2025-08-11 09:46:05 [main] INFO  com.zaxxer.hikari.pool.HikariPool - HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@7f02b2d4
+2025-08-11 09:46:05 [main] INFO  com.zaxxer.hikari.HikariDataSource - HikariPool-1 - Start completed.
+2025-08-11 09:46:05 [main] WARN  org.hibernate.orm.deprecation - HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-08-11 09:46:06 [main] INFO  o.h.e.t.j.p.i.JtaPlatformInitiator - HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-08-11 09:46:07 [main] INFO  o.s.o.j.LocalContainerEntityManagerFactoryBean - Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-08-11 09:46:07 [main] INFO  o.s.d.j.r.query.QueryEnhancerFactory - Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-08-11 09:46:08 [main] DEBUG c.N.b.security.AuthTokenFilter - Filter 'authTokenFilter' configured for use
+2025-08-11 09:46:10 [main] WARN  o.s.b.a.o.j.JpaBaseConfiguration$JpaWebConfiguration - spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2025-08-11 09:46:10 [main] DEBUG o.s.w.s.s.s.WebSocketHandlerMapping - Patterns [/ws/**, /ws-logs/**] in 'stompWebSocketHandlerMapping'
+2025-08-11 09:46:11 [main] INFO  o.s.b.a.e.web.EndpointLinksResolver - Exposing 13 endpoint(s) beneath base path '/actuator'
+2025-08-11 09:46:12 [main] INFO  o.s.s.web.DefaultSecurityFilterChain - Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@3bf66f94, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@7b88b0d6, org.springframework.security.web.context.SecurityContextHolderFilter@70abd04e, org.springframework.security.web.header.HeaderWriterFilter@33d102c9, org.springframework.web.filter.CorsFilter@42593f64, org.springframework.security.web.authentication.logout.LogoutFilter@2fc6e673, com.Nguyen.blogplatform.security.AuthTokenFilter@1c68601b, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@926d264, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@624fedfd, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@699cb1a3, org.springframework.security.web.session.SessionManagementFilter@736abb16, org.springframework.security.web.access.ExceptionTranslationFilter@27ae4c06, org.springframework.security.web.access.intercept.AuthorizationFilter@6013565b]
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.AuthorController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CategoryController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.CommentController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.DebugController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.FController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.LogController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.L.WebSocketLogController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.MemeController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.NewsletterController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.PostController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.RoleManagementController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.SavedPostController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TagController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.TestController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UploadController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.UserController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	c.N.b.c.VideoStreamController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.b.a.w.s.e.BasicErrorController:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.a.OpenApiWebMvcResource:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerWelcomeWebMvc:
+	
+2025-08-11 09:46:12 [main] DEBUG o.s.w.s.m.WebSocketAnnotationMethodMessageHandler - 
+	o.s.w.u.SwaggerConfigResource:
+	
+2025-08-11 09:46:12 [main] INFO  o.s.b.w.e.tomcat.TomcatWebServer - Tomcat started on port 8888 (http) with context path ''
+2025-08-11 09:46:12 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Starting...
+2025-08-11 09:46:12 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@79620fed]]
+2025-08-11 09:46:12 [main] INFO  o.s.m.s.b.SimpleBrokerMessageHandler - Started.
+2025-08-11 09:46:12 [main] INFO  c.N.b.BlogPlatformApplication - Started BlogPlatformApplication in 13.236 seconds (process running for 13.816)
+2025-08-11 09:47:04 [http-nio-8888-exec-1] INFO  o.a.c.c.C.[Tomcat].[localhost].[/] - Initializing Spring DispatcherServlet 'dispatcherServlet'
+2025-08-11 09:47:04 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Initializing Servlet 'dispatcherServlet'
+2025-08-11 09:47:04 [http-nio-8888-exec-1] INFO  o.s.web.servlet.DispatcherServlet - Completed initialization in 5 ms
+2025-08-11 09:47:04 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post/featured
+2025-08-11 09:47:04 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Securing GET /api/v1/post?page=0&size=6
+2025-08-11 09:47:04 [http-nio-8888-exec-2] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:04 [http-nio-8888-exec-1] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:04 [http-nio-8888-exec-1] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post?page=0&size=6
+2025-08-11 09:47:04 [http-nio-8888-exec-2] DEBUG o.s.security.web.FilterChainProxy - Secured GET /api/v1/post/featured
+2025-08-11 09:47:06 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Securing GET /uploads/thumbnail/638895310663530000_YUNZII YZ87 75_ Gasket Mechanical Keyboard.jpg
+2025-08-11 09:47:06 [http-nio-8888-exec-3] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:06 [http-nio-8888-exec-3] DEBUG o.s.security.web.FilterChainProxy - Secured GET /uploads/thumbnail/638895310663530000_YUNZII YZ87 75_ Gasket Mechanical Keyboard.jpg
+2025-08-11 09:47:06 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Securing GET /uploads/thumbnail/638902163329370000_wallpaper2.jpg
+2025-08-11 09:47:06 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Securing GET /uploads/thumbnail/638904073543830000_wallpaper2.jpg
+2025-08-11 09:47:06 [http-nio-8888-exec-4] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:06 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Securing GET /uploads/thumbnail/638902239326130000_Screenshot 2025-04-13 214209.png
+2025-08-11 09:47:06 [http-nio-8888-exec-4] DEBUG o.s.security.web.FilterChainProxy - Secured GET /uploads/thumbnail/638904073543830000_wallpaper2.jpg
+2025-08-11 09:47:06 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Securing GET /uploads/thumbnail/638904047744690000_Thinkpad X Series chính hãng giá rẻ _ Nhật Minh Laptop.jpg
+2025-08-11 09:47:06 [http-nio-8888-exec-9] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:06 [http-nio-8888-exec-8] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:06 [http-nio-8888-exec-9] DEBUG o.s.security.web.FilterChainProxy - Secured GET /uploads/thumbnail/638902163329370000_wallpaper2.jpg
+2025-08-11 09:47:06 [http-nio-8888-exec-6] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:06 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing GET /uploads/thumbnail/638904072747680000_
+2025-08-11 09:47:06 [http-nio-8888-exec-6] DEBUG o.s.security.web.FilterChainProxy - Secured GET /uploads/thumbnail/638904047744690000_Thinkpad X Series chính hãng giá rẻ _ Nhật Minh Laptop.jpg
+2025-08-11 09:47:06 [http-nio-8888-exec-5] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:06 [http-nio-8888-exec-8] DEBUG o.s.security.web.FilterChainProxy - Secured GET /uploads/thumbnail/638902239326130000_Screenshot 2025-04-13 214209.png
+2025-08-11 09:47:06 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Secured GET /uploads/thumbnail/638904072747680000_
+2025-08-11 09:47:06 [http-nio-8888-exec-5] DEBUG o.s.security.web.FilterChainProxy - Securing GET /error
+2025-08-11 09:47:06 [http-nio-8888-exec-5] DEBUG o.s.s.w.a.AnonymousAuthenticationFilter - Set SecurityContextHolder to anonymous SecurityContext
+2025-08-11 09:47:06 [http-nio-8888-exec-5] DEBUG o.s.s.w.a.Http403ForbiddenEntryPoint - Pre-authenticated entry point called. Rejecting access
+2025-08-11 09:47:12 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+2025-08-11 10:17:12 [MessageBroker-1] INFO  o.s.w.s.c.WebSocketMessageBrokerStats - WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]

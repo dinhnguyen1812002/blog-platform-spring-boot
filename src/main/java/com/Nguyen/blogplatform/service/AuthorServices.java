@@ -60,12 +60,12 @@ public class AuthorServices {
          if (postRepository.existsByTitleIgnoreCase(postRequest.getTitle())) {
         throw new BadRequestException("Title already exists");
     }
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        var author = userRepository.findById(userDetails.getId())
+        // Sử dụng authorId đã được truyền vào thay vì lấy từ SecurityContext
+        var author = userRepository.findById(authorId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + authorId));
         var categories = getCategoriesFromIds(postRequest.getCategories());
         var tags = getTagsFromIds(postRequest.getTags());
-        String thumbnailUrl = null;
+
 //        if (thumbnail != null && !thumbnail.isEmpty()) {
 //            try {
 //                thumbnailUrl = fileStorageService.saveThumbnail(thumbnail);
@@ -76,13 +76,14 @@ public class AuthorServices {
         var post = Post.builder()
                 .title(postRequest.getTitle())
                 .slug(SlugUtil.createSlug(postRequest.getTitle()))
+                .excerpt(postRequest.getExcerpt())
                 .content(Objects.requireNonNullElse(postRequest.getContent(), ""))
                 .thumbnail(postRequest.getThumbnail())
                 .user(author)
                 .createdAt(Objects.requireNonNullElse(postRequest.getCreatedAt(), new Date()))
                 .categories(categories)
                 .tags(tags)
-                .featured(DEFAULT_FEATURED)
+                .featured(Objects.requireNonNullElse(postRequest.getFeatured(), DEFAULT_FEATURED))
                 .view(0L)
                 .build();
 
@@ -103,23 +104,37 @@ public class AuthorServices {
         return savedPost;
     }
 
-    @Transactional
-    public PostResponse updatePost(String postId, PostRequest postRequest, MultipartFile imageFile) {
+
+
+    /**
+     * Lấy chi tiết bài viết của tác giả hiện tại
+     */
+
+    public PostResponse getPostDetail(String postId) {
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
         validateAuthorization(post);
-        String thumbnail = postRequest.getThumbnail();
-        if (imageFile != null && !imageFile.isEmpty()) {
-            try {
-                thumbnail = fileStorageService.saveThumbnail(imageFile);
-            } catch (IOException e) {
-                throw new RuntimeException("Failed to upload image: " + e.getMessage());
-            }
-        }
+        return toPostResponse(post);
+    }
 
+    /**
+     * Cập nhật bài viết (thumbnail URL đã được xử lý qua uploads controller)
+     */
+    @Transactional
+    public PostResponse updatePost(String postId, PostRequest postRequest) {
+        var post = postRepository.findById(postId)
+                .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
+        validateAuthorization(post);
+
+        // Cập nhật thông tin post
         post.setTitle(postRequest.getTitle());
         post.setContent(Objects.requireNonNullElse(postRequest.getContent(), ""));
-        post.setThumbnail(Objects.requireNonNullElse(thumbnail, post.getThumbnail()));
+
+        // Thumbnail URL đã được xử lý qua uploads controller, chỉ cần set nếu có
+        if (postRequest.getThumbnail() != null && !postRequest.getThumbnail().trim().isEmpty()) {
+            post.setThumbnail(postRequest.getThumbnail());
+        }
+
         post.setCategories(getCategoriesFromIds(postRequest.getCategories()));
         if (postRequest.getTags() != null) {
             post.setTags(getTagsFromIds(postRequest.getTags()));
@@ -138,6 +153,10 @@ public class AuthorServices {
 
     private String getCurrentUsername() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
+
+//        System.out.println("Authentication: " + authentication.getName());
+//        System.out.println("Authentication: " + authentication.getAuthorities());
+//        System.out.println("Authentication: " + authentication.getPrincipal());
         return authentication != null ? authentication.getName() : null;
     }
 
@@ -166,7 +185,23 @@ public class AuthorServices {
                         .collect(Collectors.toSet());
     }
 
-    private PostResponse toPostResponse(Post post) {
+    public PostResponse toPostResponse(Post post) {
+        Set<CategoryResponse> categories = post.getCategories().stream()
+                .map(category -> new CategoryResponse(
+                        category.getId(),
+                        category.getCategory(),
+                        category.getBackgroundColor()))
+                .collect(Collectors.toSet());
+        Set<TagResponse> tags = post.getTags().stream()
+                .map(tag -> new TagResponse(
+                        tag.getUuid(),
+                        tag.getName(),
+                        tag.getSlug(),
+                        tag.getDescription(),
+                        tag.getColor()))
+                .collect(Collectors.toSet());
+        Double  averageRating = post.getRatings().stream().mapToDouble(Rating::getScore).average().orElse(0.0);
+
         return PostResponse.builder()
                 .id(post.getId())
                 .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail()))
@@ -176,24 +211,12 @@ public class AuthorServices {
                 .featured(post.getFeatured())
                 .content(post.getContent())
                 .thumbnail(post.getThumbnail())
-                .categories(post.getCategories().stream()
-                        .map(category -> new CategoryResponse(
-                                category.getId(),
-                                category.getCategory(),
-                                category.getBackgroundColor()))
-                        .collect(Collectors.toSet()))
-                .tags(post.getTags().stream()
-                        .map(tag -> new TagResponse(
-                                tag.getUuid(),
-                                tag.getName(),
-                                tag.getSlug(),
-                                tag.getDescription(),
-                                tag.getColor()))
-                        .collect(Collectors.toSet()))
+                .categories(categories)
+                .tags(tags)
                 .commentCount(post.getComments().size())
                 .viewCount(post.getView())
                 .likeCount((long) post.getLike().size())
-                .averageRating(post.getRatings().stream().mapToDouble(Rating::getScore).average().orElse(0.0))
+                .averageRating(averageRating)
                 .build();
     }
 }

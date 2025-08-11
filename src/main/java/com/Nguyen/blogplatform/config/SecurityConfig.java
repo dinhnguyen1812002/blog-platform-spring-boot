@@ -74,6 +74,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/**",
                             "/actuator/prometheus"
                         ).permitAll()
+                        .requestMatchers("/notification").permitAll()
                         .requestMatchers("/api/v1/post/latest").permitAll()
                         .requestMatchers("/api/logs").permitAll()
                         .requestMatchers("/logs/**").permitAll()
@@ -132,6 +133,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/newsletter/subscribers/**").hasRole("ADMIN")
                          // Saved posts endpoints
                          .requestMatchers("/api/v1/saved-posts/**").authenticated()
+                        .requestMatchers("/api/v1/post/{postId}/bookmark").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/post/{postId}/bookmark").authenticated()
                          // JWT utility endpoints
                         .requestMatchers("/api/v1/jwt/decode").permitAll()
                         .requestMatchers("/api/v1/jwt/validate").permitAll()

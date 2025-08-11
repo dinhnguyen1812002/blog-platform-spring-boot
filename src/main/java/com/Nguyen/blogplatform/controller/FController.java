@@ -33,7 +33,7 @@ public class FController {
         return ResponseEntity.ok(list);
     }
 
-    @GetMapping
+    @GetMapping("/notification")
     public String testString(){
         return "notification";
     }

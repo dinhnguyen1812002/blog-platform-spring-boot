@@ -22,6 +22,7 @@ public class PostResponse {
     @NotEmpty(message = "*Please provide a slug")
     @Size(min = 5, message = "*Your slug must have at least 5 characters")
     private String slug;
+    private String excerpt;
     private Date createdAt;
     private Boolean featured;
     private String content;

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/saved-posts")
+@RequestMapping("/api/v1/post")
 @RequiredArgsConstructor
 //@PreAuthorize("hasRole('USER')")
 @Tag(name = "Saved Posts", description = "User saved posts management")
@@ -27,7 +27,7 @@ public class SavedPostController {
     
     private final BookmarkService savedPostService;
     
-    @PostMapping("/{postId}")
+    @PostMapping("/{postId}/bookmark")
     @Operation(summary = "Save a post", description = "Save a post to user's saved list with optional notes")
     public ResponseEntity<MessageResponse> savePost(
             @Parameter(description = "Post ID to save") @PathVariable String postId,
@@ -36,7 +36,7 @@ public class SavedPostController {
         return ResponseEntity.ok(response);
     }
     
-    @DeleteMapping("/{postId}")
+    @DeleteMapping("/{postId}/bookmark")
     @Operation(summary = "Unsave a post", description = "Remove a post from user's saved list")
     public ResponseEntity<MessageResponse> unsavePost(
             @Parameter(description = "Post ID to unsave") @PathVariable String postId) {
@@ -44,7 +44,7 @@ public class SavedPostController {
         return ResponseEntity.ok(response);
     }
     
-    @GetMapping
+    @GetMapping("/saved-posts")
     @Operation(summary = "Get saved posts", description = "Get paginated list of user's saved posts")
     public ResponseEntity<Page<SavedPostResponse>> getSavedPosts(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,

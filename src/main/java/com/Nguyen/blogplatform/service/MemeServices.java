@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.service;
 
 
+import com.Nguyen.blogplatform.Utils.UrlUtils;
 import com.Nguyen.blogplatform.model.Meme;
 import com.Nguyen.blogplatform.payload.request.MemeRequest;
 import com.Nguyen.blogplatform.repository.MemeRepository;
@@ -76,10 +77,22 @@ public class MemeServices {
         return lastRandomMeme;
     }
     public Page<Meme> getAllMemes(int page) {
-        // Mỗi page 10 items, page bắt đầu từ 0
         Pageable pageable = PageRequest.of(page, 10);
-        return memeRepository.findAll(pageable);
+        Page<Meme> memes = memeRepository.findAll(pageable);
+
+        // Lấy base URL hiện tại
+        String baseUrl = UrlUtils.getBaseEnvLinkURL();
+
+        // Map lại URL của mỗi meme
+        memes.forEach(m -> {
+            if (m.getMemeUrl() != null && !m.getMemeUrl().startsWith("http")) {
+                m.setMemeUrl(baseUrl + m.getMemeUrl());
+            }
+        });
+
+        return memes;
     }
+
     
     public Meme getMemeBySlug(String slug) {
         return memeRepository.findBySlug(slug)

@@ -30,6 +30,11 @@ public class Post {
     @Size(min = 5, message = "*Your title must have at least 5 characters")
     @NotEmpty(message = "*Please provide a title")
     private String title;
+
+    @Size(min = 5, message = "*Your excerpt must have at least 5 characters")
+    @NotEmpty(message = "*Please provide a title")
+    private String excerpt;
+
     @Size(min = 5, message = "*Your title must have at least 5 characters")
     @NotEmpty(message = "*Please provide a title")
     private String slug;

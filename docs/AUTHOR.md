@@ -1,88 +1,74 @@
-# Hướng dẫn Test API cho Tác giả (Author)
+# Author API Guide
 
-Tài liệu này mô tả các API dành riêng cho người dùng có vai trò `ROLE_AUTHOR` để quản lý bài viết của chính họ. Tất cả các API dưới đây đều yêu cầu xác thực.
+This guide provides detailed instructions for authors to manage their posts, including creating, updating, deleting, and retrieving posts.
 
----
+## 1. Create a New Post
 
-## 1. Lấy danh sách bài viết của bạn
+This endpoint allows an authenticated author to create a new post. The workflow involves two main steps:
 
-API này trả về danh sách các bài viết do chính tác giả đang đăng nhập tạo ra, có hỗ trợ phân trang.
-
--   **Method:** `GET`
--   **URL:** `http://localhost:8080/api/v1/author/posts`
--   **Authorization:** Bắt buộc (Token của Author).
--   **Query Params:**
-    -   `page`: Số trang (mặc định: `0`).
-    -   `size`: Kích thước trang (mặc định: `10`).
--   **Ví dụ:** `http://localhost:8080/api/v1/author/posts?page=0&size=5`
-
--   **Phản hồi thành công (200 OK):** Trả về một danh sách các bài viết.
-
----
-
-## 2. Tạo bài viết mới
-
-Cho phép tác giả tạo một bài viết mới. API này chỉ nhận dữ liệu dạng JSON, không bao gồm upload file trực tiếp.
+1.  **Upload Thumbnail (Optional):** If the post has a thumbnail, first upload the image file to the `/api/v1/upload` endpoint. This will return a URL for the thumbnail.
+2.  **Create Post:** Call this endpoint with the post details, including the thumbnail URL obtained in the previous step.
 
 -   **Method:** `POST`
--   **URL:** `http://localhost:8080/api/v1/author/write`
--   **Authorization:** Bắt buộc (Token của Author).
--   **Body:** `raw` - `JSON`
+-   **URL:** `http://localhost:8888/api/v1/author/write`
+-   **Authorization:** Required (Author role).
+  -   **Body:** `raw` - `JSON`
+    
+      ```json
+      {
+      "title": "test 1hfdhffh",
+      "content": "tetst 123 alo alo ",
+      "categories": [1],
+      "tags":["c4408bd9-3934-44d6-b8f2-26d30ce152c1"],
+      "thumbnail": "http://localhost:8888/uploads/thumbnail/638902163329370000_wallpaper2.jpg"
+      }
+      ```
 
-    ```json
-    {
-      "title": "Tiêu đề bài viết mới",
-      "content": "Nội dung chi tiết của bài viết.",
-      "categoryId": "uuid-cua-category",
-      "tagIds": ["uuid-cua-tag-1", "uuid-cua-tag-2"],
-      "thumbnailUrl": "/path/to/image.jpg" // (Tùy chọn) 
-    }
-    ```
-    *Lưu ý: `thumbnailUrl` là đường dẫn tới ảnh đã được upload từ trước (ví dụ: qua API Upload).* 
+-   **Success Response:**
 
--   **Phản hồi thành công (200 OK):**
+    -   **Code:** `201 Created`
+    -   **Content:**
+        ```json
+        {
+          "message": "Post created successfully"
+        }
+        ```
 
-    ```json
-    {
-        "message": "Post created successfully"
-    }
-    ```
+-   **Error Responses:**
 
----
+    -   **Code:** `400 Bad Request` - If the request body is invalid (e.g., missing title or content).
+    -   **Code:** `401 Unauthorized` - If the user is not authenticated.
 
-## 3. Cập nhật bài viết
+## 2. Get Author's Posts
 
-Cho phép tác giả cập nhật một bài viết đã tồn tại của mình.
+-   **Method:** `GET`
+-   **URL:** `http://localhost:8888/api/v1/author/posts`
+-   **Authorization:** Required.
+-   **Query Parameters:**
+    -   `page` (integer, optional, default: 0): The page number to retrieve.
+    -   `size` (integer, optional, default: 10): The number of items per page.
+
+## 3. Update a Post
 
 -   **Method:** `PUT`
--   **URL:** `http://localhost:8080/api/v1/author/{id}`
--   **Authorization:** Bắt buộc (Token của Author và phải là chủ sở hữu bài viết).
+-   **URL:** `http://localhost:8888/api/v1/author/{id}`
+-   **Authorization:** Required.
 -   **Path Variable:**
-    -   `id`: ID của bài viết cần cập nhật.
--   **Body:** `form-data`
-    -   **Key 1:** `image` (không bắt buộc)
-        -   **Value:** Chọn một file ảnh mới để thay thế ảnh đại diện.
-    -   **Key 2:** `postRequest`
-        -   **Value:** Một chuỗi JSON chứa nội dung cần cập nhật.
-            ```json
-            {
-              "title": "Tiêu đề đã được cập nhật",
-              "content": "Nội dung mới cho bài viết."
-            }
-            ```
+    -   `id` (string): The unique identifier of the post to update.
+-   **Body:** `raw` - `JSON` (Same as create post)
 
--   **Phản hồi thành công (200 OK):** Trả về chi tiết bài viết sau khi đã cập nhật.
-
----
-
-## 4. Xóa bài viết
-
-Cho phép tác giả xóa một bài viết của mình.
+## 4. Delete a Post
 
 -   **Method:** `DELETE`
--   **URL:** `http://localhost:8080/api/v1/author/{id}`
--   **Authorization:** Bắt buộc (Token của Author và phải là chủ sở hữu bài viết).
+-   **URL:** `http://localhost:8888/api/v1/author/{postId}`
+-   **Authorization:** Required.
 -   **Path Variable:**
-    -   `id`: ID của bài viết cần xóa.
+    -   `postId` (string): The unique identifier of the post to delete.
 
--   **Phản hồi thành công (204 No Content):** Không có nội dung trả về.
+## 5. Get Post Detail
+
+-   **Method:** `GET`
+-   **URL:** `http://localhost:8888/api/v1/author/{postId}`
+-   **Authorization:** Required.
+-   **Path Variable:**
+    -   `postId` (string): The unique identifier of the post.
