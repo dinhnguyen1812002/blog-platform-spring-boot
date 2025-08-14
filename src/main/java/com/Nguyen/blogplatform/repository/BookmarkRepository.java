@@ -42,4 +42,7 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, String> {
     
     @Query("SELECT sp.post FROM Bookmark sp WHERE sp.user = :user ORDER BY sp.savedAt DESC")
     List<Post> findPostsByUserOrderBySavedAtDesc(@Param("user") User user);
+
+
+    
 }

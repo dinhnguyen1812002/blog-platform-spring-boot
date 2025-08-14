@@ -12,20 +12,20 @@ import java.io.File;
 import java.io.IOException;
 
 @Component
-public class ApiDoc implements ApplicationListener<ApplicationReadyEvent> {
+public class ApiDoc {
     @Autowired
     private OpenAPI openAPI;
 
-    @Override
-    public void onApplicationEvent(ApplicationReadyEvent event) {
-        var yamlMapper = new ObjectMapper(new YAMLFactory());
-        try {
-            yamlMapper.writeValue(new File("build/apiDoc.yaml"), openAPI);
-
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-
-    }
+//    @Override
+//    public void onApplicationEvent(ApplicationReadyEvent event) {
+//        var yamlMapper = new ObjectMapper(new YAMLFactory());
+//        try {
+//            yamlMapper.writeValue(new File("build/apiDoc.yaml"), openAPI);
+//
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
+//
+//
+//    }
 }

@@ -1,12 +1,21 @@
-# Stage 1: Build the application
-FROM gradle:8.5.0-jdk21-jammy AS build
-WORKDIR /home/gradle/src
-COPY --chown=gradle:gradle . .
-RUN gradle build -x test
-
-# Stage 2: Create the final image
-FROM eclipse-temurin:21-jre-jammy
+# Dockerfile
+FROM eclipse-temurin:21-jdk AS builder
 WORKDIR /app
-COPY --from=build /home/gradle/src/build/libs/*.jar app.jar
+
+# Copy source code và gradle wrapper
+COPY gradlew .
+COPY gradle gradle
+COPY build.gradle .
+COPY settings.gradle .
+COPY src src
+
+# Build ứng dụng
+RUN ./gradlew clean bootJar --no-daemon
+
+# Image chạy thực tế
+FROM eclipse-temurin:21-jdk
+WORKDIR /app
+COPY --from=builder /app/build/libs/*.jar app.jar
+
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/post")
@@ -24,16 +25,6 @@ public class PostController {
 
     @Autowired
     private JwtUtils jwtUtils;
-
-    // @GetMapping("/{id}")
-    // public ResponseEntity<PostResponse> getPostDetail(@PathVariable String id) {
-    //     try {
-    //         PostResponse postDetail = postServices.getPostById(id);
-    //         return ResponseEntity.ok(postDetail);
-    //     } catch (Exception e) {
-    //         throw new NotFoundException("Post not found with id: " + id);
-    //     }
-    // }
 
     @PostMapping("/{id}/like")
     public ResponseEntity<Boolean> toggleLike(@PathVariable String id) {
@@ -47,15 +38,15 @@ public class PostController {
         return ResponseEntity.ok(savedScore);
     }
 
-    @GetMapping
-    public ResponseEntity<Page<PostResponse>> getPosts(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "5") int size
-    ) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-        Page<PostResponse> posts = postServices.getListPost(pageable);
-        return ResponseEntity.ok(posts);
-    }
+//    @GetMapping
+//    public ResponseEntity<Page<PostResponse>> getPosts(
+//            @RequestParam(defaultValue = "0") int page,
+//            @RequestParam(defaultValue = "5") int size
+//    ) {
+//        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
+//        Page<PostResponse> posts = postServices.getListPost(pageable);
+//        return ResponseEntity.ok(posts);
+//    }
 
     @GetMapping("/{slug}")
     public ResponseEntity<PostResponse> getPostBySlug(@PathVariable(name = "slug") String slug) {
@@ -67,19 +58,37 @@ public class PostController {
         }
     }
 
-    @GetMapping("/latest")
-    public ResponseEntity<List<PostResponse>> getLatestPosts(
-            @RequestParam(defaultValue = "5") int limit
+    /**
+     * Enhanced endpoint to get latest/filtered posts with pagination, sorting (newest or views),
+     * and filters by category slug and tag slug.
+     *
+     * @param page Page number (default: 0).
+     * @param size Page size (default: 10).
+     * @param sortBy Sorting criteria: "newest" (default) or "views".
+     * @param categorySlug Optional category slug filter.
+     * @param tagSlug Optional tag slug filter.
+     * @return Page of PostResponse objects.
+     */
+    @GetMapping()
+    public ResponseEntity<Page<PostResponse>> getLatestPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "newest") String sortBy,
+            @RequestParam(required = false) String categorySlug,
+            @RequestParam(required = false) String tagSlug
     ) {
-        Pageable pageable = Pageable.ofSize(limit);
-        List<PostResponse> posts = postServices.getLatestPosts(pageable);
+        Sort sort;
+
+        if ("views".equalsIgnoreCase(sortBy)) {
+            sort = Sort.by("view").descending();
+        } else {
+            sort = Sort.by("createdAt").descending();
+        }
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        Page<PostResponse> posts = postServices.getFilteredPosts(categorySlug, tagSlug, pageable);
         return ResponseEntity.ok(posts);
     }
-//@GetMapping("/latest")
-//    public ResponseEntity<List<Post>> getLatesPost(){
-//
-//        return ResponseEntity.ok(postServices.getAllPost());
-//    }
 
     @GetMapping("/featured")
     public ResponseEntity<List<PostResponse>> getFeaturedPosts() {

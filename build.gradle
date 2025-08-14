@@ -47,11 +47,11 @@ dependencies {
     
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
-    // https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus
-// https://mvnrepository.com/artifact/io.micrometer/micrometer-registry-prometheus
-    implementation group: 'io.micrometer', name: 'micrometer-registry-prometheus', version: '1.15.0-M3'
-// https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-actuator
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '3.4.4'
+
+
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
+
 }
 
 tasks.named('test') {

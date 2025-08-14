@@ -53,4 +53,6 @@ public interface CommentRepository extends JpaRepository<Comment, String> {
 
     @Query("SELECT COUNT(c) FROM Comment c WHERE c.user = :user")
     Long countByUser(@Param("user") User user);
+
+
 }

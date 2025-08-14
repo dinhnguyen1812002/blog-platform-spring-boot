@@ -65,15 +65,14 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource())) 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/").permitAll()
+                        .requestMatchers("/actuator/**").permitAll()
                         .requestMatchers("/images/**").permitAll()
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/uploads/thumbnail/**").permitAll()
                         .requestMatchers("/api/v1/upload/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/ws-logs/**").permitAll()
-                        .requestMatchers("/actuator/**",
-                            "/actuator/prometheus"
-                        ).permitAll()
+
                         .requestMatchers("/notification").permitAll()
                         .requestMatchers("/api/v1/post/latest").permitAll()
                         .requestMatchers("/api/logs").permitAll()
@@ -122,7 +121,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/user/{id}").permitAll()
 
                         .requestMatchers("/api/v1/author/**").permitAll()
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/admin/users/**").authenticated()
+//                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/comments/**").authenticated()
                         .requestMatchers("/api/v1/role/**").permitAll()
                         .requestMatchers("/api/v1/roles/**").permitAll()
@@ -130,7 +130,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/newsletter/subscribe").permitAll()
                         .requestMatchers("/api/v1/newsletter/confirm").permitAll()
                         .requestMatchers("/api/v1/newsletter/unsubscribe").permitAll()
-                        .requestMatchers("/api/v1/newsletter/subscribers/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/newsletter/subscribers/**").authenticated()
                          // Saved posts endpoints
                          .requestMatchers("/api/v1/saved-posts/**").authenticated()
                         .requestMatchers("/api/v1/post/{postId}/bookmark").authenticated()
@@ -139,7 +139,9 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/jwt/decode").permitAll()
                         .requestMatchers("/api/v1/jwt/validate").permitAll()
                         .requestMatchers("/api/v1/jwt/roles").authenticated()
+
                         .anyRequest().authenticated()
+
 
                 )
                 // .csrf(AbstractHttpConfigurer::disable)
@@ -171,7 +173,7 @@ public class SecurityConfig {
         config.setAllowCredentials(true); // Required if sending cookies/token
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", config);
+        source.registerCorsConfiguration("/**", config); // <-- apply to all endpoints
         return source;
     }
 

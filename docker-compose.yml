@@ -1,22 +1,72 @@
-services:
-  app:
-    build: .
-    ports:
-      - "8080:8080"
-    depends_on:
-      - db
-    environment:
-      - SPRING_DATASOURCE_URL=jdbc:mysql://db:3306/blogdb
-      - SPRING_DATASOURCE_USERNAME=user
-      - SPRING_DATASOURCE_PASSWORD=password
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+version: '3.8'
 
-  db:
+services:
+  mysql:
     image: mysql:8.0
-    ports:
-      - "3306:3306"
+    container_name: mysql-db
     environment:
-      - MYSQL_DATABASE=blogdb
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=password
-      - MYSQL_ROOT_PASSWORD=root
+      MYSQL_ROOT_PASSWORD: root  # Password cho root user
+      MYSQL_DATABASE: blog_spring  # Tên database
+      MYSQL_USER: appuser  # User thông thường (không phải root)
+      MYSQL_PASSWORD: appuserpass  # Password cho appuser
+    ports:
+      - "3307:3306"  # Port đã đổi từ trước
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .  # Thư mục chứa Dockerfile
+      dockerfile: Dockerfile
+    container_name: spring-app
+    depends_on:
+      mysql:
+        condition: service_healthy  # Đợi MySQL ready
+    environment:
+      # Config datasource cho Spring Boot
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update  # Tùy chỉnh (update/create)
+      SERVER_PORT: 8888
+    ports:
+      - "8888:8888"  # Expose app port
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    depends_on:
+      - app
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Config file
+      - prometheus-data:/prometheus  # Persist data
+    ports:
+      - "9090:9090"  # Prometheus UI
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin  # Default password (thay đổi sau)
+    ports:
+      - "3000:3000"  # Grafana UI
+    volumes:
+      - grafana-data:/var/lib/grafana  # Persist data
+      - ./grafana/provisioning:/etc/grafana/provisioning  # Auto-provision datasource
+
+volumes:
+  mysql-data:
+  prometheus-data:
+  grafana-data:

@@ -6,12 +6,12 @@ import com.Nguyen.blogplatform.mapper.PostMapper;
 import com.Nguyen.blogplatform.model.*;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.repository.*;
+import com.Nguyen.blogplatform.repository.PostSpecification;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -85,11 +85,28 @@ public class PostService {
                 .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository));
     }
 
-    public List<PostResponse> getLatestPosts(Pageable pageable) {
-        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
-                .stream()
-                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))
-                .toList();
+
+    /**
+     * Retrieves filtered and paginated posts based on category slug, tag slug, and pageable (including sorting).
+     *
+     * @param categorySlug Optional category slug to filter by.
+     * @param tagSlug Optional tag slug to filter by.
+     * @param pageable Pageable object for pagination and sorting.
+     * @return Page of PostResponse objects.
+     */
+    public Page<PostResponse> getFilteredPosts(String categorySlug, String tagSlug, Pageable pageable) {
+        Specification<Post> spec = Specification.where(null);
+
+        if (categorySlug != null && !categorySlug.isEmpty()) {
+            spec = spec.and(PostSpecification.hasCategorySlug(categorySlug));
+        }
+
+        if (tagSlug != null && !tagSlug.isEmpty()) {
+            spec = spec.and(PostSpecification.hasTagSlug(tagSlug));
+        }
+
+        return postRepository.findAll(spec, pageable)
+                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository));
     }
 
     public List<PostResponse> getFeaturedPosts(Pageable pageable) {
@@ -98,12 +115,6 @@ public class PostService {
                 .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))
                 .toList();
     }
-//
-//    public PostResponse getPostById(String postId) {
-//        var post = findPostById(postId);
-//        incrementViewCount(postId);
-//        return postMapper.toPostResponseWithComments(post, getCurrentUser());
-//    }
 
     public PostResponse getPostResponseById(String postId) {
         var post = findPostById(postId);
@@ -130,23 +141,6 @@ public class PostService {
         // No caching is performed here to ensure the view count is incremented on every call.
         return postMapper.toPostResponseWithComments(updatedPost, getCurrentUser(), savedPostRepository);
     }
-
-//    @Transactional
-//    public PostResponse getPostBySlug(String slug) {
-//        var cacheKey = "slug:" + slug;
-//
-//        if (isCacheValid(cacheKey)) {
-//            return postCache.get(cacheKey);
-//        }
-//
-//        var post = postRepository.findBySlug(slug)
-//                .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
-//        incrementViewCount(post.getId());
-//        var response = postMapper.toPostResponseWithComments(post, getCurrentUser(), savedPostRepository);
-//        cachePost(cacheKey, response);
-//        return response;
-//    }
-
 
     public List<PostResponse> getPostsByCategory(Long categoryId) {
         var category = categoryRepository.findById(categoryId)

@@ -85,6 +85,12 @@ public class User {
     @Column(name = "custom_profile_markdown", columnDefinition = "TEXT")
     private String customProfileMarkdown;
 
+    @Column(name = "banned", nullable = false)
+    private boolean banned = false;
+
+    @Column(name = "ban_reason")
+    private String banReason;
+
     public User() {
     }
     public User(String username, String email, String password) {
