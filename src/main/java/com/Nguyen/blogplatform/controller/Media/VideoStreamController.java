@@ -1,30 +1,19 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Media;
 
 import com.Nguyen.blogplatform.model.Video;
-import com.Nguyen.blogplatform.payload.response.MessageResponse;
 import com.Nguyen.blogplatform.service.VideoService;
-import com.github.f4b6a3.ulid.UlidCreator;
-import io.github.classgraph.Resource;
-import org.apache.tomcat.util.http.fileupload.FileUpload;
 import org.springframework.core.io.FileUrlResource;
 import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 
 @RestController

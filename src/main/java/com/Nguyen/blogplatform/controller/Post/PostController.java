@@ -1,7 +1,6 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Post;
 
 import com.Nguyen.blogplatform.exception.NotFoundException;
-import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import com.Nguyen.blogplatform.service.PostService;
@@ -14,7 +13,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/post")

@@ -24,6 +24,12 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
     @Query("SELECT p FROM Post p WHERE p.user.username = :username")
     Page<Post> findByUser(String username, Pageable pageable);
 
+    @Query("SELECT p FROM Post p WHERE p.user = :user")
+    Page<Post> findByUser(@Param("user") User user, Pageable pageable);
+
+    @Query("SELECT p FROM Post p WHERE p.user = :user")
+    List<Post> findByUser(@Param("user") User user);
+
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
 //    @Query("SELECT p FROM Post p JOIN p.categories c WHERE c.id = :categoryId")
 //    List<Post> findByCategoryId(@Param("categoryId") Long categoryId);

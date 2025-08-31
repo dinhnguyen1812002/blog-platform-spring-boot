@@ -16,6 +16,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
@@ -81,21 +82,13 @@ public class PostService {
     }
 
     public Page<PostResponse> getListPost(Pageable pageable) {
-        return postRepository.findAllByOrderByCreatedAtDesc(pageable)
+        Specification<Post> spec = PostSpecification.isPublished();
+        return postRepository.findAll(spec, pageable)
                 .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository));
     }
 
-
-    /**
-     * Retrieves filtered and paginated posts based on category slug, tag slug, and pageable (including sorting).
-     *
-     * @param categorySlug Optional category slug to filter by.
-     * @param tagSlug Optional tag slug to filter by.
-     * @param pageable Pageable object for pagination and sorting.
-     * @return Page of PostResponse objects.
-     */
     public Page<PostResponse> getFilteredPosts(String categorySlug, String tagSlug, Pageable pageable) {
-        Specification<Post> spec = Specification.where(null);
+        Specification<Post> spec = PostSpecification.isPublished();
 
         if (categorySlug != null && !categorySlug.isEmpty()) {
             spec = spec.and(PostSpecification.hasCategorySlug(categorySlug));
@@ -110,7 +103,9 @@ public class PostService {
     }
 
     public List<PostResponse> getFeaturedPosts(Pageable pageable) {
-        return postRepository.findByFeaturedTrueOrderByCreatedAtDesc(pageable)
+        Specification<Post> spec = PostSpecification.isPublished()
+                .and(PostSpecification.isFeatured());
+        return postRepository.findAll(spec, pageable)
                 .stream()
                 .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))
                 .toList();
@@ -118,41 +113,39 @@ public class PostService {
 
     public PostResponse getPostResponseById(String postId) {
         var post = findPostById(postId);
+        if (!isPostPublished(post)) {
+            throw new NotFoundException("Post is not published yet: " + postId);
+        }
         return postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository);
     }
 
     @Transactional
     public PostResponse getPostBySlug(String slug) {
-        // Step 1: Find the post by its slug.
         var post = postRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
-
-        // Step 2: Increment the view count in the database.
-        // The existing incrementViewCount method also invalidates the cache, which is fine.
+        if (!isPostPublished(post)) {
+            throw new NotFoundException("Post is not published yet: " + slug);
+        }
         incrementViewCount(post.getId());
-
-        // Step 3: Refetch the post to get the updated view count.
-        // This is necessary because the increment is a direct database update,
-        // and the 'post' object we currently have is stale.
         var updatedPost = postRepository.findById(post.getId())
                 .orElseThrow(() -> new NotFoundException("Could not refetch post with id: " + post.getId()));
-
-        // Step 4: Map the updated post to a response DTO and return it.
-        // No caching is performed here to ensure the view count is incremented on every call.
         return postMapper.toPostResponseWithComments(updatedPost, getCurrentUser(), savedPostRepository);
     }
 
     public List<PostResponse> getPostsByCategory(Long categoryId) {
-        var category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId));
-        return postRepository.findByCategoriesContaining(category)
+        Long category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId)).getId();
+        Specification<Post> spec = PostSpecification.isPublished()
+                .and(PostSpecification.hasCategoryId(category));
+        return postRepository.findAll(spec)
                 .stream()
-                .map(post -> postMapper.toPostResponse(post, getCurrentUser(),  savedPostRepository))
+                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))
                 .toList();
     }
 
     public List<PostResponse> searchPosts(String title, Long categoryId) {
-        Specification<Post> spec = Specification.where(PostSpecification.hasTitle(title))
+        Specification<Post> spec = PostSpecification.isPublished()
+                .and(PostSpecification.hasTitle(title))
                 .and(PostSpecification.hasCategoryId(categoryId));
         return postRepository.findAll(spec)
                 .stream()
@@ -161,7 +154,8 @@ public class PostService {
     }
 
     public List<Post> getAllPost() {
-        return postRepository.findAll();
+        Specification<Post> spec = PostSpecification.isPublished();
+        return postRepository.findAll(spec);
     }
 
     private Post findPostById(String postId) {
@@ -185,6 +179,7 @@ public class PostService {
         if (userId == null) {
             System.out.println("User id is null");
         }
+
         return userRepository.findById(userId).orElse(null);
     }
 
@@ -201,6 +196,18 @@ public class PostService {
                 .map(id -> categoryRepository.findById(id)
                         .orElseThrow(() -> new NotFoundException("Category not found with id: " + id)))
                 .collect(Collectors.toSet());
+    }
+
+    private boolean isPostPublished(Post post) {
+        if (post.getIs_publish() != null && post.getIs_publish()) {
+            return true;
+        }
+        if (post.getPublic_date() != null && post.getPublic_date().isBefore(LocalDateTime.now())) {
+            post.setIs_publish(true);
+            postRepository.save(post);
+            return true;
+        }
+        return false;
     }
 
     private void cachePost(String key, PostResponse response) {

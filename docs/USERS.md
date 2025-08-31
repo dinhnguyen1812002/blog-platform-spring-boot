@@ -80,3 +80,40 @@ Tài liệu này mô tả các API để quản lý người dùng.
         ]
     }
     ```
+
+---
+
+## 5. Cập nhật thông tin Profile người dùng
+
+- **Method:** `PUT`
+- **URL:** `http://localhost:8080/api/v1/user/profile`
+- **Authorization:** Bắt buộc (Bearer Token).
+- **Body:** `raw` - `JSON`
+
+- **Request Body Fields:**
+    - `username` (String): Tên người dùng mới. Phải có ít nhất 3 ký tự.
+    - `email` (String): Địa chỉ email mới. Phải là một email hợp lệ.
+    - `avatar` (String): URL đến ảnh đại diện mới.
+    - `bio` (String): Giới thiệu ngắn về bản thân.
+    - `website` (String): URL đến trang web cá nhân.
+    - `socialMediaLinks` (Map<String, String>): Một đối tượng chứa các liên kết mạng xã hội.
+        - `key`: Nền tảng mạng xã hội (ví dụ: `FACEBOOK`, `TWITTER`, `LINKEDIN`, `GITHUB`).
+        - `value`: URL đến trang cá nhân trên nền tảng đó.
+
+- **Ví dụ Request Body:**
+    ```json
+    {
+      "username": "newusername",
+      "email": "new.email@example.com",
+      "avatar": "https://example.com/new_avatar.png",
+      "bio": "Đây là bio mới của tôi.",
+      "website": "https://my-new-website.com",
+      "socialMediaLinks": {
+        "TWITTER": "https://twitter.com/new_handle",
+        "GITHUB": "https://github.com/new_username"
+      }
+    }
+    ```
+
+- **Phản hồi thành công (200 OK):**
+    - Trả về đối tượng `UserProfileResponse` với thông tin đã được cập nhật.

@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Post;
 
 import com.Nguyen.blogplatform.payload.request.SavePostRequest;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
@@ -13,7 +13,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -36,7 +35,7 @@ public class SavedPostController {
         return ResponseEntity.ok(response);
     }
     
-    @DeleteMapping("/{postId}/bookmark")
+    @DeleteMapping("/{postId}/bookmark/delete")
     @Operation(summary = "Unsave a post", description = "Remove a post from user's saved list")
     public ResponseEntity<MessageResponse> unsavePost(
             @Parameter(description = "Post ID to unsave") @PathVariable String postId) {

@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Post;
 
 
 import com.Nguyen.blogplatform.model.Post;
@@ -12,12 +12,10 @@ import com.Nguyen.blogplatform.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
@@ -130,6 +128,7 @@ public class AuthorController {
     @DeleteMapping("/{postId}")
     public ResponseEntity<?> deletePost(@PathVariable String postId) {
         try {
+
             authorServices.deletePost(postId);
             return ResponseEntity.ok(new MessageResponse("Post deleted successfully"));
         } catch (IllegalArgumentException e) {

@@ -1,9 +1,7 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Authentication;
 
 import com.Nguyen.blogplatform.model.Role;
-import com.Nguyen.blogplatform.repository.RoleRepository;
 import com.Nguyen.blogplatform.service.RoleServices;
-import lombok.Getter;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

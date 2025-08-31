@@ -1,11 +1,10 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Media;
 
 
 import com.Nguyen.blogplatform.Utils.UrlUtils;
 import com.Nguyen.blogplatform.payload.response.ResponseResult;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;

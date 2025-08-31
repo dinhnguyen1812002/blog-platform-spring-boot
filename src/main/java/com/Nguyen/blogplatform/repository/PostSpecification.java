@@ -3,6 +3,7 @@ package com.Nguyen.blogplatform.repository;
 import com.Nguyen.blogplatform.model.Post;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 public class PostSpecification {
@@ -52,6 +53,7 @@ public class PostSpecification {
         };
     }
 
+
     public static Specification<Post> hasTagSlug(String tagSlug) {
         return (root, query, cb) -> {
             if (tagSlug == null || tagSlug.isEmpty()) {
@@ -59,5 +61,13 @@ public class PostSpecification {
             }
             return cb.equal(root.join("tags").get("slug"), tagSlug);
         };
+    }
+
+    public static Specification<Post> isPublished() {
+        return (root, query, cb) -> cb.isTrue(root.get("is_publish"));
+    }
+
+    public static Specification<Post> isFeatured() {
+        return (root, query, cb) -> cb.isTrue(root.get("featured"));
     }
 }

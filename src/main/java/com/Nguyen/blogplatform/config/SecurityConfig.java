@@ -91,7 +91,8 @@ public class SecurityConfig {
                                 "/api/v1/user/forgot-password"
 
                         ).permitAll()
-                        .requestMatchers("/api/users/profile").authenticated()
+                        .requestMatchers("/api/v1/user/profile").authenticated()
+                        .requestMatchers("/posts/stats").authenticated()
                         .requestMatchers("/api/v1/auth/fix-roles").permitAll()
                         .requestMatchers("/api/v1/auth/me").authenticated()
                         .requestMatchers("/api/v1/auth/debug").authenticated()
@@ -131,9 +132,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/newsletter/confirm").permitAll()
                         .requestMatchers("/api/v1/newsletter/unsubscribe").permitAll()
                         .requestMatchers("/api/v1/newsletter/subscribers/**").authenticated()
+                         // Profile customization endpoints
+                        .requestMatchers(HttpMethod.GET, "/api/v1/profile/custom/{username}").permitAll()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/profile/custom").authenticated()
                          // Saved posts endpoints
                          .requestMatchers("/api/v1/saved-posts/**").authenticated()
-                        .requestMatchers("/api/v1/post/{postId}/bookmark").authenticated()
+                        .requestMatchers("/api/v1/post/{postId}/bookmark/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/v1/post/{postId}/bookmark").authenticated()
                          // JWT utility endpoints
                         .requestMatchers("/api/v1/jwt/decode").permitAll()

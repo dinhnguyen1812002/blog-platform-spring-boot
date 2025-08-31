@@ -1,13 +1,15 @@
 package com.Nguyen.blogplatform.payload.request;
 
-import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.validation.constraints.NotBlank;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class CustomProfileRequest {
-
-    @Size(max = 10000, message = "Nội dung profile không được vượt quá 10000 ký tự")
+    
+    @NotBlank(message = "Markdown content cannot be blank")
     private String markdownContent;
 }

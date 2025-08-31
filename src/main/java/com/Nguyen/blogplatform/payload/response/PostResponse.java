@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -37,4 +38,6 @@ public class PostResponse {
     private Boolean isSavedByCurrentUser;
     private Integer userRating;
     private List<CommentResponse> comments;
+    private LocalDateTime public_date;
+    private Boolean is_publish;
 }

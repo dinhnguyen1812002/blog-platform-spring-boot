@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Authentication;
 
 import com.Nguyen.blogplatform.exception.ConflictException;
 import com.Nguyen.blogplatform.exception.TokenExpiredException;
@@ -174,4 +174,25 @@ public class UserController {
     //     UserProfileResponse response = userProfileService.updateUserProfileMarkdown(userDetails.getId(), request.getMarkdownContent());
     //     return ResponseEntity.ok(response);
     // }
+//    export interface PostStats {
+//        totalPosts: number;
+//        totalViews: number;
+//        totalLikes: number;
+//        totalComments: number;
+//        averageRating: number;
+//    }
+
+    @GetMapping("/posts/stats")
+    public ResponseEntity<?> getStatus () {
+
+        Map<String, Integer> status = new HashMap<>();
+        status.put("totalPosts", 10);
+        status.put("totalViews", 110);
+        status.put("totalComments", 10);
+        status.put("totalLikes", 10);
+        status.put("averageRating", 10);
+        System.out.println(status);
+        return ResponseEntity.ok(status);
+    }
+
 }

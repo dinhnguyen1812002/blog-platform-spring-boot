@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Tags;
 
 import com.Nguyen.blogplatform.payload.request.TagRequest;
 import com.Nguyen.blogplatform.payload.response.TagResponse;

@@ -34,6 +34,10 @@ public class JwtUtils {
     @Value("${blog.app.jwtCookieName}")
     private String jwtCookie;
 
+    public String getJwtCookie() {
+        return jwtCookie;
+    }
+
 //    public String generateJwtToken(Authentication authentication) {
 //
 //        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
@@ -52,9 +56,13 @@ public class JwtUtils {
 
     public String generateJwtToken(Authentication authentication) {
         UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+        return generateTokenFromUserId(userPrincipal.getId(), userPrincipal.getEmail());
+    }
+
+    public String generateTokenFromUserId(String userId, String email) {
         return Jwts.builder()
-                .setSubject(userPrincipal.getId()) // Sử dụng id làm subject
-                .claim("email", userPrincipal.getEmail()) // Thêm email vào token nếu cần
+                .setSubject(userId)
+                .claim("email", email)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
                 .signWith(key(), SignatureAlgorithm.HS256)
@@ -155,7 +163,7 @@ public class JwtUtils {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
-            
+
             logger.info("=== JWT Claims Debug ===");
             logger.info("Subject: {}", claims.getSubject());
             logger.info("User ID: {}", claims.get("userid"));

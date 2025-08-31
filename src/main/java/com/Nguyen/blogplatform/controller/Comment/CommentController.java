@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Comment;
 
 
 import com.Nguyen.blogplatform.payload.request.CommentRequest;
@@ -12,9 +12,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

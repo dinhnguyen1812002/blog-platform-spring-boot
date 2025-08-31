@@ -35,6 +35,7 @@ public class PostMapper {
                 .createdAt(post.getCreatedAt())
                 .featured(post.getFeatured())
 //                .content(excerpt(post.getContent()))
+
                 .thumbnail(post.getThumbnail())
                 .categories(post.getCategories().stream()
                         .map(category -> new CategoryResponse(
@@ -57,6 +58,8 @@ public class PostMapper {
                 .isLikedByCurrentUser(isLikedByCurrentUser(post, currentUser))
                 .isSavedByCurrentUser(isSavedByCurrentUser(post, currentUser, savedPostRepository))
                 .userRating(getUserRating(post, currentUser))
+                .public_date(post.getPublic_date())
+                .is_publish(post.getIs_publish())
                 .build();
     }
 

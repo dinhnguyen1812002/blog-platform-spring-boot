@@ -29,36 +29,68 @@ public class ProfilePlaceholderService {
             processedContent = processedContent.replace("{{post_count}}", String.valueOf(postRepository.countByUser(user)));
         }
         
-        // Thêm logic cho các placeholders khác ở đây (ví dụ: {{social_links}})
+        if (processedContent.contains("{{user_bio}}")) {
+            String bio = user.getBio();
+            processedContent = processedContent.replace("{{user_bio}}", bio != null ? bio : "<em>No bio available.</em>");
+        }
+        
+        if (processedContent.contains("{{social_links}}")) {
+            processedContent = processedContent.replace("{{social_links}}", generateSocialLinksHtml(user));
+        }
 
         return processedContent;
     }
 
     private String generateLatestPostsHtml(User user) {
-        // Lấy 5 bài viết mới nhất (cần thêm phương thức này vào PostRepository)
+        // Get 5 latest posts
         List<Post> latestPosts = postRepository.findTop5ByUserOrderByCreatedAtDesc(user);
 
         if (latestPosts.isEmpty()) {
-            return "<p><em>Chưa có bài viết nào.</em></p>";
+            return "<p><em>No posts available.</em></p>";
         }
 
         StringBuilder html = new StringBuilder();
-        html.append("<ul>");
+        html.append("<ul class=\"latest-posts-list\">");
         for (Post post : latestPosts) {
-            // Lưu ý: Link URL cần được frontend xử lý (ví dụ: /posts/post-slug)
             html.append("<li><a href=\"/posts/")
                 .append(post.getSlug())
                 .append("\">")
-                .append(escapeHtml(post.getTitle())) // Hàm escapeHtml để tránh XSS
+                .append(escapeHtml(post.getTitle()))
                 .append("</a></li>");
         }
         html.append("</ul>");
 
         return html.toString();
     }
+    
+    private String generateSocialLinksHtml(User user) {
+        if (user.getSocialMediaLinks() == null || user.getSocialMediaLinks().isEmpty()) {
+            return "<p><em>No social media links available.</em></p>";
+        }
+        
+        StringBuilder html = new StringBuilder();
+        html.append("<ul class=\"social-links-list\">");
+        
+        user.getSocialMediaLinks().forEach(link -> {
+            if (link.getUrl() != null && !link.getUrl().isBlank()) {
+                html.append("<li><a href=\"")
+                    .append(escapeHtml(link.getUrl()))
+                    .append("\" target=\"_blank\">")
+                    .append(escapeHtml(link.getPlatform().toString()))
+                    .append("</a></li>");
+            }
+        });
+        
+        html.append("</ul>");
+        
+        return html.toString();
+    }
 
-    // Hàm helper đơn giản để escape HTML entities
+    // Helper method to escape HTML entities
     private String escapeHtml(String text) {
+        if (text == null) {
+            return "";
+        }
         return text.replace("<", "&lt;").replace(">", "&gt;");
     }
 }

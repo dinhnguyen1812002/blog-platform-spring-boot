@@ -1,24 +1,28 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Authentication;
 
 import com.Nguyen.blogplatform.Enum.ERole;
 import com.Nguyen.blogplatform.exception.NotFoundException;
+import com.Nguyen.blogplatform.exception.TokenRefreshException;
+import com.Nguyen.blogplatform.model.RefreshToken;
 import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.LoginRequest;
 import com.Nguyen.blogplatform.payload.request.SignupRequest;
+import com.Nguyen.blogplatform.payload.request.TokenRefreshRequest;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
+import com.Nguyen.blogplatform.payload.response.TokenRefreshResponse;
 import com.Nguyen.blogplatform.repository.RoleRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import com.Nguyen.blogplatform.service.AuthService;
+import com.Nguyen.blogplatform.service.RefreshTokenService;
 import com.Nguyen.blogplatform.service.UserDetailsImpl;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,16 +32,11 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @RestController
@@ -62,6 +61,9 @@ public class AuthController {
     @Autowired
     JwtUtils jwtUtils;
 
+    @Autowired
+    RefreshTokenService refreshTokenService;
+
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
@@ -72,7 +74,6 @@ public class AuthController {
         String jwt = jwtUtils.generateJwtToken(authentication);
 
         UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-//        Authentication authentication1  = SecurityContextHolder.getContext().getAuthentication();
 
         // Get user from database to check roles
         User user = userRepository.findById(userDetails.getId())
@@ -81,29 +82,22 @@ public class AuthController {
                 .map(role -> role.getName().name())
                 .collect(Collectors.toList()));
 
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
-//        List<String> rolesFromDatabase = user.getRoles().stream()
-//                .map(role -> role.getName().name())
-//                .collect(Collectors.toList());
-//        System.out.println("role: " + rolesFromDatabase);
         List<ERole> rolesFromDatabase = user.getRoles().stream()
-                .map(role -> role.getName())
+                .map(Role::getName)
                 .collect(Collectors.toList());
 
-//        return ResponseEntity.ok(new JwtResponse(jwt,
-//                userDetails.getId(),
-//                userDetails.getUsername(),
-//                userDetails.getEmail(),
-//                roles));
+        // Create new refresh token
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(auth);
-        String jwtToken = jwtUtils.generateJwtToken(auth);
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+        // Generate cookies
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
+        ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(refreshToken.getToken());
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .body(new JwtResponse(
-                        jwtToken,
+                        jwt,
                         userDetails.getId(),
                         userDetails.getUsername(),
                         userDetails.getEmail(),
@@ -118,12 +112,49 @@ public class AuthController {
         return authService.registerUser(signUpRequest);
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser() {
-        return authService.logoutUser();
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
+        String requestRefreshToken = request.getRefreshToken();
+
+        return refreshTokenService.findByToken(requestRefreshToken)
+                .map(refreshTokenService::verifyExpiration)
+                .map(RefreshToken::getUser)
+                .map(user -> {
+                    String token = jwtUtils.generateTokenFromUserId(user.getId(), user.getEmail());
+
+                    // Generate cookies
+                    ResponseCookie jwtCookie = ResponseCookie.from(jwtUtils.getJwtCookie(), token)
+                            .path("/")
+                            .maxAge(24 * 60 * 60)
+                            .httpOnly(true)
+                            .secure(true)
+                            .sameSite("Lax")
+                            .build();
+
+                    return ResponseEntity.ok()
+                            .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                            .body(new TokenRefreshResponse(token, requestRefreshToken));
+                })
+                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
+                        "Refresh token is not in database!"));
     }
 
-    
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser() {
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        String userId = userDetails.getId();
+        refreshTokenService.deleteByUserId(userId);
+
+        ResponseCookie jwtCookie = jwtUtils.getCleanJwtCookie();
+        ResponseCookie refreshTokenCookie = refreshTokenService.getCleanRefreshTokenCookie();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .body(new MessageResponse("You've been signed out!"));
+    }
+
+
 
 
     @GetMapping("/me")
@@ -156,7 +187,7 @@ public class AuthController {
 
         return ResponseEntity.ok(response);
     }
-    
+
 //    @PostMapping("/fix-roles")
 //    @Transactional
 //    @ResponseStatus(HttpStatus.OK)
@@ -187,7 +218,7 @@ public class AuthController {
 //            roleRepository.save(role);
 //        }
 //    }
-    
+
 //    private void fixRoleNames() {
 //        // Fix roles without ROLE_ prefix
 //        roleRepository.findAll().forEach(role -> {

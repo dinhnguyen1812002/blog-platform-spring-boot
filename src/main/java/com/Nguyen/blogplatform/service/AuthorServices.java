@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
@@ -57,22 +58,14 @@ public class AuthorServices {
         if (postRequest == null || postRequest.getTitle() == null || postRequest.getTitle().isBlank()) {
             throw new BadRequestException("Invalid input data");
         }
-         if (postRepository.existsByTitleIgnoreCase(postRequest.getTitle())) {
-        throw new BadRequestException("Title already exists");
-    }
-        // Sử dụng authorId đã được truyền vào thay vì lấy từ SecurityContext
+        if (postRepository.existsByTitleIgnoreCase(postRequest.getTitle())) {
+            throw new BadRequestException("Title already exists");
+        }
         var author = userRepository.findById(authorId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + authorId));
         var categories = getCategoriesFromIds(postRequest.getCategories());
         var tags = getTagsFromIds(postRequest.getTags());
 
-//        if (thumbnail != null && !thumbnail.isEmpty()) {
-//            try {
-//                thumbnailUrl = fileStorageService.saveThumbnail(thumbnail);
-//            } catch (IOException e) {
-//                throw new RuntimeException("Failed to upload image: " + e.getMessage());
-//            }
-//        }
         var post = Post.builder()
                 .title(postRequest.getTitle())
                 .slug(SlugUtil.createSlug(postRequest.getTitle()))
@@ -85,30 +78,24 @@ public class AuthorServices {
                 .tags(tags)
                 .featured(Objects.requireNonNullElse(postRequest.getFeatured(), DEFAULT_FEATURED))
                 .view(0L)
+                .public_date(postRequest.getPublic_date())
+                .is_publish(postRequest.getPublic_date() == null || postRequest.getPublic_date().isBefore(LocalDateTime.now()))
                 .build();
 
         var savedPost = postRepository.save(post);
         notificationService.sendPostNotification(savedPost.getId(), "New post created: " + postRequest.getTitle());
         notificationService.sendGlobalNotification("New post available: " + savedPost.getTitle());
 
-        // Send newsletter to subscribers asynchronously
         CompletableFuture.runAsync(() -> {
             try {
                 newsletterService.sendNewsletterForNewPost(savedPost);
             } catch (Exception e) {
-                // Log error but don't fail the post creation
                 System.err.println("Failed to send newsletter for post: " + savedPost.getTitle() + " - " + e.getMessage());
             }
         });
 
         return savedPost;
     }
-
-
-
-    /**
-     * Lấy chi tiết bài viết của tác giả hiện tại
-     */
 
     public PostResponse getPostDetail(String postId) {
         var post = postRepository.findById(postId)
@@ -117,28 +104,23 @@ public class AuthorServices {
         return toPostResponse(post);
     }
 
-    /**
-     * Cập nhật bài viết (thumbnail URL đã được xử lý qua uploads controller)
-     */
     @Transactional
     public PostResponse updatePost(String postId, PostRequest postRequest) {
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
         validateAuthorization(post);
 
-        // Cập nhật thông tin post
         post.setTitle(postRequest.getTitle());
         post.setContent(Objects.requireNonNullElse(postRequest.getContent(), ""));
-
-        // Thumbnail URL đã được xử lý qua uploads controller, chỉ cần set nếu có
         if (postRequest.getThumbnail() != null && !postRequest.getThumbnail().trim().isEmpty()) {
             post.setThumbnail(postRequest.getThumbnail());
         }
-
         post.setCategories(getCategoriesFromIds(postRequest.getCategories()));
         if (postRequest.getTags() != null) {
             post.setTags(getTagsFromIds(postRequest.getTags()));
         }
+        post.setPublic_date(postRequest.getPublic_date());
+        post.setIs_publish(postRequest.getPublic_date() == null || postRequest.getPublic_date().isBefore(LocalDateTime.now()));
 
         return toPostResponse(postRepository.save(post));
     }
@@ -153,10 +135,6 @@ public class AuthorServices {
 
     private String getCurrentUsername() {
         var authentication = SecurityContextHolder.getContext().getAuthentication();
-
-//        System.out.println("Authentication: " + authentication.getName());
-//        System.out.println("Authentication: " + authentication.getAuthorities());
-//        System.out.println("Authentication: " + authentication.getPrincipal());
         return authentication != null ? authentication.getName() : null;
     }
 
@@ -200,7 +178,7 @@ public class AuthorServices {
                         tag.getDescription(),
                         tag.getColor()))
                 .collect(Collectors.toSet());
-        Double  averageRating = post.getRatings().stream().mapToDouble(Rating::getScore).average().orElse(0.0);
+        Double averageRating = post.getRatings().stream().mapToDouble(Rating::getScore).average().orElse(0.0);
 
         return PostResponse.builder()
                 .id(post.getId())
@@ -217,6 +195,7 @@ public class AuthorServices {
                 .viewCount(post.getView())
                 .likeCount((long) post.getLike().size())
                 .averageRating(averageRating)
+                .public_date(post.getPublic_date())
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Newsletter;
 
 import com.Nguyen.blogplatform.payload.request.NewsletterSubscriptionRequest;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;

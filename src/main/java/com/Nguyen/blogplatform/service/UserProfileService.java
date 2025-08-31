@@ -11,6 +11,7 @@ import com.Nguyen.blogplatform.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -25,8 +26,8 @@ public class UserProfileService {
     private final PostRepository postRepository;
     private final BookmarkRepository savedPostRepository;
     private final CommentRepository commentRepository;
-
     private final SocialMediaLinkRepository socialMediaLinkRepository;
+    private final ProfilePlaceholderService profilePlaceholderService;
 
     public UserProfileResponse getUserProfile(UserDetailsImpl userDetails) {
         // Get user from database to get additional info
@@ -53,6 +54,13 @@ public class UserProfileService {
         Long savedPostsCount = savedPostRepository.countByUser(user);
         Long commentsCount = commentRepository.countByUser(user);
 
+        // Process custom profile markdown if it exists
+        String rawMarkdown = user.getCustomProfileMarkdown();
+        String processedMarkdown = null;
+        if (rawMarkdown != null && !rawMarkdown.isBlank()) {
+            processedMarkdown = profilePlaceholderService.processPlaceholders(rawMarkdown, user);
+        }
+
         return UserProfileResponse.builder()
                 .id(userDetails.getId())
                 .username(userDetails.getUsername())
@@ -63,6 +71,7 @@ public class UserProfileService {
                 .postsCount(postsCount)
                 .savedPostsCount(savedPostsCount)
                 .commentsCount(commentsCount)
+                .customProfileMarkdown(processedMarkdown)
                 .build();
     }
 
@@ -90,6 +99,13 @@ public class UserProfileService {
         Long savedPostsCount = savedPostRepository.countByUser(user);
         Long commentsCount = commentRepository.countByUser(user);
 
+        // Process custom profile markdown if it exists
+        String rawMarkdown = user.getCustomProfileMarkdown();
+        String processedMarkdown = null;
+        if (rawMarkdown != null && !rawMarkdown.isBlank()) {
+            processedMarkdown = profilePlaceholderService.processPlaceholders(rawMarkdown, user);
+        }
+
         return UserProfileResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -100,6 +116,7 @@ public class UserProfileService {
                 .postsCount(postsCount)
                 .savedPostsCount(savedPostsCount)
                 .commentsCount(commentsCount)
+                .customProfileMarkdown(processedMarkdown)
                 .build();
     }
 
@@ -173,6 +190,13 @@ public class UserProfileService {
         Long savedPostsCount = savedPostRepository.countByUser(user);
         Long commentsCount = commentRepository.countByUser(user);
 
+        // Process custom profile markdown if it exists
+        String rawMarkdown = user.getCustomProfileMarkdown();
+        String processedMarkdown = null;
+        if (rawMarkdown != null && !rawMarkdown.isBlank()) {
+            processedMarkdown = profilePlaceholderService.processPlaceholders(rawMarkdown, user);
+        }
+
         return UserProfileResponse.builder()
                 .id(user.getId())
                 .username(user.getUsername())
@@ -183,8 +207,101 @@ public class UserProfileService {
                 .postsCount(postsCount)
                 .savedPostsCount(savedPostsCount)
                 .commentsCount(commentsCount)
+                .customProfileMarkdown(processedMarkdown)
                 .build();
     }
 
+    public UserProfileResponse getUserProfileByUsername(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new NotFoundException("User not found with username: " + username));
 
+        // Extract roles from user entity
+        List<String> roles = user.getRoles().stream()
+                .map(role -> role.getName().toString())
+                .collect(Collectors.toList());
+
+        // Get social media links (only non-null URLs)
+        Map<ESocialMediaPlatform, String> socialMediaLinks = user.getSocialMediaLinks().stream()
+                .filter(link -> link.getUrl() != null)
+                .collect(Collectors.toMap(
+                        SocialMediaLink::getPlatform,
+                        SocialMediaLink::getUrl,
+                        (existing, replacement) -> existing,
+                        HashMap::new
+                ));
+
+        // Get user statistics
+        Long postsCount = postRepository.countByUser(user);
+        Long savedPostsCount = savedPostRepository.countByUser(user);
+        Long commentsCount = commentRepository.countByUser(user);
+
+        // Process custom profile markdown if it exists
+        String rawMarkdown = user.getCustomProfileMarkdown();
+        String processedMarkdown = null;
+        if (rawMarkdown != null && !rawMarkdown.isBlank()) {
+            processedMarkdown = profilePlaceholderService.processPlaceholders(rawMarkdown, user);
+        }
+
+        return UserProfileResponse.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .avatar(user.getAvatar())
+                .roles(roles)
+                .socialMediaLinks(socialMediaLinks)
+                .postsCount(postsCount)
+                .savedPostsCount(savedPostsCount)
+                .commentsCount(commentsCount)
+                .customProfileMarkdown(processedMarkdown)
+                .build();
+    }
+
+    @Transactional
+    public UserProfileResponse updateUserProfileMarkdown(String userId, String markdownContent) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+
+        // Save the raw markdown content
+        user.setCustomProfileMarkdown(markdownContent);
+        User updatedUser = userRepository.save(user);
+
+        // Process placeholders before returning response
+        String processedContent = null;
+        if (markdownContent != null && !markdownContent.isBlank()) {
+            processedContent = profilePlaceholderService.processPlaceholders(markdownContent, updatedUser);
+        }
+
+        // Extract roles
+        List<String> roles = updatedUser.getRoles().stream()
+                .map(role -> role.getName().toString())
+                .collect(Collectors.toList());
+
+        // Get social media links
+        Map<ESocialMediaPlatform, String> socialMediaLinks = updatedUser.getSocialMediaLinks().stream()
+                .filter(link -> link.getUrl() != null)
+                .collect(Collectors.toMap(
+                        SocialMediaLink::getPlatform,
+                        SocialMediaLink::getUrl,
+                        (existing, replacement) -> existing,
+                        HashMap::new
+                ));
+
+        // Get user statistics
+        Long postsCount = postRepository.countByUser(updatedUser);
+        Long savedPostsCount = savedPostRepository.countByUser(updatedUser);
+        Long commentsCount = commentRepository.countByUser(updatedUser);
+
+        return UserProfileResponse.builder()
+                .id(updatedUser.getId())
+                .username(updatedUser.getUsername())
+                .email(updatedUser.getEmail())
+                .avatar(updatedUser.getAvatar())
+                .roles(roles)
+                .socialMediaLinks(socialMediaLinks)
+                .postsCount(postsCount)
+                .savedPostsCount(savedPostsCount)
+                .commentsCount(commentsCount)
+                .customProfileMarkdown(processedContent)
+                .build();
+    }
 }

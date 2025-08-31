@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import io.swagger.v3.oas.annotations.info.Info;
 import jakarta.persistence.*;
@@ -9,6 +10,7 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Objects;
@@ -49,6 +51,14 @@ public class Post {
     private Date createdAt;
     @Column(name = "featured", nullable = false)
     private Boolean featured;
+
+    @Column(name = "public_date")
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+    private LocalDateTime public_date;
+
+    @Column(name = "is_publish", nullable = false)
+    private Boolean is_publish;
+
     @Column(name = "view", nullable = false)
     @Builder.Default
     private Long view = 0L;
@@ -111,8 +121,19 @@ public class Post {
         this.user = user;
     }
 
+
+
+//
+//    @PrePersist
+//    public void prePersist() {
+//        if (public_date == null) {
+//            public_date = LocalDateTime.now();
+//        }
+//    }
+
     @Override
     public int hashCode() {
         return Objects.hash(id); // Chỉ dùng ID
     }
+
 }

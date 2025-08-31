@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.controller;
+package com.Nguyen.blogplatform.controller.Meme;
 
 import com.Nguyen.blogplatform.model.Meme;
 import com.Nguyen.blogplatform.payload.request.MemeRequest;
