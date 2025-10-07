@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.service;
 
 import com.Nguyen.blogplatform.exception.NotFoundException;
+import com.Nguyen.blogplatform.model.RefreshToken;
 import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.Enum.ERole;
@@ -48,6 +49,9 @@ public class AuthService {
     @Autowired
     private JwtUtils jwtUtils;
 
+    @Autowired
+    private RefreshTokenService refreshTokenService;
+
     public ResponseEntity<?> authenticateUser(@Valid LoginRequest loginRequest) {
         if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty()
                 || !loginRequest.getEmail().matches("^(.+)@(.+)$")) {
@@ -70,8 +74,9 @@ public class AuthService {
                 (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         System.out.println("User details abbc: " + userDetailss.getAuthorities());
 
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
+
         String jwtToken = jwtUtils.generateJwtToken(authentication);
+//        String refreshToken = jwtUtils.generateRefreshToken(authentication);
         jwtUtils.debugJwtClaims(jwtToken);
 
         // Create JwtResponse with full user info
@@ -90,11 +95,18 @@ public class AuthService {
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
+                userDetails.getAvatar(),
                 roles
         );
 
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
+        ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(refreshToken.getToken());
+        HttpHeaders responseHeaders = new HttpHeaders();
+        responseHeaders.add(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+        responseHeaders.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .headers(responseHeaders)
                 .body(jwtResponse);
     }
 
@@ -144,19 +156,67 @@ public class AuthService {
         }
 
         user.setRoles(roles);
-        userRepository.save(user);
+        User savedUser = userRepository.save(user);
 
-        // Create UserResponse with username, email, and roles
-        List<ERole> roleNames = roles.stream()
-                .map(Role::getName)
-                .toList();
+        // AUTO LOGIN: Authenticate the newly registered user
+        try {
+            // Create authentication token with the original password (before encoding)
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(signUpRequest.getEmail(), signUpRequest.getPassword()));
 
-        UserResponse userResponse = new UserResponse(user.getId(),
-                user.getUsername(),
-                user.getEmail(),
-                roleNames);
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            
+            // Generate JWT token
+            String jwt = jwtUtils.generateJwtToken(authentication);
+            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
 
-        return ResponseEntity.ok(userResponse);
+            // Create refresh token
+            RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedUser.getId());
+
+            // Generate cookies
+            ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
+            ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(refreshToken.getToken());
+
+            // Prepare role names for response
+            List<String> roleNames = roles.stream()
+                    .map(role -> role.getName().name())
+                    .collect(Collectors.toList());
+
+            // Create JWT response with auto login
+            JwtResponse jwtResponse = new JwtResponse(
+                    jwt,
+                    savedUser.getId(),
+                    savedUser.getUsername(),
+                    savedUser.getEmail(),
+                    roleNames,
+                    "Registration successful! You have been automatically logged in."
+            );
+
+            // Set response headers with cookies
+            HttpHeaders responseHeaders = new HttpHeaders();
+            responseHeaders.add(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+            responseHeaders.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+
+            return ResponseEntity.ok()
+                    .headers(responseHeaders)
+                    .body(jwtResponse);
+
+        } catch (Exception e) {
+            // If auto login fails, return user info without JWT (fallback)
+            System.err.println("Auto login failed after registration: " + e.getMessage());
+            
+            List<ERole> roleNames = roles.stream()
+                    .map(Role::getName)
+                    .toList();
+
+            UserResponse userResponse = new UserResponse(savedUser.getId(),
+                    savedUser.getUsername(),
+                    savedUser.getEmail(),
+                    savedUser.getAvatar(),
+                    roleNames);
+
+            return ResponseEntity.ok(userResponse);
+        }
     }
 
     public ResponseEntity<?> logoutUser() {

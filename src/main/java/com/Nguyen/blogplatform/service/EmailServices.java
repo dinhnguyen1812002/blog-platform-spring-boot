@@ -21,7 +21,8 @@ public class EmailServices {
 
     @Value("${base-url}")
     private String baseUrl;
-
+    @Value("${frontend-url}")
+    private String frontend_url;
     public EmailServices(JavaMailSender mailSender, TemplateEngine templateEngine) {
         this.mailSender = mailSender;
         this.templateEngine = templateEngine;
@@ -78,13 +79,13 @@ public class EmailServices {
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
         String unsubscribeUrl = baseUrl + "/api/v1/newsletter/unsubscribe?token=" + subscriber.getSubscriptionToken();
-        String postUrl = baseUrl + "/post/" + post.getSlug();
+
+        String postUrl = frontend_url + "/posts/" + post.getSlug();
 
         Context context = new Context();
         context.setVariable("subscriberName", subscriber.getName() != null ? subscriber.getName() : "Subscriber");
         context.setVariable("postTitle", post.getTitle());
-        context.setVariable("postContent", post.getContent().length() > 200 ?
-                post.getContent().substring(0, 200) + "..." : post.getContent());
+        context.setVariable("excerpt", post.getExcerpt());
         context.setVariable("postUrl", postUrl);
         context.setVariable("unsubscribeUrl", unsubscribeUrl);
         context.setVariable("postThumbnail", post.getThumbnail());

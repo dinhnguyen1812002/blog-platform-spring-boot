@@ -56,10 +56,12 @@ public class AccountController {
      * @return Updated UserResponse.
      */
     @PutMapping("/{id}/ban")
-//    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('ROLE_ADMIN')")
     public ResponseEntity<UserAdminResponse> banUser(@PathVariable String id, @RequestBody BanRequest banRequest) {
         UserAdminResponse bannedUser = managementServices.banUser(id, banRequest);
         return ResponseEntity.ok(bannedUser);
     }
+
+
 
 }

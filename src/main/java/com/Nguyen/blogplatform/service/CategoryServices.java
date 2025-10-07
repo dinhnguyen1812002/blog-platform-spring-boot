@@ -42,7 +42,7 @@ public class CategoryServices {
     }
     @Transactional
     public void generateSlugsForExistingCategories() {
-        System.out.println("Bắt đầu cập nhật slug cho các category cũ...");
+//        System.out.println("Bắt đầu cập nhật slug cho các category cũ...");
         List<Category> categories = categoryRepository.findAll();
 
         for (Category category : categories) {
@@ -50,11 +50,11 @@ public class CategoryServices {
             if (category.getSlug() == null || category.getSlug().isEmpty()) {
                 String newSlug = SlugUtil.createSlug(category.getCategory());
                 category.setSlug(newSlug);
-                System.out.println("Đã tạo slug: '" + newSlug + "' cho category: '" + category.getCategory() + "'");
+//                System.out.println("Đã tạo slug: '" + newSlug + "' cho category: '" + category.getCategory() + "'");
                 // Lưu lại đối tượng đã được cập nhật
                 categoryRepository.save(category);
             }
         }
-        System.out.println("Hoàn tất cập nhật slug cho các category.");
+//        System.out.println("Hoàn tất cập nhật slug cho các category.");
     }
 }

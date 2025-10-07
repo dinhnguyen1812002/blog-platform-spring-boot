@@ -213,6 +213,7 @@ public class CommentServices {
           userResponse.setId(comment.getUser().getId());
           userResponse.setUsername(comment.getUser().getUsername());
           userResponse.setEmail(comment.getUser().getEmail());
+          userResponse.setAvatar(comment.getUser().getAvatar());
           response.setUser(userResponse);
 
         }

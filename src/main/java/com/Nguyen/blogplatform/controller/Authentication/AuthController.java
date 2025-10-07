@@ -66,49 +66,14 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
-
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-        String jwt = jwtUtils.generateJwtToken(authentication);
-
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-
-        // Get user from database to check roles
-        User user = userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new NotFoundException("User not found"));
-        logger.info("User roles from database: {}", user.getRoles().stream()
-                .map(role -> role.getName().name())
-                .collect(Collectors.toList()));
-
-        List<ERole> rolesFromDatabase = user.getRoles().stream()
-                .map(Role::getName)
-                .collect(Collectors.toList());
-
-        // Create new refresh token
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
-
-        // Generate cookies
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
-        ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(refreshToken.getToken());
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                .body(new JwtResponse(
-                        jwt,
-                        userDetails.getId(),
-                        userDetails.getUsername(),
-                        userDetails.getEmail(),
-                        rolesFromDatabase.stream().map(ERole::name).collect(Collectors.toList())
-                ));
+        return authService.authenticateUser(loginRequest);
     }
 
     @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-
         // logger.info("Registering user {} {} {}", signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getPassword());
+        
+        // AuthService now handles auto login after registration
         return authService.registerUser(signUpRequest);
     }
 
@@ -120,25 +85,30 @@ public class AuthController {
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(user -> {
-                    String token = jwtUtils.generateTokenFromUserId(user.getId(), user.getEmail());
+                    String newAccessToken = jwtUtils.generateTokenFromUserId(user.getId(), user.getEmail());
+                    // Rotate refresh token
+                    refreshTokenService.deleteByUserId(user.getId()); // Delete old token
+                    RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
 
                     // Generate cookies
-                    ResponseCookie jwtCookie = ResponseCookie.from(jwtUtils.getJwtCookie(), token)
+                    ResponseCookie jwtCookie = ResponseCookie.from(jwtUtils.getJwtCookie(), newAccessToken)
                             .path("/")
-                            .maxAge(24 * 60 * 60)
+                            .maxAge(7 * 24 * 60 * 60) // 7 days
                             .httpOnly(true)
                             .secure(true)
                             .sameSite("Lax")
                             .build();
 
+                    ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(newRefreshToken.getToken());
+
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                            .body(new TokenRefreshResponse(token, requestRefreshToken));
+                            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                            .body(new TokenRefreshResponse(newAccessToken, newRefreshToken.getToken()));
                 })
                 .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
                         "Refresh token is not in database!"));
     }
-
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -185,6 +155,19 @@ public class AuthController {
 //        response.put("email", userDetails.getEmail());
         response.put("role", roles); // Use roles from userDetails for consistency
 
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/test-auto-login")
+    public ResponseEntity<?> testAutoLogin() {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", "Auto login feature is now active!");
+        response.put("description", "When users register, they will be automatically logged in and receive JWT tokens.");
+        response.put("endpoints", Map.of(
+            "register", "/api/v1/auth/register",
+            "login", "/api/v1/auth/login",
+            "me", "/api/v1/auth/me"
+        ));
         return ResponseEntity.ok(response);
     }
 

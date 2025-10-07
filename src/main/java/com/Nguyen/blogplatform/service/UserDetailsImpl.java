@@ -27,6 +27,8 @@ public class UserDetailsImpl implements UserDetails {
 
     @Getter
     private String email;
+    @Getter
+    private String avatar;
 
     @JsonIgnore
     private String password;
@@ -37,12 +39,13 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(String id, String username, String email, String password,
+    public UserDetailsImpl(String id, String username, String email, String password, String avatar,
                            List<Role> roles, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.avatar = avatar;
         this.role = roles != null ? roles : new ArrayList<>();
         this.authorities = authorities;
     }
@@ -53,7 +56,7 @@ public class UserDetailsImpl implements UserDetails {
         List<GrantedAuthority> authorities = new ArrayList<>();
 
         if (user.getRoles() != null && !user.getRoles().isEmpty()) {
-            roles = user.getRoles().stream().collect(Collectors.toList());
+            roles = new ArrayList<>(user.getRoles());
             authorities = user.getRoles().stream()
                     .map(role -> new SimpleGrantedAuthority(role.getName().name()))
                     .collect(Collectors.toList());
@@ -64,6 +67,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getUsername(),
                 user.getEmail(),
                 user.getPassword(),
+                user.getAvatar(),
                 roles,
                 authorities);
     }

@@ -52,6 +52,7 @@ public class PostMapper {
                                 tag.getColor()))
                         .collect(Collectors.toSet()))
                 .commentCount(post.getComments().size())
+
                 .viewCount(post.getView())
                 .likeCount((long) post.getLike().size())
                 .averageRating(calculateAverageRating(post))
@@ -103,7 +104,7 @@ public class PostMapper {
     }
 
     public UserResponse createUserResponse(User user) {
-        return new UserResponse(user.getId(), user.getUsername(), user.getEmail());
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getAvatar() );
     }
 
     public double calculateAverageRating(Post post) {

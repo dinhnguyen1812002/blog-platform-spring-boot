@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,4 +40,9 @@ public interface NewsletterRepository extends JpaRepository<Newsletter, String> 
     
     @Query("SELECT n FROM Newsletter n WHERE n.email LIKE %:email%")
     List<Newsletter> findByEmailContaining(@Param("email") String email);
+    long countByIsActiveTrueAndIsConfirmedTrue();
+
+    long countBySubscribedAtBetweenAndIsActiveTrueAndIsConfirmedTrue(
+            LocalDateTime start, LocalDateTime end);
+
 }

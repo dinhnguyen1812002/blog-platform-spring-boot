@@ -16,18 +16,26 @@ public class UserResponse {
     private String avatar;
     private List<ERole> roles;
 
-    public UserResponse(String id, String username, String email) {
+    public UserResponse(String id, String username, String email, String avatar,List<ERole> roles) {
         this.id = id;
         this.username = username;
         this.email = email;
-    }
-
-    public UserResponse(String id, String username, String email, List<ERole> roles) {
-        this.id = id;
-        this.username = username;
-        this.email = email;
+        this.avatar = avatar;
         this.roles = roles;
     }
 
+//    public UserResponse(String id, String username, String email, List<ERole> roles) {
+//        this.id = id;
+//        this.username = username;
+//        this.email = email;
+//        this.roles = roles;
+//    }
+
+    public UserResponse(String id, String username, String email, String avatar ) {
+        this.id = id;
+        this.username = username;
+        this.avatar = avatar;
+        this.email = email;
+    }
 
 }

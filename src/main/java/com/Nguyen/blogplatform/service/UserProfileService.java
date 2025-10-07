@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -154,16 +155,21 @@ public class UserProfileService {
             socialMediaLinkRepository.deleteAll(user.getSocialMediaLinks());
             user.getSocialMediaLinks().clear();
 
-            // Thêm các liên kết mới (validation đã được thực hiện bởi @ValidSocialMediaLinks)
-            request.getSocialMediaLinks().entrySet().stream()
-                    .filter(entry -> entry.getValue() != null && !entry.getValue().trim().isEmpty())
-                    .forEach(entry -> {
-                        SocialMediaLink link = new SocialMediaLink();
-                        link.setUser(user);
-                        link.setPlatform(entry.getKey());
-                        link.setUrl(entry.getValue());
-                        user.getSocialMediaLinks().add(link);
-                    });
+            // Validate and add new links
+            for (Map.Entry<ESocialMediaPlatform, String> entry : request.getSocialMediaLinks().entrySet()) {
+                String url = entry.getValue();
+                if (url != null && !url.trim().isEmpty()) {
+                    // Validate URL format
+                    if (!isValidUrl(url)) {
+                        throw new IllegalArgumentException("Invalid URL format for " + entry.getKey() + ": " + url);
+                    }
+                    SocialMediaLink link = new SocialMediaLink();
+                    link.setUser(user);
+                    link.setPlatform(entry.getKey());
+                    link.setUrl(url);
+                    user.getSocialMediaLinks().add(link);
+                }
+            }
         }
 
         // Lưu user
@@ -257,6 +263,14 @@ public class UserProfileService {
     }
 
     @Transactional
+    public void updateUserAvatar(String userId, String avatarUrl) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
+        user.setAvatar(avatarUrl);
+        userRepository.save(user);
+    }
+
+    @Transactional
     public UserProfileResponse updateUserProfileMarkdown(String userId, String markdownContent) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("User not found with id: " + userId));
@@ -303,5 +317,15 @@ public class UserProfileService {
                 .commentsCount(commentsCount)
                 .customProfileMarkdown(processedContent)
                 .build();
+    }
+
+    private boolean isValidUrl(String url) {
+        if (url == null || url.trim().isEmpty()) {
+            return false;
+        }
+        // Simple URL validation regex
+        String urlRegex = "^(https?://)([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([/\\w \\.-]*)*/?$";
+        Pattern pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
+        return pattern.matcher(url.trim()).matches();
     }
 }

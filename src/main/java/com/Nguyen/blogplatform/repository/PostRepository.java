@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,4 +48,6 @@ Optional<Post> findBySlug(String slug);
     Long countByUser(@Param("user") User user);
     boolean existsByTitleIgnoreCase(String title);
     List<Post> findTop5ByUserOrderByCreatedAtDesc(User user);
+
+    long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 }

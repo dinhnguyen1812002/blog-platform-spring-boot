@@ -41,10 +41,8 @@ public class RefreshTokenService {
         
         // Check if user already has a refresh token
         Optional<RefreshToken> existingToken = refreshTokenRepository.findByUser(user);
-        if (existingToken.isPresent()) {
-            // Delete existing token
-            refreshTokenRepository.delete(existingToken.get());
-        }
+        // Delete existing token
+        existingToken.ifPresent(token -> refreshTokenRepository.delete(token));
 
         refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));

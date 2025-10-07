@@ -9,6 +9,7 @@ import com.Nguyen.blogplatform.service.UserDetailsImpl;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.constraints.Null;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,14 +32,11 @@ public class JwtUtils {
     @Value("${blog.app.jwtExpirationMs}")
     private int jwtExpirationMs;
 
+    @Getter
     @Value("${blog.app.jwtCookieName}")
     private String jwtCookie;
 
-    public String getJwtCookie() {
-        return jwtCookie;
-    }
-
-//    public String generateJwtToken(Authentication authentication) {
+    //    public String generateJwtToken(Authentication authentication) {
 //
 //        UserDetailsImpl userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
 //

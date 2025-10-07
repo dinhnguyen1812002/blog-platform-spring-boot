@@ -94,9 +94,6 @@ public class AuthorController {
         }
     }
 
-
-
-
     /**
      * Cập nhật bài viết
      * @param id ID của bài viết
@@ -158,118 +155,6 @@ public class AuthorController {
     }
 
     /**
-     * Test endpoint để kiểm tra tính năng tạo post đơn giản
-     * Không cần thumbnail, chỉ cần title và content
-     */
-    @PostMapping("/test-create")
-    public ResponseEntity<?> testCreatePost(@RequestBody PostRequest postRequest) {
-        try {
-            // Lấy thông tin user với helper method
-            UserDetailsImpl userDetails = getCurrentUserDetails();
-            if (userDetails == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new MessageResponse("User not authenticated or invalid authentication type"));
-            }
-
-            // Basic validation
-            if (postRequest.getTitle() == null || postRequest.getTitle().trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(new MessageResponse("Title is required"));
-            }
-
-            // Tạo post đơn giản
-            PostRequest simpleRequest = new PostRequest();
-            simpleRequest.setTitle(postRequest.getTitle());
-            simpleRequest.setContent(postRequest.getContent() != null ? postRequest.getContent() : "Default content");
-            simpleRequest.setCategories(postRequest.getCategories());
-            simpleRequest.setTags(postRequest.getTags());
-
-            Post createdPost = authorServices.newPost(simpleRequest, userDetails.getId());
-
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(new MessageResponse("Post created successfully with ID: " + createdPost.getId()));
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResponse("Error: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * Endpoint demo workflow hoàn chỉnh với thumbnail
-     *
-     * Workflow demo:
-     * 1. Upload thumbnail: POST /api/v1/upload với file
-     * 2. Tạo post: POST /api/v1/author/demo-create với thumbnail URL
-     */
-    @PostMapping("/demo-create")
-    public ResponseEntity<?> demoCreatePostWithThumbnail(@RequestBody PostRequest postRequest) {
-        try {
-            // Lấy thông tin user với helper method
-            UserDetailsImpl userDetails = getCurrentUserDetails();
-            if (userDetails == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(new MessageResponse("User not authenticated or invalid authentication type"));
-            }
-
-            // Validate input
-            if (postRequest.getTitle() == null || postRequest.getTitle().trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(new MessageResponse("Title is required"));
-            }
-
-            if (postRequest.getContent() == null || postRequest.getContent().trim().isEmpty()) {
-                return ResponseEntity.badRequest()
-                        .body(new MessageResponse("Content is required"));
-            }
-
-            // Log thông tin thumbnail nếu có
-            if (postRequest.getThumbnail() != null && !postRequest.getThumbnail().trim().isEmpty()) {
-                System.out.println("Creating post with thumbnail: " + postRequest.getThumbnail());
-            } else {
-                System.out.println("Creating post without thumbnail");
-            }
-
-            Post createdPost = authorServices.newPost(postRequest, userDetails.getId());
-            PostResponse postResponse = authorServices.toPostResponse(createdPost);
-
-            return ResponseEntity.status(HttpStatus.CREATED).body(postResponse);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new MessageResponse("Error: " + e.getMessage()));
-        }
-    }
-
-    /**
-     * Debug endpoint để kiểm tra request format
-     */
-    @PostMapping("/debug-request")
-    public ResponseEntity<?> debugRequest(@RequestBody PostRequest postRequest) {
-        System.out.println("=== Debug Request ===");
-        System.out.println("Raw PostRequest: " + postRequest);
-        System.out.println("Title: " + postRequest.getTitle());
-        System.out.println("Content: " + postRequest.getContent());
-        System.out.println("Thumbnail: " + postRequest.getThumbnail());
-        System.out.println("Featured: " + postRequest.getFeatured());
-        System.out.println("Categories: " + postRequest.getCategories());
-        System.out.println("Tags: " + postRequest.getTags());
-        System.out.println("====================");
-
-        return ResponseEntity.ok(Map.of(
-            "message", "Debug completed",
-            "title", postRequest.getTitle(),
-            "content", postRequest.getContent(),
-            "thumbnail", postRequest.getThumbnail(),
-            "featured", postRequest.getFeatured(),
-            "categories", postRequest.getCategories(),
-            "tags", postRequest.getTags()
-        ));
-    }
-
-    /**
      * Helper method để lấy UserDetailsImpl một cách an toàn
      */
     private UserDetailsImpl getCurrentUserDetails() {
@@ -285,6 +170,7 @@ public class AuthorController {
 
         return (UserDetailsImpl) principal;
     }
+
 
     /**
      * Helper method để convert Post thành PostResponse

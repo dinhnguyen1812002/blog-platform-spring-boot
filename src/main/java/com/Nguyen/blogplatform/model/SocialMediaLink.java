@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.model;
 
 import com.Nguyen.blogplatform.Enum.ESocialMediaPlatform;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,6 +29,7 @@ public class SocialMediaLink {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
     private User user;
 
     // ✅ Đảm bảo mỗi user chỉ có 1 link cho mỗi platform

@@ -1,7 +1,9 @@
 package com.Nguyen.blogplatform.controller.Authentication;
 
+import com.Nguyen.blogplatform.Enum.ESocialMediaPlatform;
 import com.Nguyen.blogplatform.exception.ConflictException;
 import com.Nguyen.blogplatform.exception.TokenExpiredException;
+import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.UserProfileUpdateRequest;
@@ -137,7 +139,9 @@ public class UserController {
         UserResponse response = new UserResponse(
                 user.getId(),
                 user.getUsername(),
+
                 user.getEmail(),
+                user.getAvatar(),
                 user.getRoles().stream()
                         .map(Role::getName)
                         .collect(Collectors.toList())
@@ -165,6 +169,44 @@ public class UserController {
     public ResponseEntity<UserProfileResponse> getProfileById(@PathVariable String userId) {
         UserProfileResponse response = userProfileService.getUserProfileById(userId);
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Get public profile by username - returns only public information
+     * TODO: Add caching with Redis for performance optimization
+     */
+    @GetMapping("/public/{username}")
+    public ResponseEntity<?> getPublicProfile(@PathVariable String username) {
+        try {
+            User user = userService.findByUsername(username);
+            if (user == null) {
+                return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
+            }
+
+            // Get social media links (only non-null URLs)
+            Map<ESocialMediaPlatform, String> socialMediaLinks = user.getSocialMediaLinks().stream()
+                    .filter(link -> link.getUrl() != null && !link.getUrl().trim().isEmpty())
+                    .collect(Collectors.toMap(
+                            link -> link.getPlatform(),
+                            link -> link.getUrl(),
+                            (existing, replacement) -> existing,
+                            HashMap::new
+                    ));
+
+            Map<String, Object> publicProfile = new HashMap<>();
+            publicProfile.put("username", user.getUsername());
+            publicProfile.put("avatar", user.getAvatar());
+            publicProfile.put("email",user.getEmail());
+            publicProfile.put("bio", user.getBio());
+
+            publicProfile.put("socialMediaLinks", socialMediaLinks);
+
+
+            return ResponseEntity.ok(publicProfile);
+
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Internal server error"));
+        }
     }
 
     // @PutMapping("/profile/custom")

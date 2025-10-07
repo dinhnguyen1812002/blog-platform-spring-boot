@@ -1,11 +1,10 @@
 package com.Nguyen.blogplatform.Utils;
 
-import org.springframework.cglib.proxy.NoOp;
-
 import java.util.regex.Pattern;
 
 public class SlugUtil {
-    private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^\\w-]");
+    // Cho phép Unicode letters (\p{L}), digits (\p{N}), dấu gạch ngang và gạch dưới
+    private static final Pattern NON_ALPHANUMERIC = Pattern.compile("[^\\p{L}\\p{N}-]");
     private static final Pattern WHITESPACE = Pattern.compile("\\s+");
 
     public static String createSlug(String input) {
@@ -13,8 +12,19 @@ public class SlugUtil {
             return "";
         }
         String slug = input.toLowerCase();
-        slug = NON_ALPHANUMERIC.matcher(slug).replaceAll("-");
+
+        // Thay khoảng trắng bằng -
         slug = WHITESPACE.matcher(slug).replaceAll("-");
+
+        // Loại bỏ ký tự không hợp lệ
+        slug = NON_ALPHANUMERIC.matcher(slug).replaceAll("-");
+
+        // Loại bỏ nhiều dấu - liên tiếp
+        slug = slug.replaceAll("-+", "-");
+
+        // Bỏ dấu - ở đầu/cuối (nếu có)
+        slug = slug.replaceAll("^-|-$", "");
+
         return slug;
     }
 }

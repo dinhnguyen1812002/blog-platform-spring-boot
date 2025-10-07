@@ -160,7 +160,8 @@ public class BookmarkService {
                 .user(new UserResponse(
                     savedPost.getUser().getId(),
                     savedPost.getUser().getUsername(),
-                    savedPost.getUser().getEmail()
+                    savedPost.getUser().getEmail(),
+                    savedPost.getUser().getAvatar()
                 ))
                 .notes(savedPost.getNotes())
                 .savedAt(savedPost.getSavedAt())

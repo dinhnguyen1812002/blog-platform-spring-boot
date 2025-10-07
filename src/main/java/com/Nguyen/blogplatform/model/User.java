@@ -8,6 +8,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Builder;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -46,8 +47,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
     private Set<SocialMediaLink> socialMediaLinks = new HashSet<>();
-
-
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
@@ -91,6 +90,11 @@ public class User {
     @Column(name = "ban_reason")
     private String banReason;
 
+
+    @Column(name = "created_at" )
+    private LocalDateTime createdAt;
+
+
     public User() {
     }
     public User(String username, String email, String password) {
@@ -105,4 +109,10 @@ public class User {
         this.roles = (Set<Role>) role;
     }
 
+    @PrePersist
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = LocalDateTime.now();
+        }
+    }
 }

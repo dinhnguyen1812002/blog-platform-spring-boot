@@ -182,7 +182,7 @@ public class AuthorServices {
 
         return PostResponse.builder()
                 .id(post.getId())
-                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail()))
+                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail(), post.getUser().getAvatar()))
                 .title(post.getTitle())
                 .slug(post.getSlug())
                 .createdAt(post.getCreatedAt())
@@ -196,6 +196,7 @@ public class AuthorServices {
                 .likeCount((long) post.getLike().size())
                 .averageRating(averageRating)
                 .public_date(post.getPublic_date())
+                .is_publish(post.getIs_publish())
                 .build();
     }
 }

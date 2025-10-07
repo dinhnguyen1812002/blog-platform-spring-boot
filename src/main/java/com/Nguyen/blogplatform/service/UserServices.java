@@ -5,12 +5,16 @@ import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.LoginRequest;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;
+import com.Nguyen.blogplatform.payload.response.TopUserResponse;
+import com.Nguyen.blogplatform.repository.PostRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseCookie;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -25,9 +29,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 public class UserServices {
@@ -42,6 +44,9 @@ public class UserServices {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private PostRepository postRepository;
     @Value("${base-url}")
     private String bashUrl;
 
@@ -70,6 +75,7 @@ public class UserServices {
 
         mailSender.send(message);
     }
+
     public void resetPassword(String token, String newPassword) {
         User user = userRepository.findByResetToken(token);
         if (user == null || user.getResetTokenExpiry().isBefore(LocalDateTime.now())) {
@@ -98,6 +104,11 @@ public class UserServices {
         return userRepository.findById(id)
                 .orElseThrow(()->new UsernameNotFoundException("User not Found with email"+ id));
     }
+
+    public User findByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(()->new UsernameNotFoundException("User not Found with username: "+ username));
+    }
 //    public User findById(String id) {
 //        return userRepository.findById(id).orElse(null);
 //    }
@@ -107,6 +118,23 @@ public class UserServices {
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         return user.getRoles();
+    }
+
+    public List<TopUserResponse> getTopUser(int limit) {
+        return userRepository.findAll()
+                .stream()
+                .map(user -> new TopUserResponse(
+                        user.getId(),
+                        user.getUsername(),
+                        user.getEmail(),
+                        user.getAvatar(),
+                        user.getBio(),
+                        postRepository.countByUser(user),
+                        user.getSocialMediaLinks()
+                ))
+                .sorted(Comparator.comparingLong(TopUserResponse::postCount).reversed())
+                .limit(limit)
+                .toList();
     }
 
 }

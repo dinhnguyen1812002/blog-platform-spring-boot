@@ -3,8 +3,11 @@ package com.Nguyen.blogplatform.controller.Media;
 
 import com.Nguyen.blogplatform.Utils.UrlUtils;
 import com.Nguyen.blogplatform.payload.response.ResponseResult;
+import com.Nguyen.blogplatform.service.UserDetailsImpl;
+import com.Nguyen.blogplatform.service.UserProfileService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -21,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 @RestController
 
 @RequestMapping("/api/v1/upload")
@@ -28,10 +32,18 @@ import java.util.Objects;
 public class UploadController {
     String IMAGE_FOLDER = "./src/main/resources/images/";
     private static final String THUMBNAIL_DIR = "uploads/thumbnail/";
+    private static final String AVATAR_DIR = "uploads/avatar/";
     public static final String PUBLIC_UPLOAD_PATH = "/uploads/thumbnail/";
+    private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+    private static final String[] ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png", "image/gif"};
 
 
     private UrlUtils url;
+    private final UserProfileService userProfileService;
+
+    public UploadController(UserProfileService userProfileService) {
+        this.userProfileService = userProfileService;
+    }
 
     @PostMapping()
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile uploadfile) {
@@ -61,6 +73,75 @@ public class UploadController {
         response.put("message", "File uploaded successfully");
         response.put("statusCode", "200");
         return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Upload avatar for authenticated user
+     * Validates file type (JPEG, PNG, GIF), size (max 5MB), saves to uploads/avatar/, updates user profile
+     */
+    @PostMapping("/avatar")
+    public ResponseEntity<?> uploadAvatar(@RequestParam("file") MultipartFile file,
+                                          @AuthenticationPrincipal UserDetailsImpl userDetails) {
+        try {
+            // Validate file
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "File is empty"));
+            }
+
+            // Check file size
+            if (file.getSize() > MAX_FILE_SIZE) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "File size exceeds 5MB limit"));
+            }
+
+            // Check content type
+            String contentType = file.getContentType();
+            boolean isValidType = false;
+            for (String allowedType : ALLOWED_CONTENT_TYPES) {
+                if (allowedType.equals(contentType)) {
+                    isValidType = true;
+                    break;
+                }
+            }
+            if (!isValidType) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Invalid file type. Only JPEG, PNG, and GIF are allowed"));
+            }
+
+            // Create avatar directory if not exists
+            Path avatarPath = Paths.get(AVATAR_DIR);
+            if (!Files.exists(avatarPath)) {
+                Files.createDirectories(avatarPath);
+            }
+
+            // Generate unique filename
+            String originalFilename = file.getOriginalFilename();
+            String extension = "";
+            if (originalFilename != null && originalFilename.contains(".")) {
+                extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+            }
+            String filename = UUID.randomUUID().toString() + extension;
+            Path filePath = avatarPath.resolve(filename);
+
+            // Save file
+            Files.write(filePath, file.getBytes());
+
+            // Generate URL
+            String avatarUrl = getBaseEnvLinkURL() + AVATAR_DIR + filename;
+
+            // Update user profile
+            userProfileService.updateUserAvatar(userDetails.getId(), avatarUrl);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("success", true);
+            response.put("message", "Avatar uploaded successfully");
+            response.put("avatarUrl", avatarUrl);
+
+            return ResponseEntity.ok(response);
+
+        } catch (IOException e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error uploading file: " + e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Unexpected error: " + e.getMessage()));
+        }
     }
 
     //save file
@@ -105,6 +186,7 @@ public class UploadController {
     //     }
     //     return baseEnvLinkURL;
     // }
+
     public String getBaseEnvLinkURL() {
     HttpServletRequest request =
             ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
