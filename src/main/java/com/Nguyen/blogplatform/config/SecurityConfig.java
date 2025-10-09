@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.config;
 
+import com.Nguyen.blogplatform.exception.CustomAccessDeniedHandler;
 import com.Nguyen.blogplatform.security.AuthEntryPointJwt;
 import com.Nguyen.blogplatform.security.AuthTokenFilter;
 import com.Nguyen.blogplatform.service.UserDetailsServiceImpl;
@@ -37,6 +38,8 @@ public class SecurityConfig {
     @Autowired
     private AuthEntryPointJwt unauthorizedHandler;
 
+    @Autowired
+    private CustomAccessDeniedHandler accessDeniedHandler;
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -61,10 +64,12 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .exceptionHandling(ex -> ex.authenticationEntryPoint(unauthorizedHandler))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex
+                        .accessDeniedHandler(accessDeniedHandler)
+                )
                 .authorizeHttpRequests(auth -> auth
 
                         // --- PUBLIC ENDPOINTS ---
@@ -83,6 +88,12 @@ public class SecurityConfig {
                                 "/api/v1/jwt/validate",
                                 "/api/debug/**"
                         ).permitAll()
+                        .requestMatchers("/api/series",
+                                        "/api/series/**/slug/**",
+                                        "/api/series/popular"
+                        ).permitAll()
+
+                        .requestMatchers("/api/series/**").authenticated()
 
                         // --- POSTS / TAGS / CATEGORIES (public GET) ---
                         .requestMatchers(HttpMethod.GET,

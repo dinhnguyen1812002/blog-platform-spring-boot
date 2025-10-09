@@ -9,9 +9,15 @@ import lombok.*;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+/**
+ * Entity đại diện cho một Series (chuỗi bài viết)
+ * Một series chứa nhiều bài viết được sắp xếp theo thứ tự
+ */
 @Entity
 @Table(name = "series")
 @Getter
@@ -25,39 +31,93 @@ public class Series {
     @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
-    @Column(nullable = false, unique = true)
-    @Size(min = 5, message = "*Series title must have at least 5 characters")
-    @NotEmpty(message = "*Please provide a title for the series")
+    @Column(name = "title", nullable = false)
+    @Size(min = 5, max = 200, message = "Series title must be between 5 and 200 characters")
+    @NotEmpty(message = "Please provide a series title")
     private String title;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "slug", nullable = false, unique = true)
+    @Size(min = 5, max = 250, message = "Series slug must be between 5 and 250 characters")
+    @NotEmpty(message = "Please provide a series slug")
+    private String slug;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    @Size(min = 10, message = "Description must have at least 10 characters")
     private String description;
 
+    @Column(name = "thumbnail")
     private String thumbnail;
 
-    @Column(name = "is_published", nullable = false)
+    // Tác giả của series
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonBackReference
+    private User user;
+
+    // Danh sách các bài viết trong series với thứ tự
+    @OneToMany(mappedBy = "series", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference("series-posts")
+    @OrderBy("orderIndex ASC")
     @Builder.Default
-    private boolean published = false;
+    private List<SeriesPost> seriesPosts = new ArrayList<>();
+
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
+
+    @Column(name = "is_completed", nullable = false)
+    @Builder.Default
+    private Boolean isCompleted = false;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    @JsonBackReference
-    private User author;
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "series", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
-//    @OrderBy("orderInSeries ASC")
-    @OrderBy("")
-    @JsonManagedReference("series-posts")
+    @Column(name = "total_posts")
     @Builder.Default
-    private Set<Post> posts = new LinkedHashSet<>();
+    private Integer totalPosts = 0;
+
+    @Column(name = "view_count")
+    @Builder.Default
+    private Long viewCount = 0L;
 
     @PrePersist
-    public void prePersist() {
-        if (createdAt == null) {
-            createdAt = LocalDateTime.now();
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    // Helper methods để quản lý posts trong series
+    public void addPost(Post post, Integer orderIndex) {
+        SeriesPost seriesPost = new SeriesPost();
+        seriesPost.setSeries(this);
+        seriesPost.setPost(post);
+        seriesPost.setOrderIndex(orderIndex);
+        seriesPosts.add(seriesPost);
+        this.totalPosts = seriesPosts.size();
+    }
+
+    public void removePost(Post post) {
+        seriesPosts.removeIf(sp -> sp.getPost().getId().equals(post.getId()));
+        this.totalPosts = seriesPosts.size();
+        reorderPosts();
+    }
+
+    // Sắp xếp lại thứ tự các bài viết sau khi xóa
+    private void reorderPosts() {
+        for (int i = 0; i < seriesPosts.size(); i++) {
+            seriesPosts.get(i).setOrderIndex(i + 1);
         }
+    }
+
+    public void incrementViewCount() {
+        this.viewCount++;
     }
 }

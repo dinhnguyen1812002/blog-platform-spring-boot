@@ -18,6 +18,7 @@ import com.Nguyen.blogplatform.security.JwtUtils;
 import com.Nguyen.blogplatform.service.AuthService;
 import com.Nguyen.blogplatform.service.RefreshTokenService;
 import com.Nguyen.blogplatform.service.UserDetailsImpl;
+import com.Nguyen.blogplatform.validation.annotation.WithRateLimitProtection;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,6 +66,7 @@ public class AuthController {
     RefreshTokenService refreshTokenService;
 
     @PostMapping("/login")
+    @WithRateLimitProtection
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         return authService.authenticateUser(loginRequest);
     }
@@ -109,6 +111,7 @@ public class AuthController {
                 .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
                         "Refresh token is not in database!"));
     }
+
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser() {
         UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -158,18 +161,18 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/test-auto-login")
-    public ResponseEntity<?> testAutoLogin() {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", "Auto login feature is now active!");
-        response.put("description", "When users register, they will be automatically logged in and receive JWT tokens.");
-        response.put("endpoints", Map.of(
-            "register", "/api/v1/auth/register",
-            "login", "/api/v1/auth/login",
-            "me", "/api/v1/auth/me"
-        ));
-        return ResponseEntity.ok(response);
-    }
+//    @GetMapping("/test-auto-login")
+//    public ResponseEntity<?> testAutoLogin() {
+//        Map<String, Object> response = new HashMap<>();
+//        response.put("message", "Auto login feature is now active!");
+//        response.put("description", "When users register, they will be automatically logged in and receive JWT tokens.");
+//        response.put("endpoints", Map.of(
+//            "register", "/api/v1/auth/register",
+//            "login", "/api/v1/auth/login",
+//            "me", "/api/v1/auth/me"
+//        ));
+//        return ResponseEntity.ok(response);
+//    }
 
 //    @PostMapping("/fix-roles")
 //    @Transactional

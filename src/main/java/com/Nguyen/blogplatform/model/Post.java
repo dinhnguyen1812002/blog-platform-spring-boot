@@ -49,6 +49,7 @@ public class Post {
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_at", nullable = false, updatable = false)
     private Date createdAt;
+
     @Column(name = "featured", nullable = false)
     private Boolean featured;
 
@@ -97,6 +98,8 @@ public class Post {
     @JsonManagedReference("post-ratings")
     @Builder.Default
     private Set<Rating> ratings = new HashSet<>();
+
+
     @ManyToMany
     @JoinTable(
             name = "post_tags",
