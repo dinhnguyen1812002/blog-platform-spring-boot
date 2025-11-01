@@ -79,38 +79,47 @@ public class AuthController {
         return authService.registerUser(signUpRequest);
     }
 
-    @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(@Valid @RequestBody TokenRefreshRequest request) {
-        String requestRefreshToken = request.getRefreshToken();
 
-        return refreshTokenService.findByToken(requestRefreshToken)
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(
+            @CookieValue(name = "${blog.app.refreshTokenCookieName}", required = false) String refreshTokenCookie) {
+
+        if (refreshTokenCookie == null || refreshTokenCookie.isEmpty()) {
+            throw new TokenRefreshException(null, "Refresh token cookie is missing!");
+        }
+
+        return refreshTokenService.findByToken(refreshTokenCookie)
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(user -> {
+                    // Tạo access token mới
                     String newAccessToken = jwtUtils.generateTokenFromUserId(user.getId(), user.getEmail());
-                    // Rotate refresh token
-                    refreshTokenService.deleteByUserId(user.getId()); // Delete old token
+
+                    // Xoay vòng refresh token (xóa cái cũ, tạo cái mới)
+                    refreshTokenService.deleteByUserId(user.getId());
                     RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
 
-                    // Generate cookies
+                    // Tạo cookies mới
                     ResponseCookie jwtCookie = ResponseCookie.from(jwtUtils.getJwtCookie(), newAccessToken)
                             .path("/")
-                            .maxAge(7 * 24 * 60 * 60) // 7 days
+                            .maxAge(7 * 24 * 60 * 60) // 7 ngày
                             .httpOnly(true)
                             .secure(true)
                             .sameSite("Lax")
                             .build();
 
-                    ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(newRefreshToken.getToken());
+                    ResponseCookie refreshTokenCookieNew = refreshTokenService.generateRefreshTokenCookie(newRefreshToken.getToken());
 
+                    // Trả lại access token + refresh token mới
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                            .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                            .header(HttpHeaders.SET_COOKIE, refreshTokenCookieNew.toString())
                             .body(new TokenRefreshResponse(newAccessToken, newRefreshToken.getToken()));
                 })
-                .orElseThrow(() -> new TokenRefreshException(requestRefreshToken,
+                .orElseThrow(() -> new TokenRefreshException(refreshTokenCookie,
                         "Refresh token is not in database!"));
     }
+
 
     @PostMapping("/logout")
     public ResponseEntity<?> logoutUser() {
@@ -146,110 +155,17 @@ public class AuthController {
                 .collect(Collectors.toList());
 
         // Debug roles
-        System.out.println("Roles from userDetails: " + roles);
-        System.out.println("Roles from database: " + user.getRoles().stream()
-                .map(Role::getName)
-                .toList());
 
         // Build response
         Map<String, Object> response = new HashMap<>();
         response.put("id", userDetails.getId());
         response.put("username", userDetails.getUsername());
-//        response.put("email", userDetails.getEmail());
+        response.put("email", userDetails.getEmail());
+        response.put("avatar",userDetails.getAvatar());
+//        response.put("")
         response.put("role", roles); // Use roles from userDetails for consistency
 
         return ResponseEntity.ok(response);
     }
-
-//    @GetMapping("/test-auto-login")
-//    public ResponseEntity<?> testAutoLogin() {
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("message", "Auto login feature is now active!");
-//        response.put("description", "When users register, they will be automatically logged in and receive JWT tokens.");
-//        response.put("endpoints", Map.of(
-//            "register", "/api/v1/auth/register",
-//            "login", "/api/v1/auth/login",
-//            "me", "/api/v1/auth/me"
-//        ));
-//        return ResponseEntity.ok(response);
-//    }
-
-//    @PostMapping("/fix-roles")
-//    @Transactional
-//    @ResponseStatus(HttpStatus.OK)
-//    public ResponseEntity<?> fixRoles() {
-//        logger.info("Starting role fix process");
-//
-//        // 1. Ensure roles exist with ROLE_ prefix
-//        createRoleIfNotExists("ROLE_USER");
-//        createRoleIfNotExists("ROLE_AUTHOR");
-//        createRoleIfNotExists("ROLE_ADMIN");
-//
-//        // 2. Fix existing roles without prefix
-//        fixRoleNames();
-//
-//        // 3. Assign roles to users without roles
-//        int updatedUsers = assignRolesToUsersWithoutRoles();
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("message", "Roles fixed successfully");
-//        response.put("usersUpdated", updatedUsers);
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    private void createRoleIfNotExists(ERole roleName) {
-//        if (!roleRepository.findByName(roleName).isPresent()) {
-//            logger.info("Creating missing role: {}", roleName);
-//            Role role = new Role(roleName);
-//            roleRepository.save(role);
-//        }
-//    }
-
-//    private void fixRoleNames() {
-//        // Fix roles without ROLE_ prefix
-//        roleRepository.findAll().forEach(role -> {
-//            ERole name = role.getName();
-//            if (!name.startsWith("ROLE_")) {
-//                logger.info("Fixing role name: {} -> ROLE_{}", name, name);
-//                role.setName("ROLE_" + name);
-//                roleRepository.save(role);
-//            }
-//        });
-//    }
-//
-//    private int assignRolesToUsersWithoutRoles() {
-//        int count = 0;
-//        Role userRole = roleRepository.findByName("ROLE_USER")
-//                .orElseGet(() -> {
-//                    Role newRole = new Role("ROLE_USER");
-//                    return roleRepository.save(newRole);
-//                });
-//
-//        for (User user : userRepository.findAll()) {
-//            if (user.getRoles() == null || user.getRoles().isEmpty()) {
-//                logger.info("Assigning ROLE_USER to user: {}", user.getUsername());
-//                Set<Role> roles = new HashSet<>();
-//                roles.add(userRole);
-//                user.setRoles(roles);
-//                userRepository.save(user);
-//                count++;
-//            }
-//        }
-//        return count;
-//    }
-
-//    @GetMapping("/me")
-//    public ResponseEntity<?> getUser (@AuthenticationPrincipal AuthenticationPrincipal principal) {
-//        if(principal == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-//        }
-//        UserDetailsImpl userDetails = (UserDetailsImpl) principal;
-//        List<String> roles = userDetails.getAuthorities().stream()
-//                .map(GrantedAuthority::getAuthority)
-//                .toList();
-//
-//        return ResponseEntity.ok(principal);
-//
-//    }
 
 }

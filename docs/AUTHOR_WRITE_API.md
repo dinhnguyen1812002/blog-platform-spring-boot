@@ -33,8 +33,8 @@ The request body should be a JSON object with the following properties:
   "title": "Your Post Title",
   "content": "The full content of your post.",
   "thumbnail": "URL_of_the_thumbnail_image",
-  "categories": ["Technology", "Java"],
-  "tags": ["SpringBoot", "API"],
+  "categories": ["", ""],
+  "tags": ["", ""],
   "featured": false,
   "public_date": "2025-09-01T10:00:00"
 }

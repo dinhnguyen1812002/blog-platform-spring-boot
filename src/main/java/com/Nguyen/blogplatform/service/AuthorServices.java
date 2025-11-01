@@ -14,11 +14,13 @@ import com.Nguyen.blogplatform.repository.CategoryRepository;
 import com.Nguyen.blogplatform.repository.PostRepository;
 import com.Nguyen.blogplatform.repository.TagRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
+import com.Nguyen.blogplatform.repository.specification.ArticleSpecifications;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,11 +46,29 @@ public class AuthorServices {
     private final FileStorageService fileStorageService;
     private final NewsletterService newsletterService;
 
-    public List<PostResponse> getPostsForCurrentUser(int page, int size) {
-        var username = getCurrentUsername();
-        var pageable = PageRequest.of(page, size);
-        return postRepository.findByUser(username, pageable)
-                .stream()
+    public List<PostResponse> getPostsForCurrentUser(
+            int page,
+            int size,
+            String keyword,
+            String categoryName,
+            String tagName,
+            String sortDirection) {
+        String username = getCurrentUsername();
+
+        Sort sort = sortDirection.equalsIgnoreCase("asc")
+                ? Sort.by("createdAt").ascending()
+                : Sort.by("createdAt").descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        var postsPage = postRepository.findByUserWithFilters(
+                username,
+                keyword,
+                categoryName,
+                tagName,
+                pageable);
+
+        return postsPage.stream()
                 .map(this::toPostResponse)
                 .toList();
     }
@@ -79,7 +99,8 @@ public class AuthorServices {
                 .featured(Objects.requireNonNullElse(postRequest.getFeatured(), DEFAULT_FEATURED))
                 .view(0L)
                 .public_date(postRequest.getPublic_date())
-                .is_publish(postRequest.getPublic_date() == null || postRequest.getPublic_date().isBefore(LocalDateTime.now()))
+                .is_publish(postRequest.getPublic_date() == null
+                        || postRequest.getPublic_date().isBefore(LocalDateTime.now()))
                 .build();
 
         var savedPost = postRepository.save(post);
@@ -90,7 +111,8 @@ public class AuthorServices {
             try {
                 newsletterService.sendNewsletterForNewPost(savedPost);
             } catch (Exception e) {
-                System.err.println("Failed to send newsletter for post: " + savedPost.getTitle() + " - " + e.getMessage());
+                System.err.println(
+                        "Failed to send newsletter for post: " + savedPost.getTitle() + " - " + e.getMessage());
             }
         });
 
@@ -120,7 +142,8 @@ public class AuthorServices {
             post.setTags(getTagsFromIds(postRequest.getTags()));
         }
         post.setPublic_date(postRequest.getPublic_date());
-        post.setIs_publish(postRequest.getPublic_date() == null || postRequest.getPublic_date().isBefore(LocalDateTime.now()));
+        post.setIs_publish(
+                postRequest.getPublic_date() == null || postRequest.getPublic_date().isBefore(LocalDateTime.now()));
 
         return toPostResponse(postRepository.save(post));
     }
@@ -156,8 +179,8 @@ public class AuthorServices {
     }
 
     private Set<Tags> getTagsFromIds(Set<UUID> tagIds) {
-        return tagIds == null || tagIds.isEmpty() ? new HashSet<>() :
-                tagIds.stream()
+        return tagIds == null || tagIds.isEmpty() ? new HashSet<>()
+                : tagIds.stream()
                         .map(id -> tagRepository.findById(id)
                                 .orElseThrow(() -> new NotFoundException("Tag not found with id: " + id)))
                         .collect(Collectors.toSet());
@@ -182,8 +205,10 @@ public class AuthorServices {
 
         return PostResponse.builder()
                 .id(post.getId())
-                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail(), post.getUser().getAvatar()))
+                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail(),
+                        post.getUser().getAvatar()))
                 .title(post.getTitle())
+                .excerpt(post.getExcerpt())
                 .slug(post.getSlug())
                 .createdAt(post.getCreatedAt())
                 .featured(post.getFeatured())

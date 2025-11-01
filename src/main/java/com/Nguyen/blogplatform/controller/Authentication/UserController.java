@@ -7,6 +7,7 @@ import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.UserProfileUpdateRequest;
+import com.Nguyen.blogplatform.payload.response.AvatarUploadResponse;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
 import com.Nguyen.blogplatform.payload.response.UserProfileResponse;
 import com.Nguyen.blogplatform.payload.response.UserResponse;
@@ -83,26 +84,6 @@ public class UserController {
         }
         return "reset-password";
     }
-// this for mvc with thymeleaf but i use rest api for this feature
-//    @GetMapping("/update-password")
-//    public String showUpdatePasswordForm() {
-//        return "update-password";
-//    }
-//
-//    @PostMapping("/update-password")
-//    public String updatePassword(@AuthenticationPrincipal UserDetails userDetails,
-//                                 @RequestParam String oldPassword,
-//                                 @RequestParam String newPassword,
-//                                 Model model) {
-//        User user = userService.findByEmail(userDetails.getUsername());
-//        try {
-//            userService.updatePassword(user, oldPassword, newPassword);
-//            model.addAttribute("message", "Password has been updated");
-//        } catch (IllegalArgumentException e) {
-//            model.addAttribute("error", "Error updating password: " + e.getMessage());
-//        }
-//        return "update-password";
-//    }
 
     @PatchMapping("/update-password")
     public ResponseEntity<MessageResponse> updatePassword(@RequestBody Map<String, String> request) {
@@ -127,7 +108,6 @@ public class UserController {
         }
     }
 
-
     @GetMapping("/{id}")
     public ResponseEntity<UserResponse> getUserInfo(@PathVariable String id) {
         User user = userService.findById(id);
@@ -149,13 +129,30 @@ public class UserController {
 
         return ResponseEntity.ok(response);
     }
+
     @PutMapping("/profile")
     public ResponseEntity<UserProfileResponse> updateProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @Valid @RequestBody UserProfileUpdateRequest request) throws ConflictException {
-        // Gọi service để cập nhật profile
         UserProfileResponse response = userProfileService.updateUserProfile(userDetails.getId(), request);
         return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/profile")
+    public ResponseEntity<UserProfileResponse> patchProfile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody UserProfileUpdateRequest request) throws ConflictException {
+        UserProfileResponse response = userProfileService.updateUserProfile(userDetails.getId(), request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping(value = "/avatar", consumes = {"multipart/form-data"})
+    public ResponseEntity<AvatarUploadResponse> uploadAvatar(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestPart("file") org.springframework.web.multipart.MultipartFile file
+    ) {
+        var resp = userProfileService.uploadAvatar(userDetails.getId(), file);
+        return ResponseEntity.ok(resp);
     }
 
     @GetMapping("/profile")
@@ -170,59 +167,6 @@ public class UserController {
         UserProfileResponse response = userProfileService.getUserProfileById(userId);
         return ResponseEntity.ok(response);
     }
-
-    /**
-     * Get public profile by username - returns only public information
-     * TODO: Add caching with Redis for performance optimization
-     */
-    @GetMapping("/public/{username}")
-    public ResponseEntity<?> getPublicProfile(@PathVariable String username) {
-        try {
-            User user = userService.findByUsername(username);
-            if (user == null) {
-                return ResponseEntity.status(404).body(Map.of("success", false, "message", "User not found"));
-            }
-
-            // Get social media links (only non-null URLs)
-            Map<ESocialMediaPlatform, String> socialMediaLinks = user.getSocialMediaLinks().stream()
-                    .filter(link -> link.getUrl() != null && !link.getUrl().trim().isEmpty())
-                    .collect(Collectors.toMap(
-                            link -> link.getPlatform(),
-                            link -> link.getUrl(),
-                            (existing, replacement) -> existing,
-                            HashMap::new
-                    ));
-
-            Map<String, Object> publicProfile = new HashMap<>();
-            publicProfile.put("username", user.getUsername());
-            publicProfile.put("avatar", user.getAvatar());
-            publicProfile.put("email",user.getEmail());
-            publicProfile.put("bio", user.getBio());
-
-            publicProfile.put("socialMediaLinks", socialMediaLinks);
-
-
-            return ResponseEntity.ok(publicProfile);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Internal server error"));
-        }
-    }
-
-    // @PutMapping("/profile/custom")
-    // public ResponseEntity<UserProfileResponse> updateCustomProfile(
-    //         @AuthenticationPrincipal UserDetailsImpl userDetails,
-    //         @Valid @RequestBody com.Nguyen.blogplatform.payload.request.CustomProfileRequest request) {
-    //     UserProfileResponse response = userProfileService.updateUserProfileMarkdown(userDetails.getId(), request.getMarkdownContent());
-    //     return ResponseEntity.ok(response);
-    // }
-//    export interface PostStats {
-//        totalPosts: number;
-//        totalViews: number;
-//        totalLikes: number;
-//        totalComments: number;
-//        averageRating: number;
-//    }
 
     @GetMapping("/posts/stats")
     public ResponseEntity<?> getStatus () {

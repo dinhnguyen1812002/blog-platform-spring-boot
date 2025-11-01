@@ -40,6 +40,7 @@ public class SecurityConfig {
 
     @Autowired
     private CustomAccessDeniedHandler accessDeniedHandler;
+
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
@@ -88,12 +89,13 @@ public class SecurityConfig {
                                 "/api/v1/jwt/validate",
                                 "/api/debug/**"
                         ).permitAll()
-                        .requestMatchers("/api/series",
-                                        "/api/series/**/slug/**",
-                                        "/api/series/popular"
-                        ).permitAll()
+//                        .requestMatchers("/api/v1/series",
+//                                "/api/v1/series/*/slug/*",
+//                                        "/api/v1series/popular"
+//                        ).permitAll()
 
-                        .requestMatchers("/api/series/**").authenticated()
+                        .requestMatchers("/api/v1/series").permitAll()
+                        .requestMatchers("/api/v1/series/**").permitAll()
 
                         // --- POSTS / TAGS / CATEGORIES (public GET) ---
                         .requestMatchers(HttpMethod.GET,
@@ -139,7 +141,7 @@ public class SecurityConfig {
 
                         // --- ROLE BASED ACCESS ---
                         .requestMatchers("/api/v1/user/**").hasRole("USER")
-                        .requestMatchers("/api/v1/admin/users/**").authenticated() // or .hasRole("ADMIN") if desired
+                        .requestMatchers("/api/v1/admin/users/**").hasRole("ADMIN")
 
                         // --- ANYTHING ELSE ---
                         .anyRequest().authenticated()

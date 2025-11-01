@@ -1,43 +1,111 @@
-# Author API Guide
+# Hướng dẫn API cho tác giả
 
-This guide provides detailed instructions for authors to manage their posts, including creating, updating, deleting, and retrieving posts.
+Hướng dẫn này cung cấp hướng dẫn chi tiết để tác giả quản lý bài viết của mình, bao gồm tạo, cập nhật, xóa và lấy bài viết.
 
-## 1. Create a New Post
+## 1. Tạo bài viết mới
 
-This endpoint allows an authenticated author to create a new post. The workflow involves two main steps:
+Endpoint này cho phép một tác giả đã được xác thực tạo một bài viết blog mới.
 
-1.  **Upload Thumbnail (Optional):** If the post has a thumbnail, first upload the image file to the `/api/v1/upload` endpoint. This will return a URL for the thumbnail.
-2.  **Create Post:** Call this endpoint with the post details, including the thumbnail URL obtained in the previous step.
+### Endpoint
 
--   **Method:** `POST`
--   **URL:** `http://localhost:8888/api/v1/author/write`
--   **Authorization:** Required (Author role).
-  -   **Body:** `raw` - `JSON`
-    
-      ```json
-      {
-      "title": "test 1hfdhffh",
-      "content": "tetst 123 alo alo ",
-      "categories": [1],
-      "tags":["c4408bd9-3934-44d6-b8f2-26d30ce152c1"],
-      "thumbnail": "http://localhost:8888/uploads/thumbnail/638902163329370000_wallpaper2.jpg"
-      }
-      ```
+`POST /api/v1/author/write`
 
--   **Success Response:**
+### Quy trình làm việc
 
-    -   **Code:** `201 Created`
-    -   **Content:**
-        ```json
-        {
-          "message": "Post created successfully"
-        }
-        ```
+1.  **(Tùy chọn) Tải lên ảnh đại diện (Thumbnail):** Nếu bài viết có ảnh đại diện, client trước tiên phải tải tệp ảnh lên endpoint `/api/v1/upload`. Thao tác này sẽ trả về một URL cho ảnh đã tải lên.
+2.  **Tạo bài viết:** Sau đó, client gọi endpoint `/api/v1/author/write` này, bao gồm URL của ảnh đại diện (nếu có) trong phần thân yêu cầu.
 
--   **Error Responses:**
+### Yêu cầu (Request)
 
-    -   **Code:** `400 Bad Request` - If the request body is invalid (e.g., missing title or content).
-    -   **Code:** `401 Unauthorized` - If the user is not authenticated.
+#### Headers
+
+| Header        | Giá trị             | Mô tả                               | 
+| ------------- | ------------------ | -----------------------------------------
+| `Authorization` | `Bearer <JWT_TOKEN>` | JWT token để xác thực người dùng. |
+| `Content-Type`  | `application/json` | Kiểu nội dung của phần thân yêu cầu.     |
+
+#### Body
+
+Phần thân yêu cầu phải là một đối tượng JSON với các thuộc tính sau:
+
+```json
+{
+  "title": "Tiêu đề bài viết của bạn",
+  "content": "Nội dung đầy đủ của bài viết của bạn.",
+  "thumbnail": "URL_cua_anh_dai_dien",
+  "categories": ["Công nghệ", "Java"],
+  "tags": ["SpringBoot", "API"],
+  "featured": false,
+  "public_date": "2025-09-01T10:00:00"
+}
+```
+
+#### Tham số Body
+
+| Tham số    | Kiểu      | Bắt buộc | Mô tả                                                                                               |
+| ------------ | --------- | -------- | -------------------------------------------------------------------------------------------------------- |
+| `title`      | `String`  | Có      | Tiêu đề của bài viết.                                                                                    |
+| `content`    | `String`  | Có      | Nội dung chính của bài viết, có thể ở định dạng HTML hoặc Markdown.                                          |
+| `thumbnail`  | `String`  | Không       | URL của ảnh đại diện của bài viết. URL này nên được lấy từ endpoint `/api/v1/upload`.        |
+| `categories` | `List<String>` | Không       | Một danh sách tên danh mục để liên kết với bài viết.                                                      |
+| `tags`       | `List<String>` | Không       | Một danh sách tên thẻ để liên kết với bài viết.                                                           |
+| `featured`   | `boolean` | Không       | Liệu bài viết có nên được đánh dấu là "nổi bật" hay không. Mặc định là `false`.                                     |
+| `public_date`| `String`  | Không       | Ngày và giờ bài viết sẽ được xuất bản, ở định dạng ISO-8601 (ví dụ: `2025-09-01T10:00:00`). Nếu không được cung cấp, bài viết sẽ được xuất bản ngay lập tức. |
+
+### Phản hồi (Responses)
+
+#### Phản hồi thành công
+
+- **Mã trạng thái:** `201 Created`
+- **Nội dung:** Một đối tượng JSON với thông báo thành công.
+
+```json
+{
+  "message": "Post created successfully"
+}
+```
+
+#### Phản hồi lỗi
+
+- **Mã trạng thái:** `400 Bad Request`
+  - **Nội dung:** Nếu phần thân yêu cầu không hợp lệ (ví dụ: thiếu `title` hoặc `content`).
+  ```json
+  {
+    "message": "Post title is required"
+  }
+  ```
+
+- **Mã trạng thái:** `401 Unauthorized`
+  - **Nội dung:** Nếu người dùng chưa được xác thực hoặc JWT token không hợp lệ.
+  ```json
+  {
+    "message": "User not authenticated or invalid authentication type"
+  }
+  ```
+
+- **Mã trạng thái:** `500 Internal Server Error`
+  - **Nội dung:** Nếu xảy ra lỗi không mong muốn trên máy chủ.
+  ```json
+  {
+    "message": "Error creating post: <error_details>"
+  }
+  ```
+
+### Ví dụ cURL
+
+```bash
+curl -X POST http://localhost:8080/api/v1/author/write \
+-H "Authorization: Bearer <your_jwt_token>" \
+-H "Content-Type: application/json" \
+-d '{
+      "title": "My First Post", 
+      "content": "<h1>Hello World!</h1><p>This is my first post.</p>", 
+      "thumbnail": "http://example.com/uploads/my-thumbnail.jpg", 
+      "categories": ["Introduction"], 
+      "tags": ["welcome", "first-post"], 
+      "public_date": "2025-09-01T10:00:00" 
+    }'
+```
 
 ## 2. Get Author's Posts
 

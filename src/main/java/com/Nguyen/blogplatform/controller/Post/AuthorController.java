@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 
 @RestController
@@ -32,10 +33,17 @@ public class AuthorController {
     PostService postServices;
 
     @GetMapping("/posts")
-    public List<PostResponse> getMyPosts(@RequestParam(defaultValue = "0") int page,
-                                         @RequestParam(defaultValue = "10") int size) {
-        return authorServices.getPostsForCurrentUser(page, size);
+    public List<PostResponse> getMyPosts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(required = false) String categoryName,
+            @RequestParam(required = false) String tagName,
+            @RequestParam(defaultValue = "desc") String sortDirection
+    ) {
+        return authorServices.getPostsForCurrentUser(page, size, keyword, categoryName, tagName, sortDirection);
     }
+
 
     /**
      * Tạo bài viết mới

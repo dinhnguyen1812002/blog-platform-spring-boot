@@ -11,7 +11,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.Instant;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,27 +31,49 @@ public class RefreshTokenService {
     @Autowired
     private UserRepository userRepository;
 
+
+    private static final SecureRandom secureRandom = new SecureRandom();
+    private static final Base64.Encoder base64Encoder = Base64.getUrlEncoder().withoutPadding();
+
     public Optional<RefreshToken> findByToken(String token) {
         return refreshTokenRepository.findByToken(token);
     }
 
-    public RefreshToken createRefreshToken(String userId) {
-        RefreshToken refreshToken = new RefreshToken();
+//    @Transactional
+//    public RefreshToken createRefreshToken(String userId) {
+//        User user = userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
+//
+//        // Nếu đã tồn tại RefreshToken -> cập nhật lại token và expiry date
+//        RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
+//                .orElse(new RefreshToken());
+//
+//        refreshToken.setUser(user);
+//        refreshToken.setToken(generateSecureToken(32)); // ~43 ký tự
+//        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+//
+//        return refreshTokenRepository.save(refreshToken);
+//    }
 
+    @Transactional
+    public RefreshToken createRefreshToken(String userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        
-        // Check if user already has a refresh token
-        Optional<RefreshToken> existingToken = refreshTokenRepository.findByUser(user);
-        // Delete existing token
-        existingToken.ifPresent(token -> refreshTokenRepository.delete(token));
+
+        RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
+                .orElse(new RefreshToken());
 
         refreshToken.setUser(user);
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
-        refreshToken.setToken(UUID.randomUUID().toString());
+        refreshToken.setToken(generateSecureToken(32));
 
-        refreshToken = refreshTokenRepository.save(refreshToken);
-        return refreshToken;
+        return refreshTokenRepository.save(refreshToken);
+    }
+
+    private String generateSecureToken(int lengthBytes) {
+        byte[] randomBytes = new byte[lengthBytes];
+        secureRandom.nextBytes(randomBytes);
+        return base64Encoder.encodeToString(randomBytes);
     }
 
     public RefreshToken verifyExpiration(RefreshToken token) {

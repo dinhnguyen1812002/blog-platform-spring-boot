@@ -1,8 +1,14 @@
 package com.Nguyen.blogplatform.controller.Authentication;
 
+import com.Nguyen.blogplatform.payload.response.RoleResponse;
+import com.Nguyen.blogplatform.service.RoleManagementService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/roles")
@@ -10,23 +16,23 @@ import org.springframework.web.bind.annotation.*;
 //@PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Role Management", description = "APIs for managing roles and user role assignments")
 public class RoleManagementController {
-//
-//    private final RoleManagementService roleManagementService;
-//
+
+    private final RoleManagementService roleManagementService;
+
 //    @GetMapping
 //    @Operation(summary = "Get all roles", description = "Get all roles with user count")
 //    public ResponseEntity<List<RoleResponse>> getAllRoles() {
-//        List<RoleResponse> roles = roleManagementService.getAllRoles();
+//        List<RoleResponse> roles = roleManagementService.get();
 //        return ResponseEntity.ok(roles);
 //    }
-//
+
 //    @GetMapping("/statistics")
 //    @Operation(summary = "Get role statistics", description = "Get role statistics with user counts")
 //    public ResponseEntity<List<RoleResponse>> getRoleStatistics() {
 //        List<RoleResponse> statistics = roleManagementService.getRoleStatistics();
 //        return ResponseEntity.ok(statistics);
 //    }
-//
+
 //    @GetMapping("/{roleId}")
 //    @Operation(summary = "Get role with users", description = "Get specific role with list of users")
 //    public ResponseEntity<RoleResponse> getRoleWithUsers(
@@ -34,7 +40,7 @@ public class RoleManagementController {
 //        RoleResponse role = roleManagementService.getRoleWithUsers(roleId);
 //        return ResponseEntity.ok(role);
 //    }
-//
+
 //    @GetMapping("/name/{roleName}")
 //    @Operation(summary = "Get role by name with users", description = "Get role by name with list of users")
 //    public ResponseEntity<RoleResponse> getRoleByNameWithUsers(

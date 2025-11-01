@@ -6,12 +6,16 @@ import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.model.SocialMediaLink;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.UserProfileUpdateRequest;
+import com.Nguyen.blogplatform.payload.response.AvatarUploadResponse;
+import com.Nguyen.blogplatform.payload.response.PostSummaryResponse;
+import com.Nguyen.blogplatform.payload.response.PublicProfileResponse;
 import com.Nguyen.blogplatform.payload.response.UserProfileResponse;
 import com.Nguyen.blogplatform.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.HashMap;
 import java.util.List;
@@ -29,6 +33,7 @@ public class UserProfileService {
     private final CommentRepository commentRepository;
     private final SocialMediaLinkRepository socialMediaLinkRepository;
     private final ProfilePlaceholderService profilePlaceholderService;
+    private final com.Nguyen.blogplatform.storage.AvatarStorageService avatarStorageService;
 
     public UserProfileResponse getUserProfile(UserDetailsImpl userDetails) {
         // Get user from database to get additional info
@@ -127,11 +132,13 @@ public class UserProfileService {
                 .orElseThrow(() -> new NotFoundException("User not found"));
 
         // Kiểm tra username và email trùng lặp
+        boolean usernameChanged = false;
         if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())) {
             if (userRepository.existsByUsername(request.getUsername())) {
                 throw new ConflictException("Username is already taken");
             }
             user.setUsername(request.getUsername());
+            usernameChanged = true;
         }
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.getEmail())) {
@@ -147,7 +154,16 @@ public class UserProfileService {
         if (request.getBio() != null) {
             user.setBio(request.getBio());
         }
+        if (request.getWebsite() != null) {
+            user.setWebsite(request.getWebsite());
+        }
 
+        // Regenerate slug if username changed or slug is blank
+        if (usernameChanged || user.getSlug() == null || user.getSlug().isBlank()) {
+            String base = com.Nguyen.blogplatform.util.SlugUtil.toSlug(user.getUsername());
+            String unique = ensureUniqueSlug(base, user.getId());
+            user.setSlug(unique);
+        }
 
         // Xử lý social media links
         if (request.getSocialMediaLinks() != null) {
@@ -170,6 +186,11 @@ public class UserProfileService {
                     user.getSocialMediaLinks().add(link);
                 }
             }
+        }
+
+        // Update custom user information (markdown)
+        if (request.getCustomInformation() != null) {
+            user.setCustomProfileMarkdown(request.getCustomInformation());
         }
 
         // Lưu user
@@ -327,5 +348,73 @@ public class UserProfileService {
         String urlRegex = "^(https?://)([\\da-z\\.-]+)\\.([a-z\\.]{2,6})([/\\w \\.-]*)*/?$";
         Pattern pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
         return pattern.matcher(url.trim()).matches();
+    }
+
+    private String ensureUniqueSlug(String base, String currentUserId) {
+        if (base == null || base.isBlank()) base = "user";
+        String candidate = base;
+        int suffix = 1;
+        while (true) {
+            var existing = userRepository.findBySlug(candidate);
+            if (existing.isEmpty() || existing.get().getId().equals(currentUserId)) {
+                return candidate;
+            }
+            suffix++;
+            candidate = base + "-" + suffix;
+        }
+    }
+
+    @Transactional
+    public AvatarUploadResponse uploadAvatar(String userId, MultipartFile file) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        String old = user.getAvatar();
+        String storedPublicUrl = avatarStorageService.store(file, userId);
+        user.setAvatar(storedPublicUrl);
+        userRepository.save(user);
+        if (old != null && !old.isBlank()) {
+            avatarStorageService.delete(old);
+        }
+        return AvatarUploadResponse.builder()
+                .url(storedPublicUrl)
+                .build();
+    }
+
+    public PublicProfileResponse getPublicProfileBySlug(String slug) {
+        User user = userRepository.findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        long postCount = postRepository.countByUser(user);
+        var featured = postRepository.findTop5ByUserAndFeaturedTrueOrderByCreatedAtDesc(user);
+        var featuredDtos = featured.stream()
+                .map(p -> PostSummaryResponse.builder()
+                        .id(p.getId())
+                        .title(p.getTitle())
+                        .excerpt(p.getExcerpt())
+                        .slug(p.getSlug())
+                        .thumbnail(p.getThumbnail())
+                        .createdAt(p.getCreatedAt())
+                        .build())
+                .toList();
+
+        Map<ESocialMediaPlatform, String> socialMediaLinks = user.getSocialMediaLinks().stream()
+                .filter(link -> link.getUrl() != null)
+                .collect(Collectors.toMap(
+                        SocialMediaLink::getPlatform,
+                        SocialMediaLink::getUrl,
+                        (existing, replacement) -> existing,
+                        HashMap::new
+                ));
+
+        return PublicProfileResponse.builder()
+                .username(user.getUsername())
+                .slug(user.getSlug())
+                .avatar(user.getAvatar())
+                .bio(user.getBio())
+                .socialMediaLinks(socialMediaLinks)
+                .website(user.getWebsite())
+                .customInformation(user.getCustomProfileMarkdown())
+                .postCount(postCount)
+                .featuredPosts(featuredDtos)
+                .build();
     }
 }

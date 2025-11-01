@@ -48,6 +48,26 @@ Optional<Post> findBySlug(String slug);
     Long countByUser(@Param("user") User user);
     boolean existsByTitleIgnoreCase(String title);
     List<Post> findTop5ByUserOrderByCreatedAtDesc(User user);
+    List<Post> findTop5ByUserAndFeaturedTrueOrderByCreatedAtDesc(User user);
 
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
+
+
+    @Query("""
+        SELECT DISTINCT p FROM Post p
+        LEFT JOIN p.categories c
+        LEFT JOIN p.tags t
+        WHERE p.user.username = :username
+        AND (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                          OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))
+        AND (:categoryName IS NULL OR LOWER(c.category) LIKE LOWER(CONCAT('%', :categoryName, '%')))
+        AND (:tagName IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :tagName, '%')))
+    """)
+    Page<Post> findByUserWithFilters(
+            @Param("username") String username,
+            @Param("keyword") String keyword,
+            @Param("categoryName") String categoryName,
+            @Param("tagName") String tagName,
+            Pageable pageable
+    );
 }

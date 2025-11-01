@@ -22,5 +22,6 @@ public class UserProfileUpdateRequest {
     private String avatar;
     private String bio;
     private String website;
+    private String customInformation;
     private Map<ESocialMediaPlatform, String> socialMediaLinks; // Map platform -> url
 }

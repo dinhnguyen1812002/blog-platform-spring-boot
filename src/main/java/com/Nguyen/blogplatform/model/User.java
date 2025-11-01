@@ -6,9 +6,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
 import lombok.Data;
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
@@ -30,6 +28,9 @@ public class User {
     @NotEmpty(message = "*Please provide a username")
     private String username;
 
+    @Column(name = "slug", unique = true)
+    private String slug;
+
     @Column(name = "email", nullable = false, unique = true)
     @Email(message = "*Please provide a valid Email")
     @NotEmpty(message = "*Please provide an email")
@@ -43,6 +44,7 @@ public class User {
 
     private String avatar;
     private String bio;
+    private String website;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     @JsonManagedReference
@@ -113,6 +115,10 @@ public class User {
     public void prePersist() {
         if (createdAt == null) {
             createdAt = LocalDateTime.now();
+        }
+        if (this.slug == null || this.slug.isBlank()) {
+            String base = com.Nguyen.blogplatform.util.SlugUtil.toSlug(this.username);
+            this.slug = (base == null || base.isBlank()) ? this.id : base;
         }
     }
 }

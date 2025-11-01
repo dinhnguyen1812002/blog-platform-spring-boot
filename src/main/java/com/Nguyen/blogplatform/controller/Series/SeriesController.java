@@ -3,6 +3,7 @@ package com.Nguyen.blogplatform.controller.Series;
 
 import com.Nguyen.blogplatform.payload.request.series.*;
 import com.Nguyen.blogplatform.payload.response.ApiResponse;
+import com.Nguyen.blogplatform.service.UserDetailsImpl;
 import com.Nguyen.blogplatform.service.series.SeriesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -39,7 +40,8 @@ public class SeriesController {
             @Valid @RequestBody CreateSeriesDTO dto,
             Authentication authentication) throws BadRequestException {
 
-        String userId = authentication.getName(); // Lấy user ID từ authentication
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId(); // Lấy user ID từ principal
+
         SeriesResponseDTO response = seriesService.createSeries(dto, userId);
 
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -57,7 +59,7 @@ public class SeriesController {
             @Valid @RequestBody UpdateSeriesDTO dto,
             Authentication authentication) throws BadRequestException {
 
-        String userId = authentication.getName();
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         SeriesResponseDTO response = seriesService.updateSeries(seriesId, dto, userId);
 
         return ResponseEntity.ok(new ApiResponse<>(true, "Series updated successfully", response));
@@ -162,7 +164,7 @@ public class SeriesController {
             @Valid @RequestBody AddPostToSeriesDTO dto,
             Authentication authentication) throws BadRequestException {
 
-        String userId = authentication.getName();
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         SeriesResponseDTO response = seriesService.addPostToSeries(seriesId, dto, userId);
 
         return ResponseEntity.ok(new ApiResponse<>(true, "Post added to series successfully", response));
@@ -179,7 +181,7 @@ public class SeriesController {
             @PathVariable String postId,
             Authentication authentication) throws BadRequestException {
 
-        String userId = authentication.getName();
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         SeriesResponseDTO response = seriesService.removePostFromSeries(seriesId, postId, userId);
 
         return ResponseEntity.ok(new ApiResponse<>(true, "Post removed from series successfully", response));
@@ -196,7 +198,7 @@ public class SeriesController {
             @Valid @RequestBody ReorderSeriesPostDTO dto,
             Authentication authentication) throws BadRequestException {
 
-        String userId = authentication.getName();
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         SeriesResponseDTO response = seriesService.reorderPost(seriesId, dto, userId);
 
         return ResponseEntity.ok(new ApiResponse<>(true, "Post reordered successfully", response));
@@ -212,7 +214,7 @@ public class SeriesController {
             @PathVariable String seriesId,
             Authentication authentication) throws BadRequestException {
 
-        String userId = authentication.getName();
+        String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         seriesService.deleteSeries(seriesId, userId);
 
         return ResponseEntity.ok(new ApiResponse<>(true, "Series deleted successfully", null));

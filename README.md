@@ -49,7 +49,6 @@ Our backend provides a comprehensive set of features to support the functionalit
 - **Mail Sender**: Integrates with Spring Mail to send emails for features such as password reset, and password update with MailTrap.
 - **Spring Security**: Implements secure authentication and authorization using Spring Security.
 - **Spring Data JPA**: Utilizes Spring Data JPA for simplified data access and manipulation.
-
 ## Usage
 
 To use the backend of our Spring Boot Blog Platform, follow these steps:
