@@ -1,10 +1,7 @@
-package com.Nguyen.blogplatform.repository;
+package com.Nguyen.blogplatform.repository.specification;
 
 import com.Nguyen.blogplatform.model.Post;
 import org.springframework.data.jpa.domain.Specification;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 public class PostSpecification {
 //    public static Specification<Post> hasTitle(String title) {
@@ -35,15 +32,6 @@ public class PostSpecification {
         };
     }
 
-    public static Specification<Post> hasTagId(UUID tagId) {
-        return (root, query, cb) -> {
-            if (tagId == null) {
-                return cb.conjunction();
-            }
-            return cb.equal(root.join("tags").get("uuid"), tagId);
-        };
-    }
-
     public static Specification<Post> hasCategorySlug(String categorySlug) {
         return (root, query, cb) -> {
             if (categorySlug == null || categorySlug.isEmpty()) {
@@ -67,7 +55,32 @@ public class PostSpecification {
         return (root, query, cb) -> cb.isTrue(root.get("is_publish"));
     }
 
+    public static Specification<Post> isFeatured(Boolean featured) {
+        return (root, query, cb) -> {
+            if (featured == null) {
+                return cb.conjunction(); // ignore filter
+            }
+            return cb.equal(root.get("featured"), featured);
+        };
+    }
+
     public static Specification<Post> isFeatured() {
         return (root, query, cb) -> cb.isTrue(root.get("featured"));
     }
+
+
+    public static Specification<Post> hasKeyword(String keyword) {
+        return (root, query, cb) -> {
+            if (keyword == null || keyword.isEmpty()) {
+                return cb.conjunction();
+            }
+            String likePattern = "%" + keyword.toLowerCase() + "%";
+            return cb.or(
+                    cb.like(cb.lower(root.get("title")), likePattern),
+                    cb.like(cb.lower(root.get("content")), likePattern)
+            );
+        };
+    }
+
+
 }

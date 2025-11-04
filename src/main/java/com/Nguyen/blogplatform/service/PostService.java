@@ -6,7 +6,7 @@ import com.Nguyen.blogplatform.mapper.PostMapper;
 import com.Nguyen.blogplatform.model.*;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.repository.*;
-import com.Nguyen.blogplatform.repository.PostSpecification;
+import com.Nguyen.blogplatform.repository.specification.PostSpecification;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
