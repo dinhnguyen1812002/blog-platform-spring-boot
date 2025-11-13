@@ -30,7 +30,7 @@
 
 <script>
     // Kết nối WebSocket
-    const socket = new SockJS('http://localhost:8888/ws');
+    const socket = new SockJS('http://localhost:8080/ws');
     const stompClient = Stomp.over(socket);
 
     stompClient.connect({}, function(frame) {

@@ -1,70 +1,82 @@
+version: "3.9"
+
 services:
+  # ============================
+  # MySQL Database
+  # ============================
   mysql:
     image: mysql:8.0
-    container_name: mysql-db
+    container_name: mysql_db
+    restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: root  # Password cho root user
-      MYSQL_DATABASE: blog_spring  # Tên database
-      MYSQL_USER: appuser  # User thông thường (không phải root)
-      MYSQL_PASSWORD: appuserpass  # Password cho appuser
+      MYSQL_ROOT_PASSWORD: 123456789
+      MYSQL_DATABASE: spring_blog
     ports:
-      - "3307:3306"  # Port đã đổi từ trước
+      - "3307:3306"
     volumes:
-      - mysql-data:/var/lib/mysql
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - mysql_data:/var/lib/mysql
+    networks:
+      - spring_network
 
+  # ============================
+  # Spring Boot Application
+  # ============================
   app:
     build:
-      context: .  # Thư mục chứa Dockerfile
+      context: .
       dockerfile: Dockerfile
-    container_name: spring-app
-    depends_on:
-      mysql:
-        condition: service_healthy  # Đợi MySQL ready
-    environment:
-      # Config datasource cho Spring Boot
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update  # Tùy chỉnh (update/create)
-      SERVER_PORT: 8888
+    container_name: blog_app
+    restart: always
     ports:
-      - "8888:8888"  # Expose app port
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/spring_blog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456789
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - mysql
+    networks:
+      - spring_network
 
+  # ============================
+  # Prometheus
+  # ============================
   prometheus:
     image: prom/prometheus:latest
     container_name: prometheus
+    restart: always
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    ports:
+      - "9090:9090"
     depends_on:
       - app
-    volumes:
-      - ./prometheus.yml:/etc/prometheus/prometheus.yml  # Config file
-      - prometheus-data:/prometheus  # Persist data
-    ports:
-      - "9090:9090"  # Prometheus UI
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
+    networks:
+      - spring_network
 
+  # ============================
+  # Grafana
+  # ============================
   grafana:
     image: grafana/grafana:latest
     container_name: grafana
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
     depends_on:
       - prometheus
-    environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin  # Default password (thay đổi sau)
-    ports:
-      - "3000:3000"  # Grafana UI
-    volumes:
-      - grafana-data:/var/lib/grafana  # Persist data
-      - ./grafana/provisioning:/etc/grafana/provisioning  # Auto-provision datasource
+    networks:
+      - spring_network
 
 volumes:
-  mysql-data:
-  prometheus-data:
-  grafana-data:
+  mysql_data:
+
+networks:
+  spring_network:
+    driver: bridge

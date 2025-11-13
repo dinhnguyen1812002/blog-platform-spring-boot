@@ -19,8 +19,7 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @Column(name = "username", nullable = false, unique = true)

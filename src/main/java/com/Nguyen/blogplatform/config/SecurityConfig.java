@@ -29,22 +29,28 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
+    private final UserDetailsServiceImpl userDetailsService;
+    private final AuthTokenFilter jwtAuthFilter;
+    private final AuthEntryPointJwt unauthorizedHandler;
+    private final CustomAccessDeniedHandler accessDeniedHandler;
 
     @Autowired
-    private AuthTokenFilter jwtAuthFilter;
-
-    @Autowired
-    private AuthEntryPointJwt unauthorizedHandler;
-
-    @Autowired
-    private CustomAccessDeniedHandler accessDeniedHandler;
+    public SecurityConfig(
+            UserDetailsServiceImpl userDetailsService,
+            AuthTokenFilter jwtAuthFilter,
+            AuthEntryPointJwt unauthorizedHandler,
+            CustomAccessDeniedHandler accessDeniedHandler
+    ) {
+        this.userDetailsService = userDetailsService;
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.unauthorizedHandler = unauthorizedHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
+    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
@@ -61,7 +67,6 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
@@ -69,32 +74,38 @@ public class SecurityConfig {
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint(unauthorizedHandler)
                         .accessDeniedHandler(accessDeniedHandler)
                 )
                 .authorizeHttpRequests(auth -> auth
-
                         // --- PUBLIC ENDPOINTS ---
                         .requestMatchers(
-                                "/", "/actuator/**", "/images/**", "/uploads/**", "/uploads/thumbnail/**",
-                                "/swagger-ui/**", "/swagger-resources/**", "/v3/api-docs/**", "/api-docs/**",
-                                "/ws/**", "/ws-logs/**", "/video/**", "/logs/**", "/logger/**"
+                                "/",
+                                "/actuator/**",
+                                "/images/**",
+                                "/uploads/**",
+                                "/uploads/thumbnail/**",
+                                "/swagger-ui/**",
+                                "/swagger-resources/**",
+                                "/v3/api-docs/**",
+                                "/api-docs/**",
+                                "/ws/**",
+                                "/ws-logs/**",
+                                "/video/**",
+                                "/logs/**",
+                                "/logger/**"
                         ).permitAll()
 
                         // --- AUTH & UTILITY ---
                         .requestMatchers(
                                 "/api/v1/auth/refresh-token",
                                 "/api/v1/auth/**",
-
                                 "/api/v1/jwt/decode",
                                 "/api/v1/jwt/validate",
                                 "/api/debug/**"
                         ).permitAll()
-//                        .requestMatchers("/api/v1/series",
-//                                "/api/v1/series/*/slug/*",
-//                                        "/api/v1series/popular"
-//                        ).permitAll()
 
-                        .requestMatchers("/api/v1/series").permitAll()
+                        // --- SERIES ---
                         .requestMatchers("/api/v1/series/**").permitAll()
 
                         // --- POSTS / TAGS / CATEGORIES (public GET) ---
@@ -159,10 +170,11 @@ public class SecurityConfig {
                 "http://localhost:5174",
                 "http://localhost:5000"
         ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
         config.setAllowCredentials(true);
+        config.setMaxAge(3600L); // Cache preflight requests for 1 hour
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);

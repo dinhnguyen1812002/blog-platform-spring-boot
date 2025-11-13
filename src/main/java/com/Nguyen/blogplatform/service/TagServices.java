@@ -4,7 +4,7 @@ import com.Nguyen.blogplatform.model.Tags;
 import com.Nguyen.blogplatform.payload.request.TagRequest;
 import com.Nguyen.blogplatform.payload.response.TagResponse;
 import com.Nguyen.blogplatform.repository.TagRepository;
-import com.github.f4b6a3.ulid.util.UlidUtil;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

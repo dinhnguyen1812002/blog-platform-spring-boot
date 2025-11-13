@@ -18,8 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 public class Newsletter {
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid2")
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
 
     @Column(name = "email", nullable = false, unique = true)

@@ -1,77 +1,70 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '3.5.5'
-    id 'io.spring.dependency-management' version '1.1.4'
-    id("org.openapi.generator") version "7.12.0"
+    id 'org.springframework.boot' version '4.0.0-SNAPSHOT'
+    id 'io.spring.dependency-management' version '1.1.7'
+    id("org.openapi.generator") version "7.17.0"
 }
 
 group = 'com.Nguyen'
 version = '0.0.1-SNAPSHOT'
+description = 'Demo project for Spring Boot'
 
 java {
-    sourceCompatibility = '20'
-    targetCompatibility = '20'
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+configurations {
+    compileOnly {
+        extendsFrom annotationProcessor
+    }
 }
 
 repositories {
     mavenCentral()
+    maven { url = 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
-
-    implementation 'org.springframework.boot:spring-boot-starter-web'
-
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-
     implementation 'org.springframework.boot:spring-boot-starter-mail'
-
     implementation 'org.springframework.boot:spring-boot-starter-security'
-
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
-
-    implementation 'org.projectlombok:lombok:1.18.30'
-
-    annotationProcessor 'org.projectlombok:lombok:1.18.30'
-    
-    implementation 'com.mysql:mysql-connector-j'
-    // https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.13'
-
-    implementation 'jakarta.validation:jakarta.validation-api:3.1.0-M2'
-    // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
-    implementation group: 'org.modelmapper', name: 'modelmapper', version: '3.2.2'
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-cache
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-cache', version: '3.4.3'
-    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-websocket
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-websocket', version: '3.4.3'
-    // https://mvnrepository.com/artifact/de.huxhorn.sulky/de.huxhorn.sulky.ulid
-    implementation group: 'de.huxhorn.sulky', name: 'de.huxhorn.sulky.ulid', version: '8.3.0'
-
-    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
-
-    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
-
-    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
-    
-    implementation 'com.github.f4b6a3:ulid-creator:2.3.0'
-    
-    testImplementation 'org.springframework.boot:spring-boot-starter-test'
-
-    testImplementation 'org.springframework.security:spring-security-test'
-
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-    implementation 'io.micrometer:micrometer-registry-prometheus'
-
+    compileOnly 'org.projectlombok:lombok'
+    runtimeOnly 'com.mysql:mysql-connector-j'
+    annotationProcessor 'org.projectlombok:lombok'
+    testImplementation 'org.springframework.boot:spring-boot-starter-data-jpa-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-mail-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-security-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-thymeleaf-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-validation-test'
+    testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.boot:spring-boot-starter-websocket-test'
+    // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
+    implementation 'org.modelmapper:modelmapper:3.2.6'
+    // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-cache
+    implementation 'org.springframework.boot:spring-boot-starter-cache:4.0.0-M3'
+    // https://mvnrepository.com/artifact/de.huxhorn.sulky/de.huxhorn.sulky.ulid
+    implementation 'de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0'
+    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
+    implementation 'io.jsonwebtoken:jjwt-api:0.13.0'
+    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-impl
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
+    // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
+    // https://mvnrepository.com/artifact/com.github.f4b6a3/ulid-creator
+    implementation 'com.github.f4b6a3:ulid-creator:5.2.3'
+    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
 }
 
 tasks.named('test') {
     useJUnitPlatform()
 }
-
-bootJar {
-    archiveBaseName = 'blog-platform'
-    archiveVersion = project.version
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-}
-

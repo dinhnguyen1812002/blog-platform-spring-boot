@@ -12,9 +12,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class BlogPlatformApplication  {
+public class BlogPlatformApplication implements  CommandLineRunner  {
 
-	@Autowired
+
+    @Autowired
 	private RoleRepository roleRepo;
 
 
@@ -22,6 +23,18 @@ public class BlogPlatformApplication  {
 		SpringApplication.run(BlogPlatformApplication.class, args);
 	}
 
+    @Override
+    public void run(String... args) throws Exception {
+        if (roleRepo.count() == 0) {
+            Role admin = new Role(ERole.ROLE_ADMIN);
+            Role user = new Role(ERole.ROLE_USER);
+            roleRepo.save(admin);
+            roleRepo.save(user);
 
+            System.out.println("Default roles created: ADMIN and USER");
+        } else {
+            System.out.println("Roles already exist, skipping initialization");
+        }
+    }
 
 }
