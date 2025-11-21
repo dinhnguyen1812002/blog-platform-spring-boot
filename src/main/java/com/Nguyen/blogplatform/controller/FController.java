@@ -38,4 +38,9 @@ public class FController {
         return "notification";
     }
 
+    @GetMapping("/traffic")
+    public String traffic(){
+        return "traffic-area-chart";
+    }
+
 }

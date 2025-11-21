@@ -96,7 +96,6 @@ public class AuthorController {
                     .body(new MessageResponse("Invalid input: " + e.getMessage()));
         } catch (Exception e) {
             // Log the full stack trace
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new MessageResponse("Error creating post: " + e.getMessage()));
         }

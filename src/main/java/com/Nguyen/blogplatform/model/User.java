@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
@@ -7,7 +8,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
@@ -63,7 +63,8 @@ public class User {
     private LocalDateTime resetTokenExpiry;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
-    @JsonManagedReference("user-comments")
+
+    @JsonIgnore
     private Set<Comment> comments = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)

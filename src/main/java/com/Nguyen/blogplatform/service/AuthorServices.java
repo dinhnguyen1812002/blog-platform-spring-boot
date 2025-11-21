@@ -10,10 +10,8 @@ import com.Nguyen.blogplatform.payload.response.CategoryResponse;
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.payload.response.TagResponse;
 import com.Nguyen.blogplatform.payload.response.UserResponse;
-import com.Nguyen.blogplatform.repository.CategoryRepository;
-import com.Nguyen.blogplatform.repository.PostRepository;
-import com.Nguyen.blogplatform.repository.TagRepository;
-import com.Nguyen.blogplatform.repository.UserRepository;
+import com.Nguyen.blogplatform.payload.response.notification.PublicArticleNotification;
+import com.Nguyen.blogplatform.repository.*;
 import com.Nguyen.blogplatform.repository.specification.ArticleSpecifications;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +43,7 @@ public class AuthorServices {
     private final NotificationService notificationService;
     private final FileStorageService fileStorageService;
     private final NewsletterService newsletterService;
+    private final NotificationRepository notificationRepository;
 
     public List<PostResponse> getPostsForCurrentUser(
             int page,
@@ -75,16 +74,22 @@ public class AuthorServices {
 
     @Transactional
     public Post newPost(PostRequest postRequest, String authorId) throws BadRequestException {
+
         if (postRequest == null || postRequest.getTitle() == null || postRequest.getTitle().isBlank()) {
             throw new BadRequestException("Invalid input data");
         }
         if (postRepository.existsByTitleIgnoreCase(postRequest.getTitle())) {
             throw new BadRequestException("Title already exists");
         }
+
         var author = userRepository.findById(authorId)
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + authorId));
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
         var categories = getCategoriesFromIds(postRequest.getCategories());
         var tags = getTagsFromIds(postRequest.getTags());
+
+        boolean isPublished = postRequest.getPublic_date() == null
+                || postRequest.getPublic_date().isBefore(LocalDateTime.now());
 
         var post = Post.builder()
                 .title(postRequest.getTitle())
@@ -93,28 +98,50 @@ public class AuthorServices {
                 .content(Objects.requireNonNullElse(postRequest.getContent(), ""))
                 .thumbnail(postRequest.getThumbnail())
                 .user(author)
-                .createdAt(Objects.requireNonNullElse(postRequest.getCreatedAt(), new Date()))
+                .createdAt(new Date())
                 .categories(categories)
                 .tags(tags)
-                .featured(Objects.requireNonNullElse(postRequest.getFeatured(), DEFAULT_FEATURED))
+                .featured(Objects.requireNonNullElse(postRequest.getFeatured(), false))
                 .view(0L)
                 .public_date(postRequest.getPublic_date())
-                .is_publish(postRequest.getPublic_date() == null
-                        || postRequest.getPublic_date().isBefore(LocalDateTime.now()))
+                .is_publish(isPublished)
                 .build();
 
         var savedPost = postRepository.save(post);
-        notificationService.sendPostNotification(savedPost.getId(), "New post created: " + postRequest.getTitle());
-        notificationService.sendGlobalNotification("New post available: " + savedPost.getTitle());
 
-        CompletableFuture.runAsync(() -> {
-            try {
-                newsletterService.sendNewsletterForNewPost(savedPost);
-            } catch (Exception e) {
-                System.err.println(
-                        "Failed to send newsletter for post: " + savedPost.getTitle() + " - " + e.getMessage());
-            }
-        });
+        // Create notification payload
+        PublicArticleNotification notification = new PublicArticleNotification(
+                savedPost.getId(),
+                savedPost.getTitle(),
+                savedPost.getExcerpt(),
+                savedPost.getSlug(),
+                savedPost.getPublic_date()
+        );
+
+        // If post is immediately published, send real-time notifications
+        if (isPublished) {
+            // Send notification to the author
+            notificationService.sendPostPublishedNotification(author.getUsername(), notification);
+
+            // Broadcast to all connected users
+            notificationService.broadcastArticlePublishedNotification(notification);
+
+            // Create database notification record
+            notificationService.createUserNotification(
+                    authorId,
+                    "POST_PUBLISHED",
+                    "Article Published",
+                    "Your article '" + savedPost.getTitle() + "' has been published successfully!"
+            );
+        } else {
+            // Post is scheduled for future publication
+            notificationService.createUserNotification(
+                    authorId,
+                    "POST_SCHEDULED",
+                    "Article Scheduled",
+                    "Your article '" + savedPost.getTitle() + "' has been scheduled for publication."
+            );
+        }
 
         return savedPost;
     }
@@ -145,7 +172,28 @@ public class AuthorServices {
         post.setIs_publish(
                 postRequest.getPublic_date() == null || postRequest.getPublic_date().isBefore(LocalDateTime.now()));
 
-        return toPostResponse(postRepository.save(post));
+
+        var updatedPost = postRepository.save(post);
+
+//        notificationService.createNotification(
+//                post.getUser().getId(),
+//                "POST_UPDATED",
+//                "Bài viết đã được cập nhật",
+//                "Bài viết '" + post.getTitle() + "' đã được cập nhật."
+//        );
+
+//        notificationService.sendPostPublishedNotification(
+//                author.getUsername(),
+//                new PublicArticleNotification(
+//                        savedPost.getId(),
+//                        savedPost.getTitle(),
+//                        savedPost.getSlug(),
+//                        savedPost.getExcerpt(),
+//                        savedPost.getPublic_date()
+//                )
+//        );
+
+        return toPostResponse(updatedPost);
     }
 
     @Transactional

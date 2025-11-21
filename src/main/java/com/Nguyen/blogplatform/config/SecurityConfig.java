@@ -90,10 +90,12 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/api-docs/**",
                                 "/ws/**",
+                                "/profile/avatar/**",
                                 "/ws-logs/**",
                                 "/video/**",
                                 "/logs/**",
-                                "/logger/**"
+                                "/logger/**",
+                                "/traffic"
                         ).permitAll()
 
                         // --- AUTH & UTILITY ---
@@ -117,7 +119,8 @@ public class SecurityConfig {
                                 "/api/v1/post/latest",
                                 "/api/v1/post/category/{categoryId}",
                                 "/api/v1/category/**",
-                                "/api/v1/tags/**"
+                                "/api/v1/tags/**",
+                                "/api/v1/traffic/**"
                         ).permitAll()
 
                         // --- USERS (public profile) ---
@@ -147,7 +150,8 @@ public class SecurityConfig {
                                 "/api/v1/saved-posts/**",
                                 "/api/v1/post/{postId}/bookmark/**",
                                 "/api/v1/newsletter/subscribers/**",
-                                "/api/v1/profile/custom"
+                                "/api/v1/profile/**",
+                                "/api/v1/notifications/**"
                         ).authenticated()
 
                         // --- ROLE BASED ACCESS ---

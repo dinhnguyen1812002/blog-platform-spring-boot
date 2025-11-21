@@ -5,13 +5,17 @@ import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.repository.RoleRepository;
 
 import java.util.List;
+import java.util.TimeZone;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
+@EnableScheduling
 public class BlogPlatformApplication implements  CommandLineRunner  {
 
 
@@ -36,5 +40,10 @@ public class BlogPlatformApplication implements  CommandLineRunner  {
             System.out.println("Roles already exist, skipping initialization");
         }
     }
+    @PostConstruct
+    public void init() {
+        System.out.println(">>> Spring timezone: " + TimeZone.getDefault().getID());
+    }
+
 
 }

@@ -20,6 +20,7 @@ public class PostRequest {
     private String title;
 
     private String excerpt;
+
     private Date createdAt;
     private Boolean featured;
 

@@ -70,4 +70,8 @@ Optional<Post> findBySlug(String slug);
             @Param("tagName") String tagName,
             Pageable pageable
     );
+
+    @Query("SELECT p FROM Post p WHERE p.public_date <= :now AND p.is_publish = false")
+    List<Post> findDueToPublish(LocalDateTime now);
+
 }
