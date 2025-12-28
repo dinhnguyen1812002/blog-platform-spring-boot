@@ -5,6 +5,4 @@
       - job_name: 'spring-boot-app'
         metrics_path: '/actuator/prometheus'
         static_configs:
-          - targets: ['host.docker.internal:8888'] # For local development
-            # Or use the service name if using Docker Compose:
-            # - targets: ['your-spring-boot-service-name:8080']
+          - targets: ['blog-app:8080']

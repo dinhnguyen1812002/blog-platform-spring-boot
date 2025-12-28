@@ -59,6 +59,7 @@ public class ScheduledPublishService {
             PublicArticleNotification notification = new PublicArticleNotification(
                     publishedPost.getId(),
                     publishedPost.getTitle(),
+                    publishedPost.getThumbnail(),
                     publishedPost.getExcerpt(),
                     publishedPost.getSlug(),
                     publishedPost.getPublic_date()

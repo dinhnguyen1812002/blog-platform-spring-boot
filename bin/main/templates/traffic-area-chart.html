@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Traffic Area Chart</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif; margin: 20px; }
+    .controls { margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+  <div class="controls">
+    <label for="period">Period:</label>
+    <select id="period">
+      <option value="day" selected>Day (last 30)</option>
+      <option value="month">Month (last 12)</option>
+      <option value="year">Year (last 5)</option>
+    </select>
+    <button id="refresh">Refresh</button>
+  </div>
+  <canvas id="trafficChart" height="120"></canvas>
+  <script>
+    const ctx = document.getElementById('trafficChart').getContext('2d');
+    let chart;
+
+    async function fetchData(period) {
+      const res = await fetch(`/api/v1/traffic/stats?period=${encodeURIComponent(period)}`);
+
+      if (!res.ok) throw new Error(`Failed to fetch stats: ${res.status}`);
+      console.log(res)
+      return res.json();
+    }
+
+    function toAreaDataset(points) {
+      const labels = points.map(p => p.period);
+      const data = points.map(p => p.count);
+      return { labels, data };
+    }
+
+    function render(period, points) {
+      const { labels, data } = toAreaDataset(points);
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [{
+            label: `Traffic (${period})`,
+            data,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            fill: true,
+            tension: 0.3,
+          }]
+        },
+        options: {
+          responsive: true,
+          interaction: { mode: 'index', intersect: false },
+          plugins: { legend: { display: true } },
+          scales: {
+            y: { beginAtZero: true },
+          }
+        }
+      });
+    }
+
+    async function load() {
+      const period = document.getElementById('period').value;
+      const { periodType, points } = await fetchData(period);
+      render(periodType, points);
+    }
+
+    document.getElementById('refresh').addEventListener('click', load);
+    document.getElementById('period').addEventListener('change', load);
+
+    load().catch(err => console.error(err));
+  </script>
+</body>
+</html>

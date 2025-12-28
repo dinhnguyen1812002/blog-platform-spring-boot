@@ -60,12 +60,11 @@ public class RefreshTokenService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-        RefreshToken refreshToken = refreshTokenRepository.findByUser(user)
-                .orElse(new RefreshToken());
-
-        refreshToken.setUser(user);
-        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
-        refreshToken.setToken(generateSecureToken(32));
+        RefreshToken refreshToken = RefreshToken.builder()
+                .user(user)
+                .token(generateSecureToken(32))
+                .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
+                .build();
 
         return refreshTokenRepository.save(refreshToken);
     }
@@ -87,11 +86,11 @@ public class RefreshTokenService {
 
     @Transactional
     public void deleteByUserId(String userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
-        refreshTokenRepository.deleteByUser(user);
+        refreshTokenRepository.deleteAllByUserId(userId);
     }
-    
+
+
+
     public ResponseCookie generateRefreshTokenCookie(String token) {
         return ResponseCookie.from(refreshTokenCookieName, token)
                 .path("/api/v1/auth")

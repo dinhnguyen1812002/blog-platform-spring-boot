@@ -77,14 +77,14 @@ public class ProfileCustomizationController {
         return ResponseEntity.ok(resp);
     }
 
-    @GetMapping("/profile")
+    @GetMapping
     public ResponseEntity<UserProfileResponse> getProfile(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
         UserProfileResponse response = userProfileService.getUserProfile(userDetails);
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/profile/{userId}")
+    @GetMapping("/{userId}")
     public ResponseEntity<UserProfileResponse> getProfileById(@PathVariable String userId) {
         UserProfileResponse response = userProfileService.getUserProfileById(userId);
         return ResponseEntity.ok(response);

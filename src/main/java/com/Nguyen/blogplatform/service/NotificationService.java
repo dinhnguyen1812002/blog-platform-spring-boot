@@ -29,7 +29,11 @@ public class NotificationService {
     }
 
     public List<Notifications> getNotificationsOfUser(String userId) {
-        return notificationRepository.findByUser_IdOrderByCreatedAtDesc(userId);
+        return notificationRepository
+                .findByUser_IdOrderByCreatedAtDesc(userId)
+                .stream()
+                .filter(ir -> Boolean.FALSE.equals(ir.getIsRead()))
+                .toList();
     }
 
     public void sendPostNotification(String postId, String message) {

@@ -117,6 +117,7 @@ public class UserProfileService {
                 .username(user.getUsername())
                 .email(user.getEmail())
                 .avatar(user.getAvatar())
+                .bio(user.getBio())
                 .roles(roles)
                 .socialMediaLinks(socialMediaLinks) // Thêm social media links
                 .postsCount(postsCount)

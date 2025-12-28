@@ -132,11 +132,11 @@ public class PostService {
         return postMapper.toPostResponseWithComments(updatedPost, getCurrentUser(), savedPostRepository);
     }
 
-    public List<PostResponse> getPostsByCategory(Long categoryId) {
-        Long category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new NotFoundException("Category not found with id: " + categoryId)).getId();
+    public List<PostResponse> getPostsByCategory(String  slug) {
+        String category = categoryRepository.findBySlug(slug)
+                .orElseThrow(() -> new NotFoundException("Category not found with id: " + slug)).toString();
         Specification<Post> spec = PostSpecification.isPublished()
-                .and(PostSpecification.hasCategoryId(category));
+                .and(PostSpecification.hasCategorySlug(category));
         return postRepository.findAll(spec)
                 .stream()
                 .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))

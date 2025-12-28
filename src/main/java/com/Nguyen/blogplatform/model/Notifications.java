@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import de.huxhorn.sulky.ulid.ULID;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -20,7 +21,8 @@ public class Notifications {
     private String notificationId;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
+
+    @JsonIgnore
     private User user;
 
     @NotBlank

@@ -110,38 +110,14 @@ public class AuthorServices {
         var savedPost = postRepository.save(post);
 
         // Create notification payload
-        PublicArticleNotification notification = new PublicArticleNotification(
-                savedPost.getId(),
-                savedPost.getTitle(),
-                savedPost.getExcerpt(),
-                savedPost.getSlug(),
-                savedPost.getPublic_date()
-        );
+//        PublicArticleNotification notification = new PublicArticleNotification(
+//                savedPost.getId(),
+//                savedPost.getTitle(),
+//                savedPost.getExcerpt(),
+//                savedPost.getSlug(),
+//                savedPost.getPublic_date()
+//        );
 
-        // If post is immediately published, send real-time notifications
-        if (isPublished) {
-            // Send notification to the author
-            notificationService.sendPostPublishedNotification(author.getUsername(), notification);
-
-            // Broadcast to all connected users
-            notificationService.broadcastArticlePublishedNotification(notification);
-
-            // Create database notification record
-            notificationService.createUserNotification(
-                    authorId,
-                    "POST_PUBLISHED",
-                    "Article Published",
-                    "Your article '" + savedPost.getTitle() + "' has been published successfully!"
-            );
-        } else {
-            // Post is scheduled for future publication
-            notificationService.createUserNotification(
-                    authorId,
-                    "POST_SCHEDULED",
-                    "Article Scheduled",
-                    "Your article '" + savedPost.getTitle() + "' has been scheduled for publication."
-            );
-        }
 
         return savedPost;
     }

@@ -94,9 +94,9 @@ public class PostController {
         return ResponseEntity.ok(featuredPosts);
     }
 
-    @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<PostResponse>> getPostsByCategory(@PathVariable Long categoryId) {
-        List<PostResponse> posts = postServices.getPostsByCategory(categoryId);
+    @GetMapping("/category/{slug}")
+    public ResponseEntity<List<PostResponse>> getPostsByCategory(@PathVariable String slug) {
+        List<PostResponse> posts = postServices.getPostsByCategory(slug);
         return ResponseEntity.ok(posts);
     }
 

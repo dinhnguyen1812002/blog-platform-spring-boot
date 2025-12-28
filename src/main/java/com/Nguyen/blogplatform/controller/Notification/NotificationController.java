@@ -31,6 +31,7 @@ public class NotificationController {
     @GetMapping
     public List<Notifications> getNotificationsOfUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
         return notificationService.getNotificationsOfUser(user.getId());
@@ -38,6 +39,7 @@ public class NotificationController {
 
     @PutMapping("/{id}/read")
     public Notifications markAsRead(@PathVariable String id) {
+
         var noti = notificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
         noti.setIsRead(true);

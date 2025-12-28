@@ -4,6 +4,7 @@ import com.Nguyen.blogplatform.exception.CustomAccessDeniedHandler;
 import com.Nguyen.blogplatform.security.AuthEntryPointJwt;
 import com.Nguyen.blogplatform.security.AuthTokenFilter;
 import com.Nguyen.blogplatform.service.UserDetailsServiceImpl;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,8 +24,6 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
-
 @Configuration
 @EnableMethodSecurity
 public class SecurityConfig {
@@ -36,10 +35,10 @@ public class SecurityConfig {
 
     @Autowired
     public SecurityConfig(
-            UserDetailsServiceImpl userDetailsService,
-            AuthTokenFilter jwtAuthFilter,
-            AuthEntryPointJwt unauthorizedHandler,
-            CustomAccessDeniedHandler accessDeniedHandler
+        UserDetailsServiceImpl userDetailsService,
+        AuthTokenFilter jwtAuthFilter,
+        AuthEntryPointJwt unauthorizedHandler,
+        CustomAccessDeniedHandler accessDeniedHandler
     ) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthFilter = jwtAuthFilter;
@@ -49,14 +48,18 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(
+            userDetailsService
+        );
 
         provider.setPasswordEncoder(passwordEncoder());
         return provider;
     }
 
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+    public AuthenticationManager authenticationManager(
+        AuthenticationConfiguration config
+    ) throws Exception {
         return config.getAuthenticationManager();
     }
 
@@ -68,99 +71,114 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
-                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authenticationProvider(authenticationProvider())
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(ex -> ex
-                        .authenticationEntryPoint(unauthorizedHandler)
-                        .accessDeniedHandler(accessDeniedHandler)
-                )
-                .authorizeHttpRequests(auth -> auth
-                        // --- PUBLIC ENDPOINTS ---
-                        .requestMatchers(
-                                "/",
-                                "/actuator/**",
-                                "/images/**",
-                                "/uploads/**",
-                                "/uploads/thumbnail/**",
-                                "/swagger-ui/**",
-                                "/swagger-resources/**",
-                                "/v3/api-docs/**",
-                                "/api-docs/**",
-                                "/ws/**",
-                                "/profile/avatar/**",
-                                "/ws-logs/**",
-                                "/video/**",
-                                "/logs/**",
-                                "/logger/**",
-                                "/traffic"
-                        ).permitAll()
+            .csrf(AbstractHttpConfigurer::disable)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .authenticationProvider(authenticationProvider())
+            .addFilterBefore(
+                jwtAuthFilter,
+                UsernamePasswordAuthenticationFilter.class
+            )
+            .exceptionHandling(ex ->
+                ex
+                    .authenticationEntryPoint(unauthorizedHandler)
+                    .accessDeniedHandler(accessDeniedHandler)
+            )
+            .authorizeHttpRequests(auth ->
+                auth
+                    // --- PUBLIC ENDPOINTS ---
+                    .requestMatchers(
+                        "/",
+                        "/actuator/**",
+                        "/images/**",
+                        "/uploads/**",
+                        "/uploads/thumbnail/**",
+                        "/swagger-ui/**",
+                        "/swagger-resources/**",
+                        "/v3/api-docs/**",
+                        "/api-docs/**",
+                        "/ws/**",
+                        "/profile/avatar/**",
+                        "/ws-logs/**",
+                        "/video/**",
+                        "/logs/**",
+                        "/logger/**",
+                        "/traffic"
+                    )
+                    .permitAll()
+                    // --- AUTH & UTILITY ---
+                    .requestMatchers(
+                        "/api/v1/auth/refresh-token",
+                        "/api/v1/auth/logout",
+                        "/api/v1/auth/**",
+                        "/api/v1/jwt/decode",
+                        "/api/v1/jwt/validate",
+                        "/api/debug/**"
+                    )
+                    .permitAll()
+                    // --- SERIES ---
+                    .requestMatchers("/api/v1/series/**")
+                    .permitAll()
+                    // --- POSTS / TAGS / CATEGORIES (public GET) ---
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/api/v1/post",
+                        "/api/v1/post/featured",
+                        "/api/v1/post/search",
+                        "/api/v1/post/{slug}",
+                        "/api/v1/post/latest",
+                        "/api/v1/post/category/{slug}",
+                        "/api/v1/category/**",
+                        "/api/v1/tags/**",
+                        "/api/v1/traffic/**",
+                        "/api/v1/upload"
+                    )
+                    .permitAll()
+                    // --- USERS (public profile) ---
+                    .requestMatchers(
+                        "/api/v1/users/profile/**",
+                        "/api/v1/profile/**",
+                        "/api/v1/users/top-authors",
+                        "/api/v1/user/public/{username}"
+                    )
+                    .permitAll()
+                    // --- NEWSLETTER ---
+                    .requestMatchers(
+                        "/api/v1/newsletter/subscribe",
+                        "/api/v1/newsletter/confirm",
+                        "/api/v1/newsletter/unsubscribe"
+                    )
+                    .permitAll()
+                    // --- AUTHENTICATED USERS ---
+                    .requestMatchers(
+                        "/api/v1/author/**",
+                        "/api/v1/user/profile",
+                        "/api/v1/user/update-password",
+                        "/api/v1/auth/me",
+                        "/api/v1/auth/debug",
+                        "/api/v1/auth/assign-default-role",
+                        "/api/v1/jwt/roles",
+                        "/posts/stats",
+                        "/api/v1/comments/**",
+                        "/api/v1/saved-posts/**",
+                        "/api/v1/post/{postId}/bookmark/**",
 
-                        // --- AUTH & UTILITY ---
-                        .requestMatchers(
-                                "/api/v1/auth/refresh-token",
-                                "/api/v1/auth/**",
-                                "/api/v1/jwt/decode",
-                                "/api/v1/jwt/validate",
-                                "/api/debug/**"
-                        ).permitAll()
-
-                        // --- SERIES ---
-                        .requestMatchers("/api/v1/series/**").permitAll()
-
-                        // --- POSTS / TAGS / CATEGORIES (public GET) ---
-                        .requestMatchers(HttpMethod.GET,
-                                "/api/v1/post",
-                                "/api/v1/post/featured",
-                                "/api/v1/post/search",
-                                "/api/v1/post/{slug}",
-                                "/api/v1/post/latest",
-                                "/api/v1/post/category/{categoryId}",
-                                "/api/v1/category/**",
-                                "/api/v1/tags/**",
-                                "/api/v1/traffic/**"
-                        ).permitAll()
-
-                        // --- USERS (public profile) ---
-                        .requestMatchers(
-                                "/api/v1/users/profile/**",
-                                "/api/v1/users/top-authors",
-                                "/api/v1/user/public/{username}"
-                        ).permitAll()
-
-                        // --- NEWSLETTER ---
-                        .requestMatchers(
-                                "/api/v1/newsletter/subscribe",
-                                "/api/v1/newsletter/confirm",
-                                "/api/v1/newsletter/unsubscribe"
-                        ).permitAll()
-
-                        // --- AUTHENTICATED USERS ---
-                        .requestMatchers(
-                                "/api/v1/user/profile",
-                                "/api/v1/user/update-password",
-                                "/api/v1/auth/me",
-                                "/api/v1/auth/debug",
-                                "/api/v1/auth/assign-default-role",
-                                "/api/v1/jwt/roles",
-                                "/posts/stats",
-                                "/api/v1/comments/**",
-                                "/api/v1/saved-posts/**",
-                                "/api/v1/post/{postId}/bookmark/**",
-                                "/api/v1/newsletter/subscribers/**",
-                                "/api/v1/profile/**",
-                                "/api/v1/notifications/**"
-                        ).authenticated()
-
-                        // --- ROLE BASED ACCESS ---
-                        .requestMatchers("/api/v1/user/**").hasRole("USER")
-                        .requestMatchers("/api/v1/admin/users/**").hasRole("ADMIN")
-
-                        // --- ANYTHING ELSE ---
-                        .anyRequest().authenticated()
-                );
+                        "/api/v1/newsletter/subscribers/**",
+                            "/api/v1/profile",
+                        "/api/v1/notifications/**"
+                    )
+                    .authenticated()
+                    // --- ROLE BASED ACCESS ---
+                    .requestMatchers("/api/v1/user/**")
+                    .hasRole("USER")
+                    .requestMatchers("/api/v1/admin/users/**")
+                    .hasRole("ADMIN")
+                    // --- ANYTHING ELSE ---
+                    .anyRequest()
+                    .authenticated()
+            );
 
         return http.build();
     }
@@ -168,19 +186,25 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of(
+        config.setAllowedOrigins(
+            List.of(
                 "http://localhost:3000",
                 "http://localhost:5173",
                 "http://localhost:5174",
-                "http://localhost:5000"
-        ));
-        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
+                "http://localhost:5000",
+                "http://localhost:9090"
+            )
+        );
+        config.setAllowedMethods(
+            List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
+        );
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
         config.setAllowCredentials(true);
         config.setMaxAge(3600L); // Cache preflight requests for 1 hour
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        UrlBasedCorsConfigurationSource source =
+            new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
     }
