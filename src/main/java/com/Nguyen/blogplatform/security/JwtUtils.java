@@ -35,6 +35,9 @@ public class JwtUtils {
     @Value("${blog.app.jwtCookieName}")
     private String jwtCookie;
 
+    @Value("${blog.app.cookieSecure:false}")
+    private boolean cookieSecure;
+
     /**
      * Generate JWT token from Authentication object
      */
@@ -73,7 +76,7 @@ public class JwtUtils {
     public ResponseCookie generateCookieFromToken(String token) {
         return ResponseCookie.from(jwtCookie, token)
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(24 * 60 * 60) // 24 hours
                 .sameSite("Lax")
@@ -106,7 +109,7 @@ public class JwtUtils {
     public ResponseCookie getCleanJwtCookie() {
         return ResponseCookie.from(jwtCookie, "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .path("/")
                 .maxAge(0)
                 .sameSite("Lax")

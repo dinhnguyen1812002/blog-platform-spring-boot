@@ -60,7 +60,7 @@ public class UserServices {
         userRepository.save(user);
 
         // Use the base URL for the reset link
-        String resetUrl =  bashUrl +  "/api/user/reset-password?token=" + user.getResetToken();
+        String resetUrl =  bashUrl +  "/auth/reset-password?token=" + user.getResetToken();
 
         Context context = new Context();
         context.setVariable("resetUrl", resetUrl);

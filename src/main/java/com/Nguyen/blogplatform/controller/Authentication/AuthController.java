@@ -19,11 +19,15 @@ import com.Nguyen.blogplatform.service.AuthService;
 import com.Nguyen.blogplatform.service.RefreshTokenService;
 import com.Nguyen.blogplatform.service.UserDetailsImpl;
 import com.Nguyen.blogplatform.validation.annotation.WithRateLimitProtection;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -45,6 +49,9 @@ import java.util.stream.Collectors;
 
 public class AuthController {
     private final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
+    @Value("${blog.app.refreshTokenCookieName}")
+    private String refreshTokenCookieName;
 
     @Autowired
     private AuthService authService;
@@ -82,21 +89,33 @@ public class AuthController {
 
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(
-            @CookieValue(name = "${blog.app.refreshTokenCookieName}", required = false) String refreshTokenCookie) {
+            HttpServletRequest request) {
+
+        String refreshTokenCookie = null;
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (refreshTokenCookieName.equals(cookie.getName())) {
+                    refreshTokenCookie = cookie.getValue();
+                    break;
+                }
+            }
+        }
 
         if (refreshTokenCookie == null || refreshTokenCookie.isEmpty()) {
             throw new TokenRefreshException(null, "Refresh token cookie is missing!");
         }
 
-        return refreshTokenService.findByToken(refreshTokenCookie)
+        final String refreshTokenCookieFinal = refreshTokenCookie;
+
+        return refreshTokenService.findByToken(refreshTokenCookieFinal)
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(user -> {
                     // Tạo access token mới
                     String newAccessToken = jwtUtils.generateTokenFromUserId(user.getId(), user.getEmail());
 
-                    // Xoay vòng refresh token (xóa cái cũ, tạo cái mới)
-                    refreshTokenService.deleteByUserId(user.getId());
+                    // Xoay vòng refresh token (tạo cái mới / cập nhật cái cũ)
                     RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
 
                     // Tạo cookies mới
@@ -104,7 +123,7 @@ public class AuthController {
                             .path("/")
                             .maxAge(7 * 24 * 60 * 60) // 7 ngày
                             .httpOnly(true)
-                            .secure(true)
+
                             .sameSite("Lax")
                             .build();
 
@@ -116,7 +135,7 @@ public class AuthController {
                             .header(HttpHeaders.SET_COOKIE, refreshTokenCookieNew.toString())
                             .body(new TokenRefreshResponse(newAccessToken, newRefreshToken.getToken()));
                 })
-                .orElseThrow(() -> new TokenRefreshException(refreshTokenCookie,
+                .orElseThrow(() -> new TokenRefreshException(refreshTokenCookieFinal,
                         "Refresh token is not in database!"));
     }
 
@@ -140,32 +159,55 @@ public class AuthController {
 
 
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(@AuthenticationPrincipal UserDetailsImpl userDetails) {
-//        if (userDetails == null) {
-//            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Unauthorized");
-//        }
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("No authentication found. Please log in.");
+        }
 
-        // Fetch user from database (optional, only if additional data is needed)
-        User user = userRepository.findById(userDetails.getId())
-                .orElseThrow(() -> new NotFoundException("User not found with id: " + userDetails.getId()));
+        if (!authentication.isAuthenticated()) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Authentication failed: " + authentication.getPrincipal());
+        }
 
-        // Get roles from userDetails (preferred, as it's from the authenticated JWT)
-        List<ERole> roles = user.getRoles().stream()
-                .map(Role::getName) // Map Role to its name (String)
-                .collect(Collectors.toList());
+        Object principal = authentication.getPrincipal();
+        logger.info("Principal type: " + (principal != null ? principal.getClass().getName() : "null"));
+        logger.info("Principal: " + principal);
 
-        // Debug roles
+        if (!(principal instanceof UserDetailsImpl userDetails)) {
+            return ResponseEntity
+                    .status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid authentication principal: " +
+                            (principal != null ? principal.getClass().getName() : "null"));
+        }
 
-        // Build response
-        Map<String, Object> response = new HashMap<>();
-        response.put("id", userDetails.getId());
-        response.put("username", userDetails.getUsername());
-        response.put("email", userDetails.getEmail());
-        response.put("avatar",userDetails.getAvatar());
-//        response.put("")
-        response.put("role", roles); // Use roles from userDetails for consistency
+        try {
+            // Rest of your existing code...
+            User user = userRepository.findById(userDetails.getId())
+                    .orElseThrow(() ->
+                            new NotFoundException("User not found with id: " + userDetails.getId()));
 
-        return ResponseEntity.ok(response);
+            List<ERole> roles = user.getRoles().stream()
+                    .map(Role::getName)
+                    .collect(Collectors.toList());
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("id", userDetails.getId());
+            response.put("username", userDetails.getUsername());
+            response.put("email", userDetails.getEmail());
+            response.put("avatar", user.getAvatar());
+            response.put("roles", roles);
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            logger.error("Error in /me endpoint", e);
+            return ResponseEntity
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error processing request: " + e.getMessage());
+        }
     }
+
 
 }

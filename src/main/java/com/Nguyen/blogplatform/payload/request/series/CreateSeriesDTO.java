@@ -1,4 +1,5 @@
 package com.Nguyen.blogplatform.payload.request.series;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
@@ -8,6 +9,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class CreateSeriesDTO {
+
     @NotEmpty(message = "Title is required")
     @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters")
     private String title;
@@ -21,7 +23,9 @@ public class CreateSeriesDTO {
 
     private String thumbnail;
 
+    @Builder.Default
     private Boolean isActive = true;
 
+    @Builder.Default
     private Boolean isCompleted = false;
 }

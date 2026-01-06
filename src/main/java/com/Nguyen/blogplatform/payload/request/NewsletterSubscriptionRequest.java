@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.payload.request;
 
+import com.Nguyen.blogplatform.Enum.NewsletterFrequency;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -16,4 +17,6 @@ public class NewsletterSubscriptionRequest {
     
     @Size(max = 100, message = "Name must not exceed 100 characters")
     private String name;
+
+    private NewsletterFrequency frequency;
 }

@@ -81,11 +81,7 @@ public class SecurityConfig {
                 jwtAuthFilter,
                 UsernamePasswordAuthenticationFilter.class
             )
-            .exceptionHandling(ex ->
-                ex
-                    .authenticationEntryPoint(unauthorizedHandler)
-                    .accessDeniedHandler(accessDeniedHandler)
-            )
+
             .authorizeHttpRequests(auth ->
                 auth
                     // --- PUBLIC ENDPOINTS ---
@@ -104,13 +100,16 @@ public class SecurityConfig {
                         "/ws-logs/**",
                         "/video/**",
                         "/logs/**",
+                         "/api/v1/auth/refresh-token",
                         "/logger/**",
-                        "/traffic"
+                        "/traffic",
+                        "/auth/**"
+
                     )
                     .permitAll()
                     // --- AUTH & UTILITY ---
                     .requestMatchers(
-                        "/api/v1/auth/refresh-token",
+
                         "/api/v1/auth/logout",
                         "/api/v1/auth/**",
                         "/api/v1/jwt/decode",

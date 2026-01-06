@@ -74,4 +74,6 @@ Optional<Post> findBySlug(String slug);
     @Query("SELECT p FROM Post p WHERE p.public_date <= :now AND p.is_publish = false")
     List<Post> findDueToPublish(LocalDateTime now);
 
+    List<Post> findByCreatedAtAfter(LocalDateTime createdAt);
+
 }

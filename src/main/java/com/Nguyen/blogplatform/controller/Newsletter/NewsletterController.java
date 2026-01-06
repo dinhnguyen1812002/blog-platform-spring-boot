@@ -1,5 +1,7 @@
 package com.Nguyen.blogplatform.controller.Newsletter;
 
+
+import com.Nguyen.blogplatform.Enum.NewsletterFrequency;
 import com.Nguyen.blogplatform.payload.request.NewsletterSubscriptionRequest;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
 import com.Nguyen.blogplatform.payload.response.NewsletterResponse;
@@ -21,65 +23,109 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Newsletter", description = "Newsletter subscription management")
 public class NewsletterController {
-    
+
     private final NewsletterService newsletterService;
-    
+
+
+
     @PostMapping("/subscribe")
-    @Operation(summary = "Subscribe to newsletter",
-            description = "Subscribe to the newsletter with email and optional name")
-    public ResponseEntity<MessageResponse> subscribe(@Valid @RequestBody NewsletterSubscriptionRequest request) {
-        MessageResponse response = newsletterService.subscribe(request);
-        return ResponseEntity.ok(response);
+    @Operation(
+            summary = "Subscribe to newsletter",
+            description = "Subscribe with email, name and frequency (DAILY / WEEKLY)"
+    )
+    public ResponseEntity<MessageResponse> subscribe(
+            @Valid @RequestBody NewsletterSubscriptionRequest request
+    ) {
+        return ResponseEntity.ok(newsletterService.subscribe(request));
     }
-    
+
     @GetMapping("/confirm")
-    @Operation(summary = "Confirm newsletter subscription",
-            description = "Confirm newsletter subscription using confirmation token")
+    @Operation(
+            summary = "Confirm newsletter subscription",
+            description = "Confirm subscription using confirmation token"
+    )
     public ResponseEntity<MessageResponse> confirmSubscription(
-            @Parameter(description = "Confirmation token") @RequestParam String token) {
-        MessageResponse response = newsletterService.confirmSubscription(token);
-        return ResponseEntity.ok(response);
+            @RequestParam("token") String token
+    ) {
+        return ResponseEntity.ok(
+                newsletterService.confirmSubscription(token)
+        );
     }
-    
+
     @GetMapping("/unsubscribe")
-    @Operation(summary = "Unsubscribe from newsletter",
-            description = "Unsubscribe from newsletter using subscription token")
+    @Operation(
+            summary = "Unsubscribe from newsletter",
+            description = "Unsubscribe using subscription token"
+    )
     public ResponseEntity<MessageResponse> unsubscribe(
-            @Parameter(description = "Subscription token") @RequestParam String token) {
-        MessageResponse response = newsletterService.unsubscribe(token);
-        return ResponseEntity.ok(response);
+            @RequestParam("token") String token
+    ) {
+        return ResponseEntity.ok(
+                newsletterService.unsubscribe(token)
+        );
     }
-    
+
+
+
+    @PatchMapping("/frequency")
+    @Operation(
+            summary = "Update newsletter frequency",
+            description = "Update subscription frequency (DAILY / WEEKLY)"
+    )
+    public ResponseEntity<MessageResponse> updateFrequency(
+            @RequestParam("token") String subscriptionToken,
+            @RequestParam("frequency") NewsletterFrequency frequency
+    ) {
+        return ResponseEntity.ok(
+                newsletterService.updateFrequency(subscriptionToken, frequency)
+        );
+    }
+
+
     @GetMapping("/subscribers")
-
-    @Operation(summary = "Get all subscribers",
-            description = "Get paginated list of all newsletter subscribers (Admin only)")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Get all subscribers",
+            description = "Paginated list of all newsletter subscribers (Admin only)"
+    )
     public ResponseEntity<Page<NewsletterResponse>> getAllSubscribers(
-            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size) {
+            @Parameter(description = "Page number (0-based)")
+            @RequestParam(defaultValue = "0") int page,
+
+            @Parameter(description = "Page size")
+            @RequestParam(defaultValue = "10") int size
+    ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<NewsletterResponse> subscribers = newsletterService.getAllSubscribers(pageable);
-        return ResponseEntity.ok(subscribers);
+        return ResponseEntity.ok(
+                newsletterService.getAllSubscribers(pageable)
+        );
     }
-    
+
     @GetMapping("/subscribers/active")
-
-    @Operation(summary = "Get active subscribers",
-            description = "Get paginated list of active and confirmed newsletter subscribers (Admin only)")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Get active subscribers",
+            description = "Active & confirmed subscribers (Admin only)"
+    )
     public ResponseEntity<Page<NewsletterResponse>> getActiveSubscribers(
-            @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<NewsletterResponse> subscribers = newsletterService.getActiveSubscribers(pageable);
-        return ResponseEntity.ok(subscribers);
+        return ResponseEntity.ok(
+                newsletterService.getActiveSubscribers(pageable)
+        );
     }
-    
-    @GetMapping("/subscribers/count")
 
-    @Operation(summary = "Get active subscriber count",
-            description = "Get total count of active and confirmed newsletter subscribers (Admin only)")
+    @GetMapping("/subscribers/count")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(
+            summary = "Get active subscriber count",
+            description = "Count active & confirmed subscribers (Admin only)"
+    )
     public ResponseEntity<Long> getActiveSubscriberCount() {
-        Long count = newsletterService.getActiveSubscriberCount();
-        return ResponseEntity.ok(count);
+        return ResponseEntity.ok(
+                newsletterService.getActiveSubscriberCount()
+        );
     }
 }

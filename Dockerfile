@@ -1,7 +1,7 @@
 # ============================
 # Stage 1: Build the Spring Boot app
 # ============================
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:25-jdk AS builder
 WORKDIR /app
 
 # Copy Gradle wrapper and project files
@@ -17,7 +17,7 @@ RUN ./gradlew clean bootJar --no-daemon
 # ============================
 # Stage 2: Run the built jar
 # ============================
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:25-jdk
 WORKDIR /app
 
 # Copy jar file from builder

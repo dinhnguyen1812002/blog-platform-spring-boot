@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.repository;
 
+import com.Nguyen.blogplatform.Enum.NewsletterFrequency;
 import com.Nguyen.blogplatform.model.Newsletter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -45,4 +46,12 @@ public interface NewsletterRepository extends JpaRepository<Newsletter, String> 
     long countBySubscribedAtBetweenAndIsActiveTrueAndIsConfirmedTrue(
             LocalDateTime start, LocalDateTime end);
 
+    List<Newsletter> findByIsActiveTrueAndIsConfirmedTrueAndFrequency(
+            NewsletterFrequency frequency
+    );
+
+    List<Newsletter> findByIsActiveTrueAndIsConfirmedTrueAndFrequencyAndLastSentAtBefore(
+            NewsletterFrequency frequency,
+            LocalDateTime time
+    );
 }

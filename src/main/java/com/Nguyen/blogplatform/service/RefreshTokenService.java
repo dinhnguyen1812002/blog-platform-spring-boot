@@ -25,6 +25,9 @@ public class RefreshTokenService {
     @Value("${blog.app.refreshTokenCookieName}")
     private String refreshTokenCookieName;
 
+    @Value("${blog.app.cookieSecure:false}")
+    private boolean cookieSecure;
+
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
@@ -60,11 +63,12 @@ public class RefreshTokenService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
-        RefreshToken refreshToken = RefreshToken.builder()
-                .user(user)
-                .token(generateSecureToken(32))
-                .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
-                .build();
+        RefreshToken refreshToken = refreshTokenRepository.findByUserIdForUpdate(userId)
+                .orElseGet(() -> RefreshToken.builder().user(user).build());
+
+        refreshToken.setUser(user);
+        refreshToken.setToken(generateSecureToken(32));
+        refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
 
         return refreshTokenRepository.save(refreshToken);
     }
@@ -96,7 +100,8 @@ public class RefreshTokenService {
                 .path("/api/v1/auth")
                 .maxAge(refreshTokenDurationMs / 1000) // Convert to seconds
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
+                .sameSite("Lax")
                 .sameSite("Lax")
                 .build();
     }
@@ -106,7 +111,7 @@ public class RefreshTokenService {
                 .path("/api/v1/auth")
                 .maxAge(0)
                 .httpOnly(true)
-                .secure(true)
+                .secure(cookieSecure)
                 .sameSite("Lax")
                 .build();
     }

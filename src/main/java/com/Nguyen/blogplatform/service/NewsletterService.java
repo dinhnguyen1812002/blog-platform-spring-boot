@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.service;
 
+import com.Nguyen.blogplatform.Enum.NewsletterFrequency;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.model.Newsletter;
 import com.Nguyen.blogplatform.model.Post;
@@ -76,10 +77,15 @@ public class NewsletterService {
         // Create new subscription
         String confirmationToken = UUID.randomUUID().toString();
         String subscriptionToken = UUID.randomUUID().toString();
-        
+
         Newsletter newsletter = Newsletter.builder()
                 .email(request.getEmail())
                 .name(request.getName())
+                .frequency(
+                        request.getFrequency() != null
+                                ? request.getFrequency()
+                                : NewsletterFrequency.DAILY
+                )
                 .isActive(true)
                 .isConfirmed(false)
                 .confirmationToken(confirmationToken)
@@ -150,19 +156,19 @@ public class NewsletterService {
         return newsletterRepository.countActiveAndConfirmedSubscribers();
     }
     
-    @Transactional
-    public void sendNewsletterForNewPost(Post post) {
-        List<Newsletter> activeSubscribers = newsletterRepository.findAllActiveAndConfirmedSubscribers();
-        
-        if (!activeSubscribers.isEmpty()) {
-            try {
-                emailServices.sendNewsletterEmail(activeSubscribers, post);
-                log.info("Newsletter sent to {} subscribers for post: {}", activeSubscribers.size(), post.getTitle());
-            } catch (MessagingException e) {
-                log.error("Failed to send newsletter for post: {}", post.getTitle(), e);
-            }
-        }
-    }
+//    @Transactional
+//    public void sendNewsletterForNewPost(Post post) {
+//        List<Newsletter> activeSubscribers = newsletterRepository.findAllActiveAndConfirmedSubscribers();
+//
+//        if (!activeSubscribers.isEmpty()) {
+//            try {
+//                emailServices.sendNewsletterEmail(activeSubscribers, post);
+//                log.info("Newsletter sent to {} subscribers for post: {}", activeSubscribers.size(), post.getTitle());
+//            } catch (MessagingException e) {
+//                log.error("Failed to send newsletter for post: {}", post.getTitle(), e);
+//            }
+//        }
+//    }
     
     private NewsletterResponse toNewsletterResponse(Newsletter newsletter) {
         return NewsletterResponse.builder()
@@ -175,5 +181,23 @@ public class NewsletterService {
                 .confirmedAt(newsletter.getConfirmedAt())
                 .unsubscribedAt(newsletter.getUnsubscribedAt())
                 .build();
+    }
+
+
+    @Transactional
+    public MessageResponse updateFrequency(
+            String subscriptionToken,
+            NewsletterFrequency frequency
+    ) {
+        Newsletter newsletter = newsletterRepository
+                .findBySubscriptionToken(subscriptionToken)
+                .orElseThrow(() -> new NotFoundException("Invalid token"));
+
+        newsletter.setFrequency(frequency);
+        newsletterRepository.save(newsletter);
+
+        return new MessageResponse(
+                "Newsletter frequency updated to " + frequency
+        );
     }
 }
