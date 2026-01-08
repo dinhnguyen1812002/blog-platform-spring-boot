@@ -97,6 +97,7 @@ public class SecurityConfig {
                         "/api-docs/**",
                         "/ws/**",
                         "/profile/avatar/**",
+                        "/api/v1/users/profile/{slug}",
                         "/ws-logs/**",
                         "/video/**",
                         "/logs/**",
@@ -166,7 +167,8 @@ public class SecurityConfig {
 
                         "/api/v1/newsletter/subscribers/**",
                             "/api/v1/profile",
-                        "/api/v1/notifications/**"
+                        "/api/v1/notifications/**",
+                         "/api/v1/post/{postId}/featured"
                     )
                     .authenticated()
                     // --- ROLE BASED ACCESS ---

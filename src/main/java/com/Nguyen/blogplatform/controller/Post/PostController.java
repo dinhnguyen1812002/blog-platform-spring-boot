@@ -107,4 +107,11 @@ public class PostController {
         List<PostResponse> posts = postServices.searchPosts(title, categoryId);
         return ResponseEntity.ok(posts);
     }
+
+
+    @PostMapping("/{id}/featured")
+    public ResponseEntity<PostResponse> toggleFeatured(@PathVariable String id) {
+        PostResponse postResponse = postServices.toggleFeatured(id);
+        return ResponseEntity.ok(postResponse);
+    }
 }

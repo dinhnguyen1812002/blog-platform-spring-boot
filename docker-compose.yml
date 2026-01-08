@@ -28,7 +28,7 @@ services:
       - "8080:8080"
     environment:
       # Chú ý: dùng tên service 'mysql' ở đây là đúng
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/spring_blog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/spring_blog
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: 123456789
       SPRING_JPA_HIBERNATE_DDL_AUTO: update

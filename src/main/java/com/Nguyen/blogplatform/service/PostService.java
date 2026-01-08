@@ -224,4 +224,15 @@ public class PostService {
         return timestamp != null && System.currentTimeMillis() - timestamp < CACHE_EXPIRY_MS && postCache.containsKey(key);
     }
 
+    @Transactional
+    public PostResponse toggleFeatured(String postId) {
+        Post post = findPostById(postId);
+        post.setFeatured(!post.getFeatured());
+        Post updatedPost = postRepository.save(post);
+        invalidateCache(postId);
+        return postMapper.toPostResponse(updatedPost, getCurrentUser(), savedPostRepository);
+    }
+
+
+
 }

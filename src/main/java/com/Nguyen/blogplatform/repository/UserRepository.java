@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.repository;
 
+import com.Nguyen.blogplatform.Enum.ERole;
 import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
@@ -59,5 +60,5 @@ public interface UserRepository extends JpaRepository<User, String> {
 
 
     List<User> findAllByOrderByCreatedAtDesc(Pageable pageable);
-
+    boolean existsByRoles_Name(ERole name);
 }
