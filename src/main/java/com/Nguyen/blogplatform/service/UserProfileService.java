@@ -11,6 +11,7 @@ import com.Nguyen.blogplatform.payload.response.PostSummaryResponse;
 import com.Nguyen.blogplatform.payload.response.PublicProfileResponse;
 import com.Nguyen.blogplatform.payload.response.UserProfileResponse;
 import com.Nguyen.blogplatform.repository.*;
+import com.Nguyen.blogplatform.storage.AvatarStorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -33,7 +34,7 @@ public class UserProfileService {
     private final CommentRepository commentRepository;
     private final SocialMediaLinkRepository socialMediaLinkRepository;
     private final ProfilePlaceholderService profilePlaceholderService;
-    private final com.Nguyen.blogplatform.storage.AvatarStorageService avatarStorageService;
+    private final AvatarStorageService avatarStorageService;
 
     public UserProfileResponse getUserProfile(UserDetailsImpl userDetails) {
         // Get user from database to get additional info
@@ -71,7 +72,10 @@ public class UserProfileService {
                 .id(userDetails.getId())
                 .username(userDetails.getUsername())
                 .email(userDetails.getEmail())
+                .bio(user.getBio())
+                .slug(userDetails.getSlug())
                 .avatar(user.getAvatar())
+                .website(user.getWebsite())
                 .roles(roles)
                 .socialMediaLinks(socialMediaLinks) // Thêm social media links
                 .postsCount(postsCount)
@@ -392,6 +396,8 @@ public class UserProfileService {
                         .title(p.getTitle())
                         .excerpt(p.getExcerpt())
                         .slug(p.getSlug())
+                        .views(p.getView())
+                        .likes(p.getLike().toArray().length)
                         .thumbnail(p.getThumbnail())
                         .createdAt(p.getCreatedAt())
                         .build())

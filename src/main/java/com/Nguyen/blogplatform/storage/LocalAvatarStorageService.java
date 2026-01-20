@@ -27,6 +27,7 @@ public class LocalAvatarStorageService implements AvatarStorageService {
         this.maxSizeBytes = maxSizeBytes;
         try {
             Files.createDirectories(this.uploadRoot);
+
         } catch (IOException e) {
             throw new RuntimeException("Could not create upload directory", e);
         }
@@ -52,6 +53,9 @@ public class LocalAvatarStorageService implements AvatarStorageService {
             Files.createDirectories(userDir);
             Path target = userDir.resolve(filename);
             Files.copy(file.getInputStream(), target, StandardCopyOption.REPLACE_EXISTING);
+            log.info("Upload root = {}", uploadRoot);
+            log.info("Exists = {}", Files.exists(uploadRoot));
+            log.info("Writable = {}", Files.isWritable(uploadRoot));
             // Return stored relative path from uploads root: /uploads/avatars/{userId}/{filename}
             return "/uploads/avatars/" + userId + "/" + filename;
         } catch (IOException e) {

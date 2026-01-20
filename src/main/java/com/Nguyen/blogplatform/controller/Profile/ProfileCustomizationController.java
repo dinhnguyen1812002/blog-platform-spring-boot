@@ -40,6 +40,14 @@ public class ProfileCustomizationController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping
+    public ResponseEntity<UserProfileResponse> patchProfile(
+            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @RequestBody UserProfileUpdateRequest request) throws ConflictException {
+        UserProfileResponse response = userProfileService.updateUserProfile(userDetails.getId(), request);
+        return ResponseEntity.ok(response);
+    }
+
     /**
      * Get the custom profile markdown content for a specific user
      * 
@@ -52,21 +60,14 @@ public class ProfileCustomizationController {
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/profile")
-    public ResponseEntity<UserProfileResponse> updateProfile(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @Valid @RequestBody UserProfileUpdateRequest request) throws ConflictException {
-        UserProfileResponse response = userProfileService.updateUserProfile(userDetails.getId(), request);
-        return ResponseEntity.ok(response);
-    }
+//    @PutMapping("/profile")
+//    public ResponseEntity<UserProfileResponse> updateProfile(
+//            @AuthenticationPrincipal UserDetailsImpl userDetails,
+//            @Valid @RequestBody UserProfileUpdateRequest request) throws ConflictException {
+//        UserProfileResponse response = userProfileService.updateUserProfile(userDetails.getId(), request);
+//        return ResponseEntity.ok(response);
+//    }
 
-    @PatchMapping("/profile")
-    public ResponseEntity<UserProfileResponse> patchProfile(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
-            @RequestBody UserProfileUpdateRequest request) throws ConflictException {
-        UserProfileResponse response = userProfileService.updateUserProfile(userDetails.getId(), request);
-        return ResponseEntity.ok(response);
-    }
 
     @PostMapping(value = "/avatar", consumes = {"multipart/form-data"})
     public ResponseEntity<AvatarUploadResponse> uploadAvatar(

@@ -229,7 +229,7 @@ public class AuthorServices {
 
         return PostResponse.builder()
                 .id(post.getId())
-                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail(),
+                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail(), post.getUser().getSlug(),
                         post.getUser().getAvatar()))
                 .title(post.getTitle())
                 .excerpt(post.getExcerpt())

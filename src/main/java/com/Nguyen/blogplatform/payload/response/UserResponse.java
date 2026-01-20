@@ -12,6 +12,7 @@ import java.util.List;
 public class UserResponse {
     private String id;
     private String username;
+    private String slug;
     private String email;
     private String avatar;
     private List<ERole> roles;
@@ -31,11 +32,12 @@ public class UserResponse {
 //        this.roles = roles;
 //    }
 
-    public UserResponse(String id, String username, String email, String avatar ) {
+    public UserResponse(String id, String username, String email, String slug ,String avatar ) {
         this.id = id;
         this.username = username;
         this.avatar = avatar;
         this.email = email;
+        this.slug = slug;
     }
 
 }

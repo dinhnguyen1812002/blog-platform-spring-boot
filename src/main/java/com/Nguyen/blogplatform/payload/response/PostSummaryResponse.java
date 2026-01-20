@@ -18,5 +18,8 @@ public class PostSummaryResponse {
     private String slug;
     private String thumbnail;
     private Date createdAt;
+    private long views;
+    private int likes;
+
 
 }

@@ -161,6 +161,7 @@ public class BookmarkService {
                     savedPost.getUser().getId(),
                     savedPost.getUser().getUsername(),
                     savedPost.getUser().getEmail(),
+                    savedPost.getUser().getSlug(),
                     savedPost.getUser().getAvatar()
                 ))
                 .notes(savedPost.getNotes())

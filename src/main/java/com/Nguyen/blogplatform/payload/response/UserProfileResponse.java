@@ -15,7 +15,9 @@ public class UserProfileResponse {
     private String id;
     private String username;
     private String email;
+    private String slug;
     private String avatar;
+    private String website;
     private String bio;
     private List<String> roles;
     private Map<ESocialMediaPlatform, String> socialMediaLinks;

@@ -30,6 +30,9 @@ public class UserDetailsImpl implements UserDetails {
     @Getter
     private String avatar;
 
+    @Getter
+    private String slug;
+
     @JsonIgnore
     private String password;
 
@@ -39,12 +42,13 @@ public class UserDetailsImpl implements UserDetails {
 
     private Collection<? extends GrantedAuthority> authorities;
 
-    public UserDetailsImpl(String id, String username, String email, String password, String avatar,
+    public UserDetailsImpl(String id, String username, String email, String password,  String slug, String avatar,
                            List<Role> roles, Collection<? extends GrantedAuthority> authorities) {
         this.id = id;
         this.username = username;
         this.email = email;
         this.password = password;
+        this.slug = slug;
         this.avatar = avatar;
         this.role = roles != null ? roles : new ArrayList<>();
         this.authorities = authorities;
@@ -67,6 +71,7 @@ public class UserDetailsImpl implements UserDetails {
                 user.getUsername(),
                 user.getEmail(),
                 user.getPassword(),
+                user.getSlug(),
                 user.getAvatar(),
                 roles,
                 authorities);

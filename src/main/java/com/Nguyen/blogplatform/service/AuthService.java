@@ -95,6 +95,7 @@ public class AuthService {
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
+                userDetails.getSlug(),
                 userDetails.getAvatar(),
                 roles
         );
@@ -188,6 +189,7 @@ public class AuthService {
                     savedUser.getId(),
                     savedUser.getUsername(),
                     savedUser.getEmail(),
+                    savedUser.getSlug(),
                     roleNames,
                     "Registration successful! You have been automatically logged in."
             );

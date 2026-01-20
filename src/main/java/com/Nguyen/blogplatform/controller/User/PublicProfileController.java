@@ -26,3 +26,4 @@ public class PublicProfileController {
         return ResponseEntity.ok(response);
     }
 }
+

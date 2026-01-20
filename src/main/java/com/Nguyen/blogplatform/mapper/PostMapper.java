@@ -104,7 +104,7 @@ public class PostMapper {
     }
 
     public UserResponse createUserResponse(User user) {
-        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getAvatar() );
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getSlug() , user.getAvatar() );
     }
 
     public double calculateAverageRating(Post post) {

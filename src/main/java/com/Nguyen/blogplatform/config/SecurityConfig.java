@@ -87,6 +87,7 @@ public class SecurityConfig {
                     // --- PUBLIC ENDPOINTS ---
                     .requestMatchers(
                         "/",
+                        "/fuck",
                         "/actuator/**",
                         "/images/**",
                         "/uploads/**",
@@ -138,10 +139,10 @@ public class SecurityConfig {
                     .permitAll()
                     // --- USERS (public profile) ---
                     .requestMatchers(
-                        "/api/v1/users/profile/**",
+                        "/api/v1/user/profile/**",
                         "/api/v1/profile/**",
                         "/api/v1/users/top-authors",
-                        "/api/v1/user/public/{username}"
+                        "/api/v1/users/public/{username}"
                     )
                     .permitAll()
                     // --- NEWSLETTER ---
