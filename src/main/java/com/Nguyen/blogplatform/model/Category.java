@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.model;
 
-import com.Nguyen.blogplatform.Utils.SlugUtil;
+
+import com.Nguyen.blogplatform.util.SlugUtil;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
@@ -50,7 +51,7 @@ public class Category {
     @PrePersist
     public void generateSlug() {
         if (this.category != null && !this.category.isEmpty()) {
-            this.slug = SlugUtil.createSlug(this.category);
+            this.slug = SlugUtil.toSlug(this.category);
         }
     }
     @Override

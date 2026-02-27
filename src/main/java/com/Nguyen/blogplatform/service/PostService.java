@@ -10,6 +10,7 @@ import com.Nguyen.blogplatform.repository.specification.PostSpecification;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -83,8 +84,10 @@ public class PostService {
 
     public Page<PostResponse> getListPost(Pageable pageable) {
         Specification<Post> spec = PostSpecification.isPublished();
-        return postRepository.findAll(spec, pageable)
-                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository));
+        Page<Post> posts = postRepository.findAll(spec, pageable);
+        User currentUser = getCurrentUser();
+        List<PostResponse> responses = postMapper.toPostResponseList(posts.getContent(), currentUser, savedPostRepository);
+        return new PageImpl<>(responses, pageable, posts.getTotalElements());
     }
 
     public Page<PostResponse> getFilteredPosts(String categorySlug, String tagSlug, Pageable pageable) {
@@ -98,17 +101,17 @@ public class PostService {
             spec = spec.and(PostSpecification.hasTagSlug(tagSlug));
         }
 
-        return postRepository.findAll(spec, pageable)
-                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository));
+        Page<Post> posts = postRepository.findAll(spec, pageable);
+        User currentUser = getCurrentUser();
+        List<PostResponse> responses = postMapper.toPostResponseList(posts.getContent(), currentUser, savedPostRepository);
+        return new PageImpl<>(responses, pageable, posts.getTotalElements());
     }
 
     public List<PostResponse> getFeaturedPosts(Pageable pageable) {
         Specification<Post> spec = PostSpecification.isPublished()
                 .and(PostSpecification.isFeatured());
-        return postRepository.findAll(spec, pageable)
-                .stream()
-                .map(post -> postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository))
-                .toList();
+        List<Post> posts = postRepository.findAll(spec, pageable).getContent();
+        return postMapper.toPostResponseList(posts, getCurrentUser(), savedPostRepository);
     }
 
     public PostResponse getPostResponseById(String postId) {

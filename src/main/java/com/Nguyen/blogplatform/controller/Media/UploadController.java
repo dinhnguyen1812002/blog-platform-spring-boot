@@ -1,7 +1,8 @@
 package com.Nguyen.blogplatform.controller.Media;
 
 
-import com.Nguyen.blogplatform.Utils.UrlUtils;
+import com.Nguyen.blogplatform.util.FileValidationUtils;
+import com.Nguyen.blogplatform.util.UrlUtils;
 import com.Nguyen.blogplatform.payload.response.ResponseResult;
 import com.Nguyen.blogplatform.service.UserDetailsImpl;
 import com.Nguyen.blogplatform.service.UserProfileService;
@@ -47,12 +48,15 @@ public class UploadController {
 
     @PostMapping()
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile uploadfile) {
-        ResponseResult rr = new ResponseResult();
-
         if (uploadfile.isEmpty()) {
             return ResponseEntity.ok().body("please select a file!");
         }
 
+        if (!FileValidationUtils.isSafeFile(uploadfile)) {
+            return ResponseEntity.badRequest().body(new ResponseResult(400, "Invalid file. Only JPEG, PNG, and GIF are allowed with valid headers."));
+        }
+
+        ResponseResult rr = new ResponseResult();
         try {
             // Create directories if they don't exist
             Path thumbnailPath = Paths.get(THUMBNAIL_DIR);
@@ -94,16 +98,8 @@ public class UploadController {
             }
 
             // Check content type
-            String contentType = file.getContentType();
-            boolean isValidType = false;
-            for (String allowedType : ALLOWED_CONTENT_TYPES) {
-                if (allowedType.equals(contentType)) {
-                    isValidType = true;
-                    break;
-                }
-            }
-            if (!isValidType) {
-                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Invalid file type. Only JPEG, PNG, and GIF are allowed"));
+            if (!FileValidationUtils.isSafeFile(file)) {
+                return ResponseEntity.badRequest().body(Map.of("success", false, "message", "Invalid file. Only JPEG, PNG, and GIF are allowed with valid headers."));
             }
 
             // Create avatar directory if not exists
@@ -113,7 +109,7 @@ public class UploadController {
             }
 
             // Generate unique filename
-            String originalFilename = file.getOriginalFilename();
+            String originalFilename = FileValidationUtils.sanitizeFilename(file.getOriginalFilename());
             String extension = "";
             if (originalFilename != null && originalFilename.contains(".")) {
                 extension = originalFilename.substring(originalFilename.lastIndexOf("."));
@@ -154,11 +150,8 @@ public class UploadController {
             }
 
             byte[] bytes = file.getBytes();
-            long TICKS_AT_EPOCH = 621355968000000000L;
-            long tick = System.currentTimeMillis()*10000 + TICKS_AT_EPOCH;
-            String filename = String.valueOf(tick).concat("_")
-                    .concat(Objects
-                            .requireNonNull(file.getOriginalFilename()));
+            String originalFilename = FileValidationUtils.sanitizeFilename(file.getOriginalFilename());
+            String filename = UUID.randomUUID().toString() + "_" + originalFilename;
 
             Path path = Paths.get(THUMBNAIL_DIR + filename);
             Files.write(path, bytes);

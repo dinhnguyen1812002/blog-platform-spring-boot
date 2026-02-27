@@ -1,7 +1,6 @@
-package com.Nguyen.blogplatform.Utils;
+package com.Nguyen.blogplatform.util;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 

@@ -9,7 +9,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-
+import java.util.Collection;
+import java.util.Set;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,11 +38,15 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, String> {
     Long countByPost(@Param("post") Post post);
     
     Boolean existsByUserAndPost(User user, Post post);
-    
+
+    @Query("SELECT b.post.id FROM Bookmark b WHERE b.user = :user AND b.post IN :posts")
+    Set<String> findBookmarkedPostIds(@Param("user") User user, @Param("posts") Collection<Post> posts);
+
     void deleteByUserAndPost(User user, Post post);
     
     @Query("SELECT sp.post FROM Bookmark sp WHERE sp.user = :user ORDER BY sp.savedAt DESC")
     List<Post> findPostsByUserOrderBySavedAtDesc(@Param("user") User user);
+
 
 
     

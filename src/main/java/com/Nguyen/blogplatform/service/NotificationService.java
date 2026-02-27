@@ -115,4 +115,26 @@ public class NotificationService {
                 .orElseThrow(() -> new RuntimeException("Notification not found"));
     }
 
+    /**
+     * Send notification to post author when someone comments on their post
+     */
+    public void notifyPostAuthorAboutComment(String postAuthorId, String commenterUsername, String postTitle, String postId) {
+        try {
+            String title = "New Comment on Your Post";
+            String message = String.format("%s has commented on your post: %s", 
+                commenterUsername, postTitle);
+            
+            createUserNotification(
+                postAuthorId,
+                "NEW_COMMENT",
+                title,
+                message
+            );
+            
+            log.info("Notification sent to post author {} about new comment from {}", postAuthorId, commenterUsername);
+        } catch (Exception e) {
+            log.error("Error sending comment notification to post author", e);
+        }
+    }
+
 }

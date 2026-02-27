@@ -40,14 +40,18 @@ public class TrafficService {
     private void upsert(PeriodType type, LocalDate dateKey) {
         int updated = trafficRepository.incrementCounter(type, dateKey, 1L);
         if (updated == 0) {
-            // Create row then increment to handle race conditions
-            Traffic entity = new Traffic(dateKey, type);
-            entity.setAccessCount(1);
-            try {
-                trafficRepository.save(entity);
-            } catch (Exception ex) {
-                // Handle unique constraint race; retry increment
-                log.debug("Traffic upsert race for {} {}: {}", type, dateKey, ex.getMessage());
+            // Check if it exists first to minimize race conditions that cause "null identifier" warnings
+            if (trafficRepository.findByPeriodTypeAndPeriodDate(type, dateKey).isEmpty()) {
+                Traffic entity = new Traffic(dateKey, type);
+                entity.setAccessCount(1);
+                try {
+                    trafficRepository.save(entity);
+                } catch (Exception ex) {
+                    // Handle unique constraint race; retry increment
+                    log.debug("Traffic upsert race for {} {}: {}", type, dateKey, ex.getMessage());
+                    trafficRepository.incrementCounter(type, dateKey, 1L);
+                }
+            } else {
                 trafficRepository.incrementCounter(type, dateKey, 1L);
             }
         }

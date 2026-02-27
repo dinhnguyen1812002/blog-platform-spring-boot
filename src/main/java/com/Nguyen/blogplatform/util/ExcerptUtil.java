@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.Utils;
+package com.Nguyen.blogplatform.util;
 
 public class ExcerptUtil {
 

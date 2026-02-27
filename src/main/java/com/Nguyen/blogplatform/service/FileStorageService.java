@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.service;
 
+import com.Nguyen.blogplatform.util.FileValidationUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -25,12 +26,13 @@ public class FileStorageService {
      * Lưu file thumbnail và trả về đường dẫn
      */
     public String saveThumbnail(MultipartFile file) throws IOException {
-        if (file == null || file.isEmpty()) {
+        if (file == null || file.isEmpty() || !FileValidationUtils.isSafeFile(file)) {
             return null;
         }
         
         // Tạo tên file duy nhất
-        String filename = UUID.randomUUID().toString() + "_" + file.getOriginalFilename();
+        String originalFilename = FileValidationUtils.sanitizeFilename(file.getOriginalFilename());
+        String filename = UUID.randomUUID().toString() + "_" + originalFilename;
         Path filePath = Paths.get(THUMBNAIL_DIR, filename);
         
         // Lưu file

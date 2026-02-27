@@ -1,11 +1,11 @@
 package com.Nguyen.blogplatform.service;
 
-import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.model.Category;
 import com.Nguyen.blogplatform.payload.request.CategoryRequest;
 import com.Nguyen.blogplatform.repository.CategoryRepository;
 
+import com.Nguyen.blogplatform.util.SlugUtil;
 import jakarta.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
@@ -48,7 +48,7 @@ public class CategoryServices {
         for (Category category : categories) {
             // Chỉ cập nhật nếu slug chưa có
             if (category.getSlug() == null || category.getSlug().isEmpty()) {
-                String newSlug = SlugUtil.createSlug(category.getCategory());
+                String newSlug = SlugUtil.toSlug(category.getCategory());
                 category.setSlug(newSlug);
 //                System.out.println("Đã tạo slug: '" + newSlug + "' cho category: '" + category.getCategory() + "'");
                 // Lưu lại đối tượng đã được cập nhật

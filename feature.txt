@@ -27,3 +27,6 @@ Tích hợp CMS - trình soạn thảo nội dung phong phú (WYSIWYG)
 Hệ thống đăng ký newsletter - để người dùng đăng ký nhận bản tin
 Tính năng lưu bài viết - cho phép người dùng lưu bài viết yêu thích
 Tính năng đánh giá bài viết - hệ thống rating, like/dislike
+
+
+

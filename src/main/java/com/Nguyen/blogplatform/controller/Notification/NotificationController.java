@@ -10,6 +10,7 @@ import com.Nguyen.blogplatform.service.NotificationService;
 import com.Nguyen.blogplatform.service.UserServices;
 import com.sun.security.auth.UserPrincipal;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,6 +32,7 @@ public class NotificationController {
     @GetMapping
     public List<Notifications> getNotificationsOfUser() {
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+
 
         var user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));

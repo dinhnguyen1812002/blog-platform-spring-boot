@@ -1,8 +1,8 @@
 package com.Nguyen.blogplatform.seed;
 
-import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.model.Tags;
 import com.Nguyen.blogplatform.repository.TagRepository;
+import com.Nguyen.blogplatform.util.SlugUtil;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -39,7 +39,7 @@ public class TagDataSeeder {
     }
 
     private Tags createTag(String name, String description, String color) {
-        String slug = SlugUtil.createSlug(name);
+        String slug = SlugUtil.toSlug(name);
         Tags tag = new Tags();
         tag.setName(name);
         tag.setSlug(slug);

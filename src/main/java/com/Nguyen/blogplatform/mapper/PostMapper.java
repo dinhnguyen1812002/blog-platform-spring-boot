@@ -15,17 +15,18 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.Nguyen.blogplatform.Utils.ExcerptUtil.excerpt;
 
 @Component
 @RequiredArgsConstructor
 public class PostMapper {
     private final CommentServices commentServices;
 
-    public PostResponse toPostResponse(Post post, User currentUser, BookmarkRepository savedPostRepository) {
+    public PostResponse toPostResponse(Post post, User currentUser, Set<String> bookmarkedPostIds) {
         return PostResponse.builder()
                 .id(post.getId())
                 .user(createUserResponse(post.getUser()))
@@ -34,8 +35,6 @@ public class PostMapper {
                 .slug(post.getSlug())
                 .createdAt(post.getCreatedAt())
                 .featured(post.getFeatured())
-//                .content(excerpt(post.getContent()))
-
                 .thumbnail(post.getThumbnail())
                 .categories(post.getCategories().stream()
                         .map(category -> new CategoryResponse(
@@ -52,16 +51,36 @@ public class PostMapper {
                                 tag.getColor()))
                         .collect(Collectors.toSet()))
                 .commentCount(post.getComments().size())
-
                 .viewCount(post.getView())
                 .likeCount((long) post.getLike().size())
                 .averageRating(calculateAverageRating(post))
                 .isLikedByCurrentUser(isLikedByCurrentUser(post, currentUser))
-                .isSavedByCurrentUser(isSavedByCurrentUser(post, currentUser, savedPostRepository))
+                .isSavedByCurrentUser(bookmarkedPostIds != null && bookmarkedPostIds.contains(post.getId()))
                 .userRating(getUserRating(post, currentUser))
                 .public_date(post.getPublic_date())
                 .is_publish(post.getIs_publish())
                 .build();
+    }
+
+    public List<PostResponse> toPostResponseList(Collection<Post> posts, User currentUser, BookmarkRepository savedPostRepository) {
+        if (posts == null || posts.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        Set<String> bookmarkedPostIds = (currentUser != null) 
+            ? savedPostRepository.findBookmarkedPostIds(currentUser, posts)
+            : Collections.emptySet();
+
+        return posts.stream()
+                .map(post -> toPostResponse(post, currentUser, bookmarkedPostIds))
+                .toList();
+    }
+
+    public PostResponse toPostResponse(Post post, User currentUser, BookmarkRepository savedPostRepository) {
+        Set<String> bookmarkedPostIds = (currentUser != null && savedPostRepository != null)
+                ? (savedPostRepository.existsByUserAndPost(currentUser, post) ? Set.of(post.getId()) : Collections.emptySet())
+                : Collections.emptySet();
+        return toPostResponse(post, currentUser, bookmarkedPostIds);
     }
 
     public PostResponse toPostResponseWithComments(Post post, User currentUser, BookmarkRepository savedPostRepository) {
@@ -115,16 +134,22 @@ public class PostMapper {
     }
 
     public boolean isLikedByCurrentUser(Post post, User currentUser) {
-        return currentUser != null && post.getLike().contains(currentUser);
+        if (currentUser == null || post.getLike() == null) {
+            return false;
+        }
+        return post.getLike().stream()
+                .anyMatch(u -> u.getId().equals(currentUser.getId()));
     }
 
     public Integer getUserRating(Post post, User currentUser) {
-        return currentUser != null ?
-                post.getRatings().stream()
-                        .filter(r -> r.getUser().equals(currentUser))
-                        .map(Rating::getScore)
-                        .findFirst()
-                        .orElse(null) : null;
+        if (currentUser == null || post.getRatings() == null) {
+            return null;
+        }
+        return post.getRatings().stream()
+                .filter(r -> r.getUser() != null && r.getUser().getId().equals(currentUser.getId()))
+                .map(Rating::getScore)
+                .findFirst()
+                .orElse(null);
     }
 
     public boolean isSavedByCurrentUser(Post post, User currentUser, BookmarkRepository savedPostRepository) {

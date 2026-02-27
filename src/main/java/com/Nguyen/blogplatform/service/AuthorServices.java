@@ -1,9 +1,9 @@
 package com.Nguyen.blogplatform.service;
 
-import com.Nguyen.blogplatform.Utils.SlugUtil;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.exception.UnauthorizedException;
+import com.Nguyen.blogplatform.mapper.PostMapper;
 import com.Nguyen.blogplatform.model.*;
 import com.Nguyen.blogplatform.payload.request.PostRequest;
 import com.Nguyen.blogplatform.payload.response.CategoryResponse;
@@ -14,6 +14,7 @@ import com.Nguyen.blogplatform.payload.response.notification.PublicArticleNotifi
 import com.Nguyen.blogplatform.repository.*;
 import com.Nguyen.blogplatform.repository.specification.ArticleSpecifications;
 import com.Nguyen.blogplatform.security.JwtUtils;
+import com.Nguyen.blogplatform.util.SlugUtil;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.PageRequest;
@@ -44,6 +45,8 @@ public class AuthorServices {
     private final FileStorageService fileStorageService;
     private final NewsletterService newsletterService;
     private final NotificationRepository notificationRepository;
+    private final PostMapper postMapper;
+    private final BookmarkRepository savedPostRepository;
 
     public List<PostResponse> getPostsForCurrentUser(
             int page,
@@ -67,9 +70,7 @@ public class AuthorServices {
                 tagName,
                 pageable);
 
-        return postsPage.stream()
-                .map(this::toPostResponse)
-                .toList();
+        return postMapper.toPostResponseList(postsPage.getContent(), getCurrentUser(), savedPostRepository);
     }
 
     @Transactional
@@ -93,7 +94,7 @@ public class AuthorServices {
 
         var post = Post.builder()
                 .title(postRequest.getTitle())
-                .slug(SlugUtil.createSlug(postRequest.getTitle()))
+                .slug(SlugUtil.toSlug(postRequest.getTitle()))
                 .excerpt(postRequest.getExcerpt())
                 .content(Objects.requireNonNullElse(postRequest.getContent(), ""))
                 .thumbnail(postRequest.getThumbnail())
@@ -190,6 +191,13 @@ public class AuthorServices {
         if (!post.getUser().getUsername().equals(currentUsername)) {
             throw new UnauthorizedException("You are not authorized to modify this post");
         }
+    }
+
+    private User getCurrentUser() {
+        String username = getCurrentUsername();
+        if (username == null) return null;
+        return userRepository.findByUsername(username)
+                .orElse(null);
     }
 
     private Set<Category> getCategoriesFromIds(Set<Long> categoryIds) {

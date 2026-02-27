@@ -94,9 +94,18 @@ public class User {
     @Column(name = "ban_reason")
     private String banReason;
 
+    @Column(name = "auth_provider", length = 30)
+    private String authProvider;
+
+    @Column(name = "provider_id", length = 100)
+    private String providerId;
+
 
     @Column(name = "created_at" )
     private LocalDateTime createdAt;
+
+    @Version
+    private Long version;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RefreshToken> refreshTokens = new ArrayList<>();

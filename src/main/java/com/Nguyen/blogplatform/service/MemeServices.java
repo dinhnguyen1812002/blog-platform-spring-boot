@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.service;
 
 
-import com.Nguyen.blogplatform.Utils.UrlUtils;
+import com.Nguyen.blogplatform.util.UrlUtils;
 import com.Nguyen.blogplatform.model.Meme;
 import com.Nguyen.blogplatform.payload.request.MemeRequest;
 import com.Nguyen.blogplatform.repository.MemeRepository;

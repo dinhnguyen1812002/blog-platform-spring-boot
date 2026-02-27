@@ -95,6 +95,23 @@ public class CommentServices {
         CommentResponse response = saveAndConvert(comment);
 
         // Gửi notification bất đồng bộ (không cần context nữa)
+        // Notify the post author about the new comment
+        if (!post.getUser().getId().equals(user.getId())) {  // Don't notify if the author is commenting on their own post
+            CompletableFuture.runAsync(() -> {
+                try {
+                    notificationService.notifyPostAuthorAboutComment(
+                        post.getUser().getId(),
+                        user.getUsername(),
+                        post.getTitle(),
+                        postId
+                    );
+                } catch (Exception e) {
+                    log.warning("Failed to send notification to post author: " + e.getMessage());
+                }
+            });
+        }
+
+        // Send real-time notification about the new comment
         CompletableFuture.runAsync(() -> {
             notificationService.sendCommentNotification(postId, response);
             notificationService.sendGlobalNotification(

@@ -63,6 +63,9 @@ public class Post {
     @Builder.Default
     private Long view = 0L;
 
+    @Version
+    private Long version;
+
     @ManyToMany
     @JoinTable(
             name = "post_like",
@@ -88,12 +91,12 @@ public class Post {
     @Builder.Default
     private Set<Category> categories = new HashSet<>();
 
-    @OneToMany(mappedBy = "post", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @Builder.Default
     @JsonManagedReference("post-comments")
     private Set<Comment> comments = new HashSet<>();
 
-    @OneToMany(mappedBy = "post", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "post", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JsonManagedReference("post-ratings")
     @Builder.Default
     private Set<Rating> ratings = new HashSet<>();
