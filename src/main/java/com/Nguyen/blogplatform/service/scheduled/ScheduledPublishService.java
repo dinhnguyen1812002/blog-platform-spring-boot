@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.service.scheduled;
 
+import com.Nguyen.blogplatform.Enum.PublishStatus;
 import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.payload.response.notification.PublicArticleNotification;
 import com.Nguyen.blogplatform.repository.PostRepository;
@@ -51,6 +52,7 @@ public class ScheduledPublishService {
     private void publishPost(Post post) {
         try {
             post.setIs_publish(true);
+            post.setVisibility(PublishStatus.PUBLISHED);
             Post publishedPost = postRepository.save(post);
 
             log.info("Post published: {} (ID: {})", publishedPost.getTitle(), publishedPost.getId());
@@ -62,14 +64,12 @@ public class ScheduledPublishService {
                     publishedPost.getThumbnail(),
                     publishedPost.getExcerpt(),
                     publishedPost.getSlug(),
-                    publishedPost.getPublic_date()
-            );
+                    publishedPost.getPublic_date());
 
             // Send notification to the author
             notificationService.sendPostPublishedNotification(
                     publishedPost.getUser().getUsername(),
-                    notification
-            );
+                    notification);
 
             // Broadcast to all connected users
             notificationService.broadcastArticlePublishedNotification(notification);
@@ -79,8 +79,7 @@ public class ScheduledPublishService {
                     publishedPost.getUser().getId(),
                     "POST_PUBLISHED",
                     "Article Published",
-                    "Your article '" + publishedPost.getTitle() + "' has been published successfully!"
-            );
+                    "Your article '" + publishedPost.getTitle() + "' has been published successfully!");
 
         } catch (Exception e) {
             log.error("Error publishing post with ID: {}", post.getId(), e);

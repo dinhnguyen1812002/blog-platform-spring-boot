@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.io.Serializable;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
@@ -17,7 +18,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 
-public class CommentResponse {
+public class CommentResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String id;
     private String content;
     private UserResponse user;

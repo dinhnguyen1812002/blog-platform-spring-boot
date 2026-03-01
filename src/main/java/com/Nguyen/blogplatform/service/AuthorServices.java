@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.service;
 
+import com.Nguyen.blogplatform.Enum.PublishStatus;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.exception.UnauthorizedException;
@@ -20,6 +21,7 @@ import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -57,7 +59,7 @@ public class AuthorServices {
             String sortDirection) {
         String username = getCurrentUsername();
 
-        Sort sort = sortDirection.equalsIgnoreCase("asc")
+        Sort sort = "asc".equalsIgnoreCase(sortDirection)
                 ? Sort.by("createdAt").ascending()
                 : Sort.by("createdAt").descending();
 
@@ -82,6 +84,10 @@ public class AuthorServices {
         if (postRepository.existsByTitleIgnoreCase(postRequest.getTitle())) {
             throw new BadRequestException("Title already exists");
         }
+        String slug = SlugUtil.toSlug(postRequest.getTitle());
+        if (postRepository.existsBySlug(slug)) {
+            throw new BadRequestException("A post with a similar title/slug already exists");
+        }
 
         var author = userRepository.findById(authorId)
                 .orElseThrow(() -> new NotFoundException("User not found"));
@@ -89,8 +95,42 @@ public class AuthorServices {
         var categories = getCategoriesFromIds(postRequest.getCategories());
         var tags = getTagsFromIds(postRequest.getTags());
 
-        boolean isPublished = postRequest.getPublic_date() == null
-                || postRequest.getPublic_date().isBefore(LocalDateTime.now());
+        // Resolve visibility: prefer explicit visibility field, fall back to status for
+        // backward compat
+        PublishStatus resolvedVisibility = postRequest.getVisibility() != null
+                ? postRequest.getVisibility()
+                : mapStatusToVisibility(postRequest.getStatus());
+
+        boolean isPublished = false;
+        LocalDateTime scheduledPublishAt = null;
+        LocalDateTime publicDate = null;
+
+        switch (resolvedVisibility) {
+            case PUBLISHED -> {
+                isPublished = true;
+                publicDate = LocalDateTime.now();
+            }
+            case SCHEDULED -> {
+                LocalDateTime scheduleTime = postRequest.getScheduledPublishAt() != null
+                        ? postRequest.getScheduledPublishAt()
+                        : postRequest.getPublic_date();
+                if (scheduleTime == null) {
+                    throw new BadRequestException("scheduledPublishAt is required when visibility is SCHEDULED");
+                }
+                if (!scheduleTime.isAfter(LocalDateTime.now())) {
+                    throw new BadRequestException("scheduledPublishAt must be in the future");
+                }
+                isPublished = false;
+                scheduledPublishAt = scheduleTime;
+                publicDate = scheduleTime;
+            }
+            case PRIVATE -> {
+                isPublished = false;
+            }
+            case DRAFT -> {
+                isPublished = false;
+            }
+        }
 
         var post = Post.builder()
                 .title(postRequest.getTitle())
@@ -104,22 +144,22 @@ public class AuthorServices {
                 .tags(tags)
                 .featured(Objects.requireNonNullElse(postRequest.getFeatured(), false))
                 .view(0L)
-                .public_date(postRequest.getPublic_date())
+                .visibility(resolvedVisibility)
+                .scheduledPublishAt(scheduledPublishAt)
+                .public_date(publicDate)
                 .is_publish(isPublished)
                 .build();
 
         var savedPost = postRepository.save(post);
 
         // Create notification payload
-//        PublicArticleNotification notification = new PublicArticleNotification(
-//                savedPost.getId(),
-//                savedPost.getTitle(),
-//                savedPost.getExcerpt(),
-//                savedPost.getSlug(),
-//                savedPost.getPublic_date()
-//        );
-
-
+        // PublicArticleNotification notification = new PublicArticleNotification(
+        // savedPost.getId(),
+        // savedPost.getTitle(),
+        // savedPost.getExcerpt(),
+        // savedPost.getSlug(),
+        // savedPost.getPublic_date()
+        // );
         return savedPost;
     }
 
@@ -131,13 +171,21 @@ public class AuthorServices {
     }
 
     @Transactional
-    public PostResponse updatePost(String postId, PostRequest postRequest) {
+    public PostResponse updatePost(String postId, PostRequest postRequest) throws BadRequestException {
         var post = postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
         validateAuthorization(post);
+        if (!post.getTitle().equalsIgnoreCase(postRequest.getTitle())
+                && postRepository.existsByTitleIgnoreCase(postRequest.getTitle())) {
+            throw new BadRequestException("Title already exists");
+        }
 
         post.setTitle(postRequest.getTitle());
+        post.setSlug(SlugUtil.toSlug(postRequest.getTitle()));
         post.setContent(Objects.requireNonNullElse(postRequest.getContent(), ""));
+        if (postRequest.getExcerpt() != null) {
+            post.setExcerpt(postRequest.getExcerpt());
+        }
         if (postRequest.getThumbnail() != null && !postRequest.getThumbnail().trim().isEmpty()) {
             post.setThumbnail(postRequest.getThumbnail());
         }
@@ -145,31 +193,48 @@ public class AuthorServices {
         if (postRequest.getTags() != null) {
             post.setTags(getTagsFromIds(postRequest.getTags()));
         }
-        post.setPublic_date(postRequest.getPublic_date());
-        post.setIs_publish(
-                postRequest.getPublic_date() == null || postRequest.getPublic_date().isBefore(LocalDateTime.now()));
+        if (postRequest.getFeatured() != null) {
+            post.setFeatured(postRequest.getFeatured());
+        }
 
+        // Resolve visibility
+        PublishStatus resolvedVisibility = postRequest.getVisibility() != null
+                ? postRequest.getVisibility()
+                : mapStatusToVisibility(postRequest.getStatus());
+
+        // Only update visibility if explicitly provided, otherwise keep current
+        if (postRequest.getVisibility() != null || postRequest.getStatus() != null) {
+            post.setVisibility(resolvedVisibility);
+            switch (resolvedVisibility) {
+                case PUBLISHED -> {
+                    post.setIs_publish(true);
+                    post.setScheduledPublishAt(null);
+                    if (post.getPublic_date() == null) {
+                        post.setPublic_date(LocalDateTime.now());
+                    }
+                }
+                case SCHEDULED -> {
+                    LocalDateTime scheduleTime = postRequest.getScheduledPublishAt() != null
+                            ? postRequest.getScheduledPublishAt()
+                            : postRequest.getPublic_date();
+                    if (scheduleTime == null) {
+                        throw new BadRequestException("scheduledPublishAt is required when visibility is SCHEDULED");
+                    }
+                    if (!scheduleTime.isAfter(LocalDateTime.now())) {
+                        throw new BadRequestException("scheduledPublishAt must be in the future");
+                    }
+                    post.setIs_publish(false);
+                    post.setScheduledPublishAt(scheduleTime);
+                    post.setPublic_date(scheduleTime);
+                }
+                case PRIVATE, DRAFT -> {
+                    post.setIs_publish(false);
+                    post.setScheduledPublishAt(null);
+                }
+            }
+        }
 
         var updatedPost = postRepository.save(post);
-
-//        notificationService.createNotification(
-//                post.getUser().getId(),
-//                "POST_UPDATED",
-//                "Bài viết đã được cập nhật",
-//                "Bài viết '" + post.getTitle() + "' đã được cập nhật."
-//        );
-
-//        notificationService.sendPostPublishedNotification(
-//                author.getUsername(),
-//                new PublicArticleNotification(
-//                        savedPost.getId(),
-//                        savedPost.getTitle(),
-//                        savedPost.getSlug(),
-//                        savedPost.getExcerpt(),
-//                        savedPost.getPublic_date()
-//                )
-//        );
-
         return toPostResponse(updatedPost);
     }
 
@@ -195,7 +260,8 @@ public class AuthorServices {
 
     private User getCurrentUser() {
         String username = getCurrentUsername();
-        if (username == null) return null;
+        if (username == null)
+            return null;
         return userRepository.findByUsername(username)
                 .orElse(null);
     }
@@ -237,7 +303,8 @@ public class AuthorServices {
 
         return PostResponse.builder()
                 .id(post.getId())
-                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail(), post.getUser().getSlug(),
+                .user(new UserResponse(post.getUser().getId(), post.getUser().getUsername(), post.getUser().getEmail(),
+                        post.getUser().getSlug(),
                         post.getUser().getAvatar()))
                 .title(post.getTitle())
                 .excerpt(post.getExcerpt())
@@ -254,6 +321,19 @@ public class AuthorServices {
                 .averageRating(averageRating)
                 .public_date(post.getPublic_date())
                 .is_publish(post.getIs_publish())
+                .visibility(post.getVisibility())
+                .scheduledPublishAt(post.getScheduledPublishAt())
                 .build();
+    }
+
+    /**
+     * Maps the legacy status field to the new visibility enum.
+     * Used for backward compatibility when clients send the old `status` field.
+     */
+    private PublishStatus mapStatusToVisibility(PublishStatus status) {
+        if (status == null) {
+            return PublishStatus.DRAFT;
+        }
+        return status;
     }
 }

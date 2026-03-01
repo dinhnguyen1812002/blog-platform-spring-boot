@@ -59,17 +59,20 @@ public class PostMapper {
                 .userRating(getUserRating(post, currentUser))
                 .public_date(post.getPublic_date())
                 .is_publish(post.getIs_publish())
+                .visibility(post.getVisibility())
+                .scheduledPublishAt(post.getScheduledPublishAt())
                 .build();
     }
 
-    public List<PostResponse> toPostResponseList(Collection<Post> posts, User currentUser, BookmarkRepository savedPostRepository) {
+    public List<PostResponse> toPostResponseList(Collection<Post> posts, User currentUser,
+            BookmarkRepository savedPostRepository) {
         if (posts == null || posts.isEmpty()) {
             return Collections.emptyList();
         }
 
-        Set<String> bookmarkedPostIds = (currentUser != null) 
-            ? savedPostRepository.findBookmarkedPostIds(currentUser, posts)
-            : Collections.emptySet();
+        Set<String> bookmarkedPostIds = (currentUser != null)
+                ? savedPostRepository.findBookmarkedPostIds(currentUser, posts)
+                : Collections.emptySet();
 
         return posts.stream()
                 .map(post -> toPostResponse(post, currentUser, bookmarkedPostIds))
@@ -78,12 +81,14 @@ public class PostMapper {
 
     public PostResponse toPostResponse(Post post, User currentUser, BookmarkRepository savedPostRepository) {
         Set<String> bookmarkedPostIds = (currentUser != null && savedPostRepository != null)
-                ? (savedPostRepository.existsByUserAndPost(currentUser, post) ? Set.of(post.getId()) : Collections.emptySet())
+                ? (savedPostRepository.existsByUserAndPost(currentUser, post) ? Set.of(post.getId())
+                        : Collections.emptySet())
                 : Collections.emptySet();
         return toPostResponse(post, currentUser, bookmarkedPostIds);
     }
 
-    public PostResponse toPostResponseWithComments(Post post, User currentUser, BookmarkRepository savedPostRepository) {
+    public PostResponse toPostResponseWithComments(Post post, User currentUser,
+            BookmarkRepository savedPostRepository) {
         Pageable pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
         Page<CommentResponse> commentPage = commentServices.getTopLevelComments(post.getId(), pageable);
         List<CommentResponse> comments = commentPage.getContent();
@@ -119,11 +124,13 @@ public class PostMapper {
                 .isLikedByCurrentUser(isLikedByCurrentUser(post, currentUser))
                 .isSavedByCurrentUser(isSavedByCurrentUser(post, currentUser, savedPostRepository))
                 .userRating(getUserRating(post, currentUser))
+                .visibility(post.getVisibility())
+                .scheduledPublishAt(post.getScheduledPublishAt())
                 .build();
     }
 
     public UserResponse createUserResponse(User user) {
-        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getSlug() , user.getAvatar() );
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getSlug(), user.getAvatar());
     }
 
     public double calculateAverageRating(Post post) {

@@ -19,11 +19,15 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
 
     @Query("SELECT p FROM Post p ORDER BY p.createdAt DESC")
     List<Post> findTopNByOrderByCreatedAtDesc(@Param("limit") int limit);
-    @EntityGraph(attributePaths = {"user", "categories", "tags", "comments", "like", "ratings"})
+
+    @EntityGraph(attributePaths = { "user", "categories", "tags", "comments", "like", "ratings" })
     List<Post> findByFeaturedTrueOrderByCreatedAtDesc(Pageable pageable);
+
     List<Post> findByCategoriesContaining(Category category);
+
     @Query("SELECT p FROM Post p WHERE p.title LIKE %:title%")
     List<Post> findByTitleContaining(@Param("title") String title);
+
     @Query("SELECT p FROM Post p WHERE p.user.username = :username")
     Page<Post> findByUser(String username, Pageable pageable);
 
@@ -33,17 +37,20 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
     @Query("SELECT p FROM Post p WHERE p.user = :user")
     List<Post> findByUser(@Param("user") User user);
 
-    @EntityGraph(attributePaths = {"user", "categories", "tags", "comments", "like", "ratings"})
+    @EntityGraph(attributePaths = { "user", "categories", "tags", "comments", "like", "ratings" })
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
-//    @Query("SELECT p FROM Post p JOIN p.categories c WHERE c.id = :categoryId")
-//    List<Post> findByCategoryId(@Param("categoryId") Long categoryId);
-//
-//    @Query("SELECT p FROM Post p JOIN p.categories c WHERE p.title LIKE %:title% AND c.id = :categoryId")
-//    List<Post> findByTitleContainingAndCategoryId(@Param("title") String title, @Param("categoryId") Long categoryId);
-    @EntityGraph(attributePaths = {"user", "categories", "tags", "comments", "like", "ratings"})
+
+    // @Query("SELECT p FROM Post p JOIN p.categories c WHERE c.id = :categoryId")
+    // List<Post> findByCategoryId(@Param("categoryId") Long categoryId);
+    //
+    // @Query("SELECT p FROM Post p JOIN p.categories c WHERE p.title LIKE %:title%
+    // AND c.id = :categoryId")
+    // List<Post> findByTitleContainingAndCategoryId(@Param("title") String title,
+    // @Param("categoryId") Long categoryId);
+    @EntityGraph(attributePaths = { "user", "categories", "tags", "comments", "like", "ratings" })
     Page<Post> findAll(Specification<Post> spec, Pageable pageable);
 
-    @EntityGraph(attributePaths = {"comments", "comments.user", "categories", "tags", "like", "ratings"})
+    @EntityGraph(attributePaths = { "comments", "comments.user", "categories", "tags", "like", "ratings" })
     Optional<Post> findBySlug(String slug);
 
     @Modifying
@@ -52,35 +59,37 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
 
     @Query("SELECT COUNT(p) FROM Post p WHERE p.user = :user")
     Long countByUser(@Param("user") User user);
+
     boolean existsByTitleIgnoreCase(String title);
+
     List<Post> findTop5ByUserOrderByCreatedAtDesc(User user);
+
     List<Post> findTop5ByUserAndFeaturedTrueOrderByCreatedAtDesc(User user);
 
     long countByCreatedAtBetween(LocalDateTime start, LocalDateTime end);
 
-
     @Query("""
-        SELECT DISTINCT p FROM Post p
-        LEFT JOIN p.categories c
-        LEFT JOIN p.tags t
-        WHERE p.user.username = :username
-        AND (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
-                          OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))
-        AND (:categoryName IS NULL OR LOWER(c.category) LIKE LOWER(CONCAT('%', :categoryName, '%')))
-        AND (:tagName IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :tagName, '%')))
-    """)
-    @EntityGraph(attributePaths = {"user", "categories", "tags", "comments", "like", "ratings"})
+                SELECT DISTINCT p FROM Post p
+                LEFT JOIN p.categories c
+                LEFT JOIN p.tags t
+                WHERE p.user.username = :username
+                AND (:keyword IS NULL OR LOWER(p.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
+                                  OR LOWER(p.content) LIKE LOWER(CONCAT('%', :keyword, '%')))
+                AND (:categoryName IS NULL OR LOWER(c.category) LIKE LOWER(CONCAT('%', :categoryName, '%')))
+                AND (:tagName IS NULL OR LOWER(t.name) LIKE LOWER(CONCAT('%', :tagName, '%')))
+            """)
+    @EntityGraph(attributePaths = { "user", "categories", "tags", "comments", "like", "ratings" })
     Page<Post> findByUserWithFilters(
             @Param("username") String username,
             @Param("keyword") String keyword,
             @Param("categoryName") String categoryName,
             @Param("tagName") String tagName,
-            Pageable pageable
-    );
+            Pageable pageable);
 
-    @Query("SELECT p FROM Post p WHERE p.public_date <= :now AND p.is_publish = false")
+    @Query("SELECT p FROM Post p WHERE (p.visibility = 'SCHEDULED' AND p.scheduledPublishAt <= :now AND p.is_publish = false) OR (p.public_date <= :now AND p.is_publish = false)")
     List<Post> findDueToPublish(LocalDateTime now);
 
     List<Post> findByCreatedAtAfter(LocalDateTime createdAt);
 
+    boolean existsBySlug(String slug);
 }

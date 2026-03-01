@@ -26,6 +26,7 @@ target/
 /nbdist/
 /.nb-gradle/
 build/
+bin/
 !**/src/main/**/build/
 !**/src/main/resources/images/
 !**/src/test/**/build/
@@ -42,3 +43,4 @@ videos
 uploads
 
 feature.txt
+

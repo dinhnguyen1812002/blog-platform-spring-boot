@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.model;
 
+import com.Nguyen.blogplatform.Enum.PublishStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -8,7 +9,6 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -59,19 +59,21 @@ public class Post {
     @Column(name = "is_publish", nullable = false)
     private Boolean is_publish;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "visibility", nullable = false)
+    @Builder.Default
+    private PublishStatus visibility = PublishStatus.PUBLISHED;
+
+    @Column(name = "scheduled_publish_at")
+    @JsonFormat(pattern = "dd-MM-yyyy HH:mm:ss")
+    private LocalDateTime scheduledPublishAt;
+
     @Column(name = "view", nullable = false)
     @Builder.Default
     private Long view = 0L;
 
-    @Version
-    private Long version;
-
     @ManyToMany
-    @JoinTable(
-            name = "post_like",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "user_id")
-    )
+    @JoinTable(name = "post_like", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
     @Builder.Default
     private Set<User> like = new HashSet<>();
 
@@ -81,11 +83,7 @@ public class Post {
     private User user;
 
     @ManyToMany
-    @JoinTable(
-            name = "post_category",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "category_id")
-    )
+    @JoinTable(name = "post_category", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "category_id"))
     @JsonManagedReference
     @NotEmpty(message = "A post must have at least one category")
     @Builder.Default
@@ -101,23 +99,16 @@ public class Post {
     @Builder.Default
     private Set<Rating> ratings = new HashSet<>();
 
-
     @ManyToMany
-    @JoinTable(
-            name = "post_tags",
-            joinColumns = @JoinColumn(name = "post_id"),
-            inverseJoinColumns = @JoinColumn(name = "tag_id")
-    )
+    @JoinTable(name = "post_tags", joinColumns = @JoinColumn(name = "post_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @Builder.Default
     private Set<Tags> tags = new HashSet<>();
-
-
 
     public Post() {
 
         this.createdAt = new Date();
 
-        this.view= 0L;
+        this.view = 0L;
     }
 
     public Post(String title, String slug, String content, String thumbnail, User user) {
@@ -129,19 +120,26 @@ public class Post {
         this.user = user;
     }
 
-
-
-//
-//    @PrePersist
-//    public void prePersist() {
-//        if (public_date == null) {
-//            public_date = LocalDateTime.now();
-//        }
-//    }
+    //
+    // @PrePersist
+    // public void prePersist() {
+    // if (public_date == null) {
+    // public_date = LocalDateTime.now();
+    // }
+    // }
 
     @Override
     public int hashCode() {
         return Objects.hash(id); // Chỉ dùng ID
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o)
+            return true;
+        if (!(o instanceof Post post))
+            return false;
+        return Objects.equals(id, post.id);
     }
 
 }

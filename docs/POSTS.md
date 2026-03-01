@@ -13,8 +13,13 @@
 
 - **Method:** `GET`
 - **URL:** `http://localhost:8080/api/v1/post/{slug}`
-- **Authorization:** Không bắt buộc (API công khai).
+- **Authorization:** Không bắt buộc đối với bài viết công khai (PUBLISHED). Yêu cầu (Token hợp lệ) đối với bài viết PRIVATE.
 - **Path Variable:** `slug` - slug của bài viết.
+- **Quy tắc bảo mật (Privacy Rules):**
+  - **PUBLISHED**: Công khai cho tất cả.
+  - **SCHEDULED**: Trả về lỗi `404 Not Found` nếu chưa đến thời gian hẹn giờ xuất bản (`scheduledPublishAt`). Trở thành công khai (200 OK) nếu đã qua thời gian hẹn giờ.
+  - **PRIVATE**: Trả về lỗi `403 Forbidden` nếu người gọi API không phải tác giả gốc của bài viết.
+  - **DRAFT**: Trả về lỗi `404 Not Found`.
 
 ## 3. Lấy bài viết mới nhất
 

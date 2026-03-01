@@ -19,10 +19,10 @@ Endpoint này cho phép một tác giả đã được xác thực tạo một b
 
 #### Headers
 
-| Header        | Giá trị             | Mô tả                               | 
-| ------------- | ------------------ | -----------------------------------------
-| `Authorization` | `Bearer <JWT_TOKEN>` | JWT token để xác thực người dùng. |
-| `Content-Type`  | `application/json` | Kiểu nội dung của phần thân yêu cầu.     |
+| Header          | Giá trị              | Mô tả                                |
+| --------------- | -------------------- | ------------------------------------ |
+| `Authorization` | `Bearer <JWT_TOKEN>` | JWT token để xác thực người dùng.    |
+| `Content-Type`  | `application/json`   | Kiểu nội dung của phần thân yêu cầu. |
 
 #### Body
 
@@ -36,21 +36,24 @@ Phần thân yêu cầu phải là một đối tượng JSON với các thuộc
   "categories": ["Công nghệ", "Java"],
   "tags": ["SpringBoot", "API"],
   "featured": false,
-  "public_date": "2025-09-01T10:00:00"
+  "visibility": "PUBLISHED",
+  "scheduledPublishAt": "2025-09-01T10:00:00"
 }
 ```
 
 #### Tham số Body
 
-| Tham số    | Kiểu      | Bắt buộc | Mô tả                                                                                               |
-| ------------ | --------- | -------- | -------------------------------------------------------------------------------------------------------- |
-| `title`      | `String`  | Có      | Tiêu đề của bài viết.                                                                                    |
-| `content`    | `String`  | Có      | Nội dung chính của bài viết, có thể ở định dạng HTML hoặc Markdown.                                          |
-| `thumbnail`  | `String`  | Không       | URL của ảnh đại diện của bài viết. URL này nên được lấy từ endpoint `/api/v1/upload`.        |
-| `categories` | `List<String>` | Không       | Một danh sách tên danh mục để liên kết với bài viết.                                                      |
-| `tags`       | `List<String>` | Không       | Một danh sách tên thẻ để liên kết với bài viết.                                                           |
-| `featured`   | `boolean` | Không       | Liệu bài viết có nên được đánh dấu là "nổi bật" hay không. Mặc định là `false`.                                     |
-| `public_date`| `String`  | Không       | Ngày và giờ bài viết sẽ được xuất bản, ở định dạng ISO-8601 (ví dụ: `2025-09-01T10:00:00`). Nếu không được cung cấp, bài viết sẽ được xuất bản ngay lập tức. |
+| Tham số              | Kiểu           | Bắt buộc | Mô tả                                                                                                                |
+| -------------------- | -------------- | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `title`              | `String`       | Có       | Tiêu đề của bài viết.                                                                                                |
+| `content`            | `String`       | Có       | Nội dung chính của bài viết, có thể ở định dạng HTML hoặc Markdown.                                                  |
+| `thumbnail`          | `String`       | Không    | URL của ảnh đại diện của bài viết. URL này nên được lấy từ endpoint `/api/v1/upload`.                                |
+| `categories`         | `List<String>` | Không    | Một danh sách tên danh mục để liên kết với bài viết.                                                                 |
+| `tags`               | `List<String>` | Không    | Một danh sách tên thẻ để liên kết với bài viết.                                                                      |
+| `featured`           | `boolean`      | Không    | Liệu bài viết có nên được đánh dấu là "nổi bật" hay không. Mặc định là `false`.                                      |
+| `visibility`         | `String`       | Không    | Trạng thái hiển thị của bài viết. Nhận các giá trị: `PUBLISHED`, `SCHEDULED`, `PRIVATE`, `DRAFT`. Mặc định: `DRAFT`. |
+| `scheduledPublishAt` | `String`       | Không    | Ngày và giờ xuất bản nếu visibility là `SCHEDULED`, định dạng ISO-8601 (ví dụ: `2025-09-01T10:00:00`).               |
+| `public_date`        | `String`       | Không    | (Legacy) Tương tự `scheduledPublishAt`. Khuyên dùng `scheduledPublishAt`.                                            |
 
 ### Phản hồi (Responses)
 
@@ -103,7 +106,8 @@ curl -X POST http://localhost:8080/api/v1/author/write \
       "thumbnail": "http://example.com/uploads/my-thumbnail.jpg", 
       "categories": ["Introduction"], 
       "tags": ["welcome", "first-post"], 
-      "public_date": "2025-09-01T10:00:00" 
+      "visibility": "PUBLISHED", 
+      "scheduledPublishAt": "2025-09-01T10:00:00" 
     }'
 ```
 

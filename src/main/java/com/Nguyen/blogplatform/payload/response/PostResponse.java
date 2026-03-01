@@ -1,9 +1,12 @@
 package com.Nguyen.blogplatform.payload.response;
 
+import com.Nguyen.blogplatform.Enum.PublishStatus;
+
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
@@ -14,7 +17,8 @@ import java.util.Set;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class PostResponse {
+public class PostResponse implements Serializable {
+    private static final long serialVersionUID = 1L;
     private String id;
     private UserResponse user;
     @NotEmpty(message = "*Please provide a title")
@@ -40,4 +44,6 @@ public class PostResponse {
     private List<CommentResponse> comments;
     private LocalDateTime public_date;
     private Boolean is_publish;
+    private PublishStatus visibility;
+    private LocalDateTime scheduledPublishAt;
 }

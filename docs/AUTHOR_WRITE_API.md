@@ -19,10 +19,10 @@ This endpoint allows an authenticated author to create a new blog post.
 
 ### Headers
 
-| Header        | Value              | Description                               |
-| ------------- | ------------------ | ----------------------------------------- |
+| Header          | Value                | Description                                |
+| --------------- | -------------------- | ------------------------------------------ |
 | `Authorization` | `Bearer <JWT_TOKEN>` | The JWT token for authenticating the user. |
-| `Content-Type`  | `application/json` | The content type of the request body.     |
+| `Content-Type`  | `application/json`   | The content type of the request body.      |
 
 ### Body
 
@@ -36,21 +36,24 @@ The request body should be a JSON object with the following properties:
   "categories": ["", ""],
   "tags": ["", ""],
   "featured": false,
-  "public_date": "2025-09-01T10:00:00"
+  "visibility": "PUBLISHED",
+  "scheduledPublishAt": "2025-09-01T10:00:00"
 }
 ```
 
 ### Body Parameters
 
-| Parameter    | Type      | Required | Description                                                                                               |
-| ------------ | --------- | -------- | --------------------------------------------------------------------------------------------------------- |
-| `title`      | `String`  | Yes      | The title of the post.                                                                                    |
-| `content`    | `String`  | Yes      | The main content of the post, can be in HTML or Markdown format.                                          |
-| `thumbnail`  | `String`  | No       | The URL of the post's thumbnail image. This should be obtained from the `/api/v1/upload` endpoint.        |
-| `categories` | `List<String>` | No       | A list of category names to associate with the post.                                                      |
-| `tags`       | `List<String>` | No       | A list of tag names to associate with the post.                                                           |
-| `featured`   | `boolean` | No       | Whether the post should be marked as "featured". Defaults to `false`.                                     |
-| `public_date`| `String`  | No       | The date and time when the post should be published, in ISO-8601 format (e.g., `2025-09-01T10:00:00`). If not provided, the post is published immediately. |
+| Parameter            | Type           | Required | Description                                                                                                                         |
+| -------------------- | -------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `title`              | `String`       | Yes      | The title of the post.                                                                                                              |
+| `content`            | `String`       | Yes      | The main content of the post, can be in HTML or Markdown format.                                                                    |
+| `thumbnail`          | `String`       | No       | The URL of the post's thumbnail image. This should be obtained from the `/api/v1/upload` endpoint.                                  |
+| `categories`         | `List<String>` | No       | A list of category names to associate with the post.                                                                                |
+| `tags`               | `List<String>` | No       | A list of tag names to associate with the post.                                                                                     |
+| `featured`           | `boolean`      | No       | Whether the post should be marked as "featured". Defaults to `false`.                                                               |
+| `visibility`         | `String`       | No       | The visibility status of the post. Values: `PUBLISHED`, `SCHEDULED`, `PRIVATE`, `DRAFT`. Defaults to `DRAFT`.                       |
+| `scheduledPublishAt` | `String`       | No       | The date and time when the post should be published if visibility is `SCHEDULED`, in ISO-8601 format (e.g., `2025-09-01T10:00:00`). |
+| `public_date`        | `String`       | No       | (Legacy) Same as `scheduledPublishAt`. Use `scheduledPublishAt` instead.                                                            |
 
 ## Responses
 
@@ -103,6 +106,7 @@ curl -X POST http://localhost:8080/api/v1/author/write \
       "thumbnail": "http://example.com/uploads/my-thumbnail.jpg", \
       "categories": ["Introduction"], \
       "tags": ["welcome", "first-post"], \
-      "public_date": "2025-09-01T10:00:00" \
+      "visibility": "PUBLISHED", \
+      "scheduledPublishAt": "2025-09-01T10:00:00" \
     }'
 ```

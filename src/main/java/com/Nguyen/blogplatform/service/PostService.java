@@ -1,5 +1,7 @@
 package com.Nguyen.blogplatform.service;
 
+import com.Nguyen.blogplatform.Enum.PublishStatus;
+import com.Nguyen.blogplatform.exception.ForbiddenException;
 import com.Nguyen.blogplatform.exception.InvalidCategoryException;
 import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.mapper.PostMapper;
@@ -22,8 +24,11 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
+
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PostService {
     private static final long CACHE_EXPIRY_MS = 300_000; // 5 minutes
 
@@ -86,7 +91,8 @@ public class PostService {
         Specification<Post> spec = PostSpecification.isPublished();
         Page<Post> posts = postRepository.findAll(spec, pageable);
         User currentUser = getCurrentUser();
-        List<PostResponse> responses = postMapper.toPostResponseList(posts.getContent(), currentUser, savedPostRepository);
+        List<PostResponse> responses = postMapper.toPostResponseList(posts.getContent(), currentUser,
+                savedPostRepository);
         return new PageImpl<>(responses, pageable, posts.getTotalElements());
     }
 
@@ -103,7 +109,8 @@ public class PostService {
 
         Page<Post> posts = postRepository.findAll(spec, pageable);
         User currentUser = getCurrentUser();
-        List<PostResponse> responses = postMapper.toPostResponseList(posts.getContent(), currentUser, savedPostRepository);
+        List<PostResponse> responses = postMapper.toPostResponseList(posts.getContent(), currentUser,
+                savedPostRepository);
         return new PageImpl<>(responses, pageable, posts.getTotalElements());
     }
 
@@ -116,9 +123,7 @@ public class PostService {
 
     public PostResponse getPostResponseById(String postId) {
         var post = findPostById(postId);
-        if (!isPostPublished(post)) {
-            throw new NotFoundException("Post is not published yet: " + postId);
-        }
+        enforcePrivacy(post);
         return postMapper.toPostResponse(post, getCurrentUser(), savedPostRepository);
     }
 
@@ -126,16 +131,14 @@ public class PostService {
     public PostResponse getPostBySlug(String slug) {
         var post = postRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
-        if (!isPostPublished(post)) {
-            throw new NotFoundException("Post is not published yet: " + slug);
-        }
+        enforcePrivacy(post);
         incrementViewCount(post.getId());
         var updatedPost = postRepository.findById(post.getId())
                 .orElseThrow(() -> new NotFoundException("Could not refetch post with id: " + post.getId()));
         return postMapper.toPostResponseWithComments(updatedPost, getCurrentUser(), savedPostRepository);
     }
 
-    public List<PostResponse> getPostsByCategory(String  slug) {
+    public List<PostResponse> getPostsByCategory(String slug) {
         String category = categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Category not found with id: " + slug)).toString();
         Specification<Post> spec = PostSpecification.isPublished()
@@ -173,21 +176,17 @@ public class PostService {
             return null;
         }
 
-        var jwt = (String) authentication.getCredentials();
-        if (jwt == null) {
-            return null;
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof UserDetailsImpl userDetails) {
+            return userRepository.findById(userDetails.getId()).orElse(null);
         }
 
-        var userId = jwtUtils.getUserIdFromJwtToken(jwt);
-        if (userId == null) {
-            System.out.println("User id is null");
-        }
-
-        return userRepository.findById(userId).orElse(null);
+        return null;
     }
 
     private User getUser() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication()
+                .getPrincipal();
         return userRepository.findById(userDetails.getId()).orElse(null);
     }
 
@@ -201,12 +200,65 @@ public class PostService {
                 .collect(Collectors.toSet());
     }
 
+    /**
+     * Enforce privacy rules for post access:
+     * - PRIVATE posts: only accessible by the author (403 for others)
+     * - SCHEDULED posts: accessible only after their scheduled time (404 if not yet
+     * published)
+     * - PUBLISHED posts: always accessible
+     * - DRAFT posts: treated as not found for public access
+     */
+    private void enforcePrivacy(Post post) {
+        User currentUser = getCurrentUser();
+        boolean isAuthor = currentUser != null && post.getUser() != null
+                && currentUser.getId().equals(post.getUser().getId());
+
+        // Authors and Admins can always see the post
+        boolean isAdmin = currentUser != null && currentUser.getRoles().stream()
+                .anyMatch(role -> role.getName().name().contains("ADMIN"));
+
+        if (isAuthor || isAdmin) {
+            return;
+        }
+
+        PublishStatus visibility = post.getVisibility();
+        if (visibility == null) {
+            // Legacy fallback: use is_publish boolean
+            if (!Boolean.TRUE.equals(post.getIs_publish())) {
+                throw new NotFoundException("Post not found");
+            }
+            return;
+        }
+
+        switch (visibility) {
+            case PRIVATE -> throw new ForbiddenException("This post is private and only accessible by its author");
+            case DRAFT, SCHEDULED -> {
+                // For DRAFT and SCHEDULED, we treat as not found for non-authors
+                // unless it was just published via isPostPublished check (which updates the object)
+                if (!isPostPublished(post)) {
+                    throw new NotFoundException("Post not found");
+                }
+            }
+            case PUBLISHED -> {
+                if (!isPostPublished(post)) {
+                    throw new NotFoundException("Post not found");
+                }
+            }
+        }
+    }
+
     private boolean isPostPublished(Post post) {
-        if (post.getIs_publish() != null && post.getIs_publish()) {
+        if (Boolean.TRUE.equals(post.getIs_publish()) && post.getVisibility() == PublishStatus.PUBLISHED) {
             return true;
         }
-        if (post.getPublic_date() != null && post.getPublic_date().isBefore(LocalDateTime.now())) {
+        // Check if scheduled post is due
+        LocalDateTime scheduleTime = post.getScheduledPublishAt() != null
+                ? post.getScheduledPublishAt()
+                : post.getPublic_date();
+        if (scheduleTime != null && scheduleTime.isBefore(LocalDateTime.now())
+                && post.getVisibility() == PublishStatus.SCHEDULED) {
             post.setIs_publish(true);
+            post.setVisibility(PublishStatus.PUBLISHED);
             postRepository.save(post);
             return true;
         }
@@ -219,12 +271,14 @@ public class PostService {
     }
 
     private void invalidateCache(String postId) {
-        postCache.entrySet().removeIf(entry -> entry.getKey().equals(postId) || entry.getValue().getId().equals(postId));
+        postCache.entrySet()
+                .removeIf(entry -> entry.getKey().equals(postId) || entry.getValue().getId().equals(postId));
     }
 
     private boolean isCacheValid(String key) {
         var timestamp = cacheTimestamps.get(key);
-        return timestamp != null && System.currentTimeMillis() - timestamp < CACHE_EXPIRY_MS && postCache.containsKey(key);
+        return timestamp != null && System.currentTimeMillis() - timestamp < CACHE_EXPIRY_MS
+                && postCache.containsKey(key);
     }
 
     @Transactional
@@ -235,7 +289,5 @@ public class PostService {
         invalidateCache(postId);
         return postMapper.toPostResponse(updatedPost, getCurrentUser(), savedPostRepository);
     }
-
-
 
 }

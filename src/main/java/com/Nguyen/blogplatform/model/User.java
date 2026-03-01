@@ -39,8 +39,7 @@ public class User {
 
     @Column(name = "password", nullable = false)
     @Size(min = 6, message = "*Your password must have at least 6 characters")
-    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{6,}$",
-            message = "Password must contain at least one digit, one lowercase letter, one uppercase letter, one special character, and no whitespace")
+    @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{6,}$", message = "Password must contain at least one digit, one lowercase letter, one uppercase letter, one special character, and no whitespace")
     private String password;
 
     private String avatar;
@@ -56,9 +55,7 @@ public class User {
     private Set<Post> posts = new HashSet<>();
 
     @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(  name = "user_roles",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
     private String resetToken;
@@ -74,11 +71,7 @@ public class User {
     private Set<Rating> ratings = new HashSet<>();
 
     @ManyToMany
-    @JoinTable(
-            name = "user_like",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "post_id")
-    )
+    @JoinTable(name = "user_like", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
     private Set<Post> like = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -100,23 +93,21 @@ public class User {
     @Column(name = "provider_id", length = 100)
     private String providerId;
 
-
-    @Column(name = "created_at" )
+    @Column(name = "created_at")
     private LocalDateTime createdAt;
-
-    @Version
-    private Long version;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<RefreshToken> refreshTokens = new ArrayList<>();
 
     public User() {
     }
+
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
     }
+
     public User(String username, String email, String password, Role role) {
         this.username = username;
         this.email = email;

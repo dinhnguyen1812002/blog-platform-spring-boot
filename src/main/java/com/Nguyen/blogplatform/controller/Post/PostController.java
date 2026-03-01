@@ -11,6 +11,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.List;
 
@@ -36,16 +41,24 @@ public class PostController {
         return ResponseEntity.ok(savedScore);
     }
 
-//    @GetMapping
-//    public ResponseEntity<Page<PostResponse>> getPosts(
-//            @RequestParam(defaultValue = "0") int page,
-//            @RequestParam(defaultValue = "5") int size
-//    ) {
-//        Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
-//        Page<PostResponse> posts = postServices.getListPost(pageable);
-//        return ResponseEntity.ok(posts);
-//    }
+    // @GetMapping
+    // public ResponseEntity<Page<PostResponse>> getPosts(
+    // @RequestParam(defaultValue = "0") int page,
+    // @RequestParam(defaultValue = "5") int size
+    // ) {
+    // Pageable pageable = PageRequest.of(page, size,
+    // Sort.by("createdAt").descending());
+    // Page<PostResponse> posts = postServices.getListPost(pageable);
+    // return ResponseEntity.ok(posts);
+    // }
 
+    @Operation(summary = "Lấy chi tiết bài viết theo slug (Công khai)", description = "Lấy bài viết công khai cho tất cả người đọc. Các quy tắc áp dụng: <br> - Bài viết **PRIVATE**: Trả về 403 Forbidden nếu người xem không phải tác giả.<br> - Bài viết **SCHEDULED**: Trả về 404 Not Found nếu ngày xuất bản (scheduledPublishAt) chưa đến.<br> - Bài viết **DRAFT**: Trả về 404 Not Found.<br> - Bài viết **PUBLISHED**: Luôn hiển thị.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Trả về chi tiết bài viết", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = PostResponse.class)) }),
+            @ApiResponse(responseCode = "403", description = "Bài viết là PRIVATE và người gọi không phải tác giả", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết, bài viết là DRAFT, hoặc bài viết là SCHEDULED chưa tới thời gian xuất bản", content = @Content)
+    })
     @GetMapping("/{slug}")
     public ResponseEntity<PostResponse> getPostBySlug(@PathVariable(name = "slug") String slug) {
         try {
@@ -57,14 +70,15 @@ public class PostController {
     }
 
     /**
-     * Enhanced endpoint to get latest/filtered posts with pagination, sorting (newest or views),
+     * Enhanced endpoint to get latest/filtered posts with pagination, sorting
+     * (newest or views),
      * and filters by category slug and tag slug.
      *
-     * @param page Page number (default: 0).
-     * @param size Page size (default: 10).
-     * @param sortBy Sorting criteria: "newest" (default) or "views".
+     * @param page         Page number (default: 0).
+     * @param size         Page size (default: 10).
+     * @param sortBy       Sorting criteria: "newest" (default) or "views".
      * @param categorySlug Optional category slug filter.
-     * @param tagSlug Optional tag slug filter.
+     * @param tagSlug      Optional tag slug filter.
      * @return Page of PostResponse objects.
      */
     @GetMapping()
@@ -73,8 +87,7 @@ public class PostController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "newest") String sortBy,
             @RequestParam(required = false) String categorySlug,
-            @RequestParam(required = false) String tagSlug
-    ) {
+            @RequestParam(required = false) String tagSlug) {
         Sort sort;
 
         if ("views".equalsIgnoreCase(sortBy)) {
@@ -107,7 +120,6 @@ public class PostController {
         List<PostResponse> posts = postServices.searchPosts(title, categoryId);
         return ResponseEntity.ok(posts);
     }
-
 
     @PostMapping("/{id}/featured")
     public ResponseEntity<PostResponse> toggleFeatured(@PathVariable String id) {

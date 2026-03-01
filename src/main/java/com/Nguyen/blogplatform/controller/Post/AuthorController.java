@@ -1,6 +1,5 @@
 package com.Nguyen.blogplatform.controller.Post;
 
-
 import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.payload.request.PostRequest;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
@@ -16,11 +15,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
 
 @RestController
 @RequestMapping("/api/v1/author")
@@ -39,11 +42,9 @@ public class AuthorController {
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) String categoryName,
             @RequestParam(required = false) String tagName,
-            @RequestParam(defaultValue = "desc") String sortDirection
-    ) {
+            @RequestParam(defaultValue = "desc") String sortDirection) {
         return authorServices.getPostsForCurrentUser(page, size, keyword, categoryName, tagName, sortDirection);
     }
-
 
     /**
      * Tạo bài viết mới
@@ -52,9 +53,18 @@ public class AuthorController {
      * 1. Client upload thumbnail qua /api/v1/upload trước (nếu có)
      * 2. Client gọi API này với thumbnail URL đã được trả về từ bước 1
      *
-     * @param postRequest Thông tin bài viết (bao gồm thumbnail URL từ uploads controller)
+     *
+     * @param postRequest Thông tin bài viết (bao gồm thumbnail URL từ uploads
+     *                    controller)
      * @return PostResponse với thông tin bài viết đã tạo
      */
+    @Operation(summary = "Tạo bài viết mới", description = "Tạo bài viết với các trạng thái hiển thị (visibility): PUBLISHED (công khai ngay), SCHEDULED (hẹn giờ lên sóng), PRIVATE (chỉ người viết xem được), DRAFT (bản nháp). Nếu là SCHEDULED, bắt buộc phải cung cấp scheduledPublishAt ở tương lai.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Tạo bài viết thành công", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = MessageResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu đầu vào không hợp lệ (ví dụ: thiếu thời gian hẹn giờ cho post SCHEDULED hoặc thời gian trong quá khứ)", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Không có quyền truy cập", content = @Content)
+    })
     @PostMapping(value = "/write")
     public ResponseEntity<MessageResponse> createPost(@Valid @RequestBody PostRequest postRequest) {
         try {
@@ -103,10 +113,21 @@ public class AuthorController {
 
     /**
      * Cập nhật bài viết
-     * @param id ID của bài viết
-     * @param postRequest Thông tin cập nhật (thumbnail URL đã được xử lý qua uploads controller)
+     * 
+     * @param id          ID của bài viết
+     * @param postRequest Thông tin cập nhật (thumbnail URL đã được xử lý qua
+     *                    uploads controller)
      * @return PostResponse đã cập nhật
      */
+    @Operation(summary = "Cập nhật bài viết", description = "Cho phép cập nhật thông tin và trạng thái hiển thị của bài viết (PUBLISHED, SCHEDULED, PRIVATE, DRAFT). Tác giả có thể thay đổi thời gian xuất bản hoặc chuyển bài viết thành riêng tư.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Cập nhật thành công", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = PostResponse.class)) }),
+            @ApiResponse(responseCode = "400", description = "Dữ liệu cập nhật không hợp lệ", content = @Content),
+            @ApiResponse(responseCode = "401", description = "Không có quyền truy cập", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Không phải tác giả của bài viết", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết", content = @Content)
+    })
     @PutMapping("/{id}")
     public ResponseEntity<?> updatePost(
             @PathVariable String id,
@@ -126,6 +147,7 @@ public class AuthorController {
 
     /**
      * Xóa bài viết
+     * 
      * @param postId ID của bài viết cần xóa
      * @return Void response
      */
@@ -147,9 +169,18 @@ public class AuthorController {
 
     /**
      * Lấy chi tiết bài viết của tác giả
+     * 
      * @param postId ID của bài viết
      * @return PostResponse
      */
+    @Operation(summary = "Lấy chi tiết của một bài viết (Dành cho tác giả)", description = "Lấy chi tiết bài viết bất kể trạng thái nào. Phải kiểm tra quyền là tác giả của bài viết thông qua Auth token hiện tại.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Thành công", content = {
+                    @Content(mediaType = "application/json", schema = @Schema(implementation = PostResponse.class)) }),
+            @ApiResponse(responseCode = "401", description = "Chưa xác thực", content = @Content),
+            @ApiResponse(responseCode = "403", description = "Không có quyền xem chi tiết (không phải tác giả)", content = @Content),
+            @ApiResponse(responseCode = "404", description = "Không tìm thấy bài viết", content = @Content)
+    })
     @GetMapping("/{postId}")
     public ResponseEntity<?> getPostDetail(@PathVariable String postId) {
         try {
@@ -177,7 +208,6 @@ public class AuthorController {
 
         return (UserDetailsImpl) principal;
     }
-
 
     /**
      * Helper method để convert Post thành PostResponse

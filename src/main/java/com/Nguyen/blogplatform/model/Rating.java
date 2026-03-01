@@ -30,9 +30,6 @@ public class Rating {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Version
-    private Long version;
-
     public Rating() {
         this.createdAt = new Date();
     }

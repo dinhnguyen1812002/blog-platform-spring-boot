@@ -38,12 +38,7 @@ public class Category {
     @Size(max = 500)
     private String description;
 
-    @ManyToMany
-    @JoinTable(
-            name = "post_category",
-            joinColumns = @JoinColumn(name = "category_id"),
-            inverseJoinColumns = @JoinColumn(name = "post_id")
-    )
+    @ManyToMany(mappedBy = "categories")
     @JsonBackReference
     private Set<Post> posts = new HashSet<>();
 

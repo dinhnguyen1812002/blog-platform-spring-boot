@@ -1,18 +1,23 @@
 package com.Nguyen.blogplatform.repository.specification;
 
+import com.Nguyen.blogplatform.Enum.PublishStatus;
 import com.Nguyen.blogplatform.model.Post;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.LocalDateTime;
+
 public class PostSpecification {
-//    public static Specification<Post> hasTitle(String title) {
-//        return (root, query, criteriaBuilder) ->
-//                title == null ? criteriaBuilder.conjunction() : criteriaBuilder.like(root.get("title"), "%" + title + "%");
-//    }
-//
-//    public static Specification<Post> hasCategoryId(Long categoryId) {
-//        return (root, query, criteriaBuilder) ->
-//                categoryId == null ? criteriaBuilder.conjunction() : criteriaBuilder.equal(root.get("categoryId"), categoryId);
-//    }
+    // public static Specification<Post> hasTitle(String title) {
+    // return (root, query, criteriaBuilder) ->
+    // title == null ? criteriaBuilder.conjunction() :
+    // criteriaBuilder.like(root.get("title"), "%" + title + "%");
+    // }
+    //
+    // public static Specification<Post> hasCategoryId(Long categoryId) {
+    // return (root, query, criteriaBuilder) ->
+    // categoryId == null ? criteriaBuilder.conjunction() :
+    // criteriaBuilder.equal(root.get("categoryId"), categoryId);
+    // }
 
     public static Specification<Post> hasTitle(String title) {
         return (root, query, cb) -> {
@@ -41,7 +46,6 @@ public class PostSpecification {
         };
     }
 
-
     public static Specification<Post> hasTagSlug(String tagSlug) {
         return (root, query, cb) -> {
             if (tagSlug == null || tagSlug.isEmpty()) {
@@ -52,7 +56,9 @@ public class PostSpecification {
     }
 
     public static Specification<Post> isPublished() {
-        return (root, query, cb) -> cb.isTrue(root.get("is_publish"));
+        return (root, query, cb) -> cb.and(
+                cb.isTrue(root.get("is_publish")),
+                cb.equal(root.get("visibility"), PublishStatus.PUBLISHED));
     }
 
     public static Specification<Post> isFeatured(Boolean featured) {
@@ -68,7 +74,6 @@ public class PostSpecification {
         return (root, query, cb) -> cb.isTrue(root.get("featured"));
     }
 
-
     public static Specification<Post> hasKeyword(String keyword) {
         return (root, query, cb) -> {
             if (keyword == null || keyword.isEmpty()) {
@@ -77,10 +82,8 @@ public class PostSpecification {
             String likePattern = "%" + keyword.toLowerCase() + "%";
             return cb.or(
                     cb.like(cb.lower(root.get("title")), likePattern),
-                    cb.like(cb.lower(root.get("content")), likePattern)
-            );
+                    cb.like(cb.lower(root.get("content")), likePattern));
         };
     }
-
 
 }

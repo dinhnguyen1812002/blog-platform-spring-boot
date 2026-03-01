@@ -29,15 +29,15 @@ public class GlobalExceptionHandler {
         telegramNotificationService.sendErrorNotification(
                 "NotFoundException",
                 ex.getMessage(),
-                request.getDescription(false)
-        );
+                request.getDescription(false));
 
         return new ResponseEntity<>(response, HttpStatus.NOT_FOUND);
     }
 
     // Handler for InvalidCategoryException
     @ExceptionHandler(InvalidCategoryException.class)
-    public ResponseEntity<Map<String, String>> handleInvalidCategoryException(InvalidCategoryException ex, WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleInvalidCategoryException(InvalidCategoryException ex,
+            WebRequest request) {
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
 
@@ -45,15 +45,15 @@ public class GlobalExceptionHandler {
         telegramNotificationService.sendErrorNotification(
                 "InvalidCategoryException",
                 ex.getMessage(),
-                request.getDescription(false)
-        );
+                request.getDescription(false));
 
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 
     // Handler for UnauthorizedException
     @ExceptionHandler(UnauthorizedException.class)
-    public ResponseEntity<Map<String, String>> handleUnauthorizedException(UnauthorizedException ex, WebRequest request) {
+    public ResponseEntity<Map<String, String>> handleUnauthorizedException(UnauthorizedException ex,
+            WebRequest request) {
         Map<String, String> response = new HashMap<>();
         response.put("error", ex.getMessage());
 
@@ -61,8 +61,7 @@ public class GlobalExceptionHandler {
         telegramNotificationService.sendErrorNotification(
                 "UnauthorizedException",
                 ex.getMessage(),
-                request.getDescription(false)
-        );
+                request.getDescription(false));
 
         return new ResponseEntity<>(response, HttpStatus.UNAUTHORIZED);
     }
@@ -82,8 +81,7 @@ public class GlobalExceptionHandler {
         telegramNotificationService.sendErrorNotification(
                 "IllegalStateException",
                 message,
-                request.getDescription(false)
-        );
+                request.getDescription(false));
 
         return new ErrorResponse(message);
     }
@@ -95,12 +93,54 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.CONFLICT);
     }
 
-//    @ExceptionHandler(MethodArgumentNotValidException.class)
-//    public ResponseEntity<Map<String, String>> handleValidationExceptions(MethodArgumentNotValidException ex) {
-//        Map<String, String> errors = new HashMap<>();
-//        for (FieldError error : ex.getBindingResult().getFieldErrors()) {
-//            errors.put(error.getField(), error.getDefaultMessage());
-//        }
-//        return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
-//    }
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Map<String, String>> handleForbiddenException(ForbiddenException ex, WebRequest request) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", ex.getMessage());
+
+        telegramNotificationService.sendErrorNotification(
+                "ForbiddenException",
+                ex.getMessage(),
+                request.getDescription(false));
+
+        return new ResponseEntity<>(response, HttpStatus.FORBIDDEN);
+    }
+
+    // @ExceptionHandler(MethodArgumentNotValidException.class)
+    // public ResponseEntity<Map<String, String>>
+    // handleValidationExceptions(MethodArgumentNotValidException ex) {
+    // Map<String, String> errors = new HashMap<>();
+    // for (FieldError error : ex.getBindingResult().getFieldErrors()) {
+    // errors.put(error.getField(), error.getDefaultMessage());
+    // }
+    // return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    // }
+
+    @ExceptionHandler(org.springframework.transaction.TransactionSystemException.class)
+    public ResponseEntity<Map<String, String>> handleTransactionException(org.springframework.transaction.TransactionSystemException ex, WebRequest request) {
+        Map<String, String> response = new HashMap<>();
+        Throwable cause = ex.getRootCause();
+        String message = (cause != null) ? cause.getMessage() : ex.getMessage();
+        response.put("error", "Transaction failed: " + message);
+
+        telegramNotificationService.sendErrorNotification(
+                "TransactionSystemException",
+                message,
+                request.getDescription(false));
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Map<String, String>> handleGeneralException(Exception ex, WebRequest request) {
+        Map<String, String> response = new HashMap<>();
+        response.put("error", "An internal error occurred: " + ex.getMessage());
+
+        telegramNotificationService.sendErrorNotification(
+                "GeneralException",
+                ex.getMessage(),
+                request.getDescription(false));
+
+        return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
 }
