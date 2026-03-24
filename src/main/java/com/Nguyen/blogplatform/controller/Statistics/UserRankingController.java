@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.controller.Statistics;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.response.TopUserResponse;
 
-import com.Nguyen.blogplatform.service.UserServices;
+import com.Nguyen.blogplatform.service.user.UserServices;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;

@@ -8,7 +8,7 @@ import com.Nguyen.blogplatform.model.Post;
 
 import com.Nguyen.blogplatform.repository.NewsletterRepository;
 import com.Nguyen.blogplatform.repository.PostRepository;
-import com.Nguyen.blogplatform.service.EmailServices;
+import com.Nguyen.blogplatform.service.notification.EmailServices;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -49,7 +49,7 @@ public class NewsletterScheduler {
 
         for (Newsletter subscriber : subscribers) {
             try {
-                emailServices.sendNewsletterEmail(subscribers, newPosts);
+                emailServices.queueNewsletterEmail(subscriber.getEmail(), newPosts);
                 subscriber.setLastSentAt(LocalDateTime.now());
                 newsletterRepository.save(subscriber);
             } catch (Exception e) {

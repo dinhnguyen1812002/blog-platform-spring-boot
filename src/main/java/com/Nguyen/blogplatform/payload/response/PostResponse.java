@@ -1,49 +1,38 @@
 package com.Nguyen.blogplatform.payload.response;
 
 import com.Nguyen.blogplatform.Enum.PublishStatus;
-
-import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.Size;
-import lombok.*;
-
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class PostResponse implements Serializable {
+/**
+ * Full response object for a post, including content and comments.
+ */
+public record PostResponse(
+        String id,
+        String title,
+        String slug,
+        String excerpt,
+        String content,
+        String thumbnail,
+        LocalDateTime createdAt,
+        LocalDateTime updatedAt,
+        LocalDateTime publishedAt,
+        Boolean featured,
+        PublishStatus visibility,
+        LocalDateTime scheduledPublishAt,
+        Long viewCount,
+        Long likeCount,
+        Double averageRating,
+        UserResponse author,
+        Set<CategoryResponse> categories,
+        Set<TagResponse> tags,
+        Boolean isLikedByCurrentUser,
+        Boolean isSavedByCurrentUser,
+        Integer userRating,
+        Integer commentCount,
+        List<CommentResponse> comments
+) implements Serializable {
     private static final long serialVersionUID = 1L;
-    private String id;
-    private UserResponse user;
-    @NotEmpty(message = "*Please provide a title")
-    @Size(min = 5, message = "*Your title must have at least 5 characters")
-    private String title;
-    @NotEmpty(message = "*Please provide a slug")
-    @Size(min = 5, message = "*Your slug must have at least 5 characters")
-    private String slug;
-    private String excerpt;
-    private Date createdAt;
-    private Boolean featured;
-    private String content;
-    private String thumbnail;
-    private Set<CategoryResponse> categories;
-    private Set<TagResponse> tags;
-    private Integer commentCount;
-    private Long viewCount;
-    private Long likeCount;
-    private Double averageRating;
-    private Boolean isLikedByCurrentUser;
-    private Boolean isSavedByCurrentUser;
-    private Integer userRating;
-    private List<CommentResponse> comments;
-    private LocalDateTime public_date;
-    private Boolean is_publish;
-    private PublishStatus visibility;
-    private LocalDateTime scheduledPublishAt;
 }

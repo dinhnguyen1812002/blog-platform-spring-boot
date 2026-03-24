@@ -2,7 +2,7 @@ package com.Nguyen.blogplatform.controller.Tags;
 
 import com.Nguyen.blogplatform.payload.request.TagRequest;
 import com.Nguyen.blogplatform.payload.response.TagResponse;
-import com.Nguyen.blogplatform.service.TagServices;
+import com.Nguyen.blogplatform.service.post.TagServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

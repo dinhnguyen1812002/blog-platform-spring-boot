@@ -57,8 +57,12 @@ public class PostSpecification {
 
     public static Specification<Post> isPublished() {
         return (root, query, cb) -> cb.and(
-                cb.isTrue(root.get("is_publish")),
-                cb.equal(root.get("visibility"), PublishStatus.PUBLISHED));
+                cb.equal(root.get("visibility"), PublishStatus.PUBLISHED),
+                cb.or(
+                        cb.isNull(root.get("publishedAt")),
+                        cb.lessThanOrEqualTo(root.get("publishedAt"), LocalDateTime.now())
+                )
+        );
     }
 
     public static Specification<Post> isFeatured(Boolean featured) {

@@ -1,6 +1,6 @@
 package com.Nguyen.blogplatform.exception;
 
-import com.Nguyen.blogplatform.service.TelegramNotificationService;
+import com.Nguyen.blogplatform.service.notification.TelegramNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

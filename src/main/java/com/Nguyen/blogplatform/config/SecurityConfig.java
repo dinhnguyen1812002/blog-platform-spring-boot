@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.config;
 import com.Nguyen.blogplatform.exception.CustomAccessDeniedHandler;
 import com.Nguyen.blogplatform.security.AuthEntryPointJwt;
 import com.Nguyen.blogplatform.security.AuthTokenFilter;
-import com.Nguyen.blogplatform.service.UserDetailsServiceImpl;
+import com.Nguyen.blogplatform.service.auth.UserDetailsServiceImpl;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -133,6 +133,7 @@ public class SecurityConfig {
                         "/api/v1/post",
                         "/api/v1/post/featured",
                         "/api/v1/post/search",
+                        "/api/v1/search",
                         "/api/v1/post/{slug}",
                         "/api/v1/post/latest",
                         "/api/v1/post/category/{slug}",
@@ -153,8 +154,8 @@ public class SecurityConfig {
                     // --- NEWSLETTER ---
                     .requestMatchers(
                         "/api/v1/newsletter/subscribe",
-                        "/api/v1/newsletter/confirm",
-                        "/api/v1/newsletter/unsubscribe"
+                        "/api/v1/newsletter/confirm/**",
+                        "/api/v1/newsletter/unsubscribe/**"
                     )
                     .permitAll()
                     // --- AUTHENTICATED USERS ---
@@ -199,7 +200,8 @@ public class SecurityConfig {
                 "http://localhost:5173",
                 "http://localhost:5174",
                 "http://localhost:5000",
-                "http://localhost:9090"
+                "http://localhost:9090",
+                "https://c9a3-171-249-183-25.ngrok-free.app"
             )
         );
         config.setAllowedMethods(

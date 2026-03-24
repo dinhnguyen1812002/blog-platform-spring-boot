@@ -30,7 +30,7 @@ import java.security.interfaces.RSAPublicKey;
 import java.time.Duration;
 import java.util.UUID;
 
-@Configuration
+//@Configuration
 public class OAuth2AuthorizationServerConfig {
 
     @Bean

@@ -2,8 +2,8 @@ package com.Nguyen.blogplatform.controller.Statistics;
 
 import com.Nguyen.blogplatform.payload.response.PostResponse;
 import com.Nguyen.blogplatform.payload.response.UserStatisticsResponse;
-import com.Nguyen.blogplatform.service.UserDetailsImpl;
-import com.Nguyen.blogplatform.service.UserStatisticsService;
+import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;
+import com.Nguyen.blogplatform.service.user.UserStatisticsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

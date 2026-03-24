@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.security;
 
 
-import com.Nguyen.blogplatform.service.UserDetailsServiceImpl;
+import com.Nguyen.blogplatform.service.auth.UserDetailsServiceImpl;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

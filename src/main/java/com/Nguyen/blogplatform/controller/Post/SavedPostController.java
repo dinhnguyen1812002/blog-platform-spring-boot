@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.controller.Post;
 import com.Nguyen.blogplatform.payload.request.SavePostRequest;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
 import com.Nguyen.blogplatform.payload.response.SavedPostResponse;
-import com.Nguyen.blogplatform.service.BookmarkService;
+import com.Nguyen.blogplatform.service.post.BookmarkService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.controller.Meme;
 import com.Nguyen.blogplatform.model.Meme;
 import com.Nguyen.blogplatform.payload.request.MemeRequest;
 import com.Nguyen.blogplatform.payload.response.PagedMemeResponse;
-import com.Nguyen.blogplatform.service.MemeServices;
+import com.Nguyen.blogplatform.service.media.MemeServices;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

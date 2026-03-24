@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.controller.Series;
 
 import com.Nguyen.blogplatform.payload.request.series.*;
 import com.Nguyen.blogplatform.payload.response.ApiResponse;
-import com.Nguyen.blogplatform.service.UserDetailsImpl;
+import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;
 import com.Nguyen.blogplatform.service.series.SeriesService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.controller.User;
 
 import com.Nguyen.blogplatform.payload.response.PublicProfileResponse;
-import com.Nguyen.blogplatform.service.UserProfileService;
+import com.Nguyen.blogplatform.service.user.UserProfileService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

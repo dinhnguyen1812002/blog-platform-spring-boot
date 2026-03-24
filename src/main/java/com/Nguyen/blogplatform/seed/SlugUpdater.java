@@ -4,7 +4,7 @@ package com.Nguyen.blogplatform.seed;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-import com.Nguyen.blogplatform.service.CategoryServices;
+import com.Nguyen.blogplatform.service.post.CategoryServices;
 
 @Component
 public class SlugUpdater implements CommandLineRunner {

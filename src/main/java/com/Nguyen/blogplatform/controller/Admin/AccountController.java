@@ -3,7 +3,7 @@ import com.Nguyen.blogplatform.payload.request.BanRequest;
 import com.Nguyen.blogplatform.payload.response.UserAdminResponse;
 import com.Nguyen.blogplatform.payload.response.UserResponse;
 
-import com.Nguyen.blogplatform.service.ManagementServices;
+import com.Nguyen.blogplatform.service.admin.ManagementServices;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

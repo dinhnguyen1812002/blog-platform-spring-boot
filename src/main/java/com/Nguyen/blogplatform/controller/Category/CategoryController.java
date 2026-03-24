@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.controller.Category;
 import com.Nguyen.blogplatform.model.Category;
 import com.Nguyen.blogplatform.payload.request.CategoryRequest;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
-import com.Nguyen.blogplatform.service.CategoryServices;
+import com.Nguyen.blogplatform.service.post.CategoryServices;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

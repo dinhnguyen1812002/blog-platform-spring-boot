@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.controller.Authentication;
 
 import com.Nguyen.blogplatform.model.Role;
-import com.Nguyen.blogplatform.service.RoleServices;
+import com.Nguyen.blogplatform.service.user.RoleServices;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

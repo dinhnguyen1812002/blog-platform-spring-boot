@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.controller.Authentication;
 
 import com.Nguyen.blogplatform.payload.response.RoleResponse;
-import com.Nguyen.blogplatform.service.RoleManagementService;
+import com.Nguyen.blogplatform.service.user.RoleManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;

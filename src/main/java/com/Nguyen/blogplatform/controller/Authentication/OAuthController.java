@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.controller.Authentication;
 import com.Nguyen.blogplatform.payload.request.OAuthTokenRequest;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;
 import com.Nguyen.blogplatform.payload.response.OAuthProfileResponse;
-import com.Nguyen.blogplatform.service.OAuthAuthService;
+import com.Nguyen.blogplatform.service.auth.OAuthAuthService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

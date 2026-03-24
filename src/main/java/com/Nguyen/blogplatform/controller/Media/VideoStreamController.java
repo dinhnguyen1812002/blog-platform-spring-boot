@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.controller.Media;
 
 import com.Nguyen.blogplatform.model.Video;
-import com.Nguyen.blogplatform.service.VideoService;
+import com.Nguyen.blogplatform.service.media.VideoService;
 import org.springframework.core.io.FileUrlResource;
 import org.springframework.core.io.support.ResourceRegion;
 import org.springframework.http.HttpStatus;

@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.controller.traffic;
 
 import com.Nguyen.blogplatform.model.Traffic.PeriodType;
-import com.Nguyen.blogplatform.service.TrafficService;
+import com.Nguyen.blogplatform.service.analytics.TrafficService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.format.annotation.DateTimeFormat;

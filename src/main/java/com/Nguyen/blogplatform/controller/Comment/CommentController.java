@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.controller.Comment;
 
 import com.Nguyen.blogplatform.payload.request.CommentRequest;
 import com.Nguyen.blogplatform.payload.response.CommentResponse;
-import com.Nguyen.blogplatform.service.CommentServices;
+import com.Nguyen.blogplatform.service.comment.CommentServices;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

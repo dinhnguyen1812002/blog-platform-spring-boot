@@ -1,6 +1,6 @@
 package com.Nguyen.blogplatform.config;
 
-import com.Nguyen.blogplatform.service.TrafficService;
+import com.Nguyen.blogplatform.service.analytics.TrafficService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;

@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.controller.Admin;
 
 import com.Nguyen.blogplatform.payload.response.AnalyticsResponse;
-import com.Nguyen.blogplatform.service.AnalyticsService;
+import com.Nguyen.blogplatform.service.analytics.AnalyticsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;

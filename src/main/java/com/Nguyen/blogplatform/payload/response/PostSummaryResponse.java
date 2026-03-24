@@ -1,25 +1,32 @@
 package com.Nguyen.blogplatform.payload.response;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.Nguyen.blogplatform.Enum.PublishStatus;
+import java.io.Serializable;
+import java.time.LocalDateTime;
+import java.util.Set;
 
-import java.util.Date;
-
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class PostSummaryResponse {
-    private String id;
-    private String title;
-    private String excerpt;
-    private String slug;
-    private String thumbnail;
-    private Date createdAt;
-    private long views;
-    private int likes;
-
-
+/**
+ * Summary response object for a post, suitable for lists.
+ */
+public record PostSummaryResponse(
+        String id,
+        String title,
+        String slug,
+        String excerpt,
+        String thumbnail,
+        LocalDateTime createdAt,
+        LocalDateTime publishedAt,
+        Boolean featured,
+        PublishStatus visibility,
+        Long viewCount,
+        Long likeCount,
+        Double averageRating,
+        UserResponse author,
+        Set<CategoryResponse> categories,
+        Set<TagResponse> tags,
+        Integer commentCount,
+        Boolean isLikedByCurrentUser,
+        Boolean isSavedByCurrentUser
+) implements Serializable {
+    private static final long serialVersionUID = 1L;
 }

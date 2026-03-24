@@ -1,6 +1,6 @@
 package com.Nguyen.blogplatform.config;
 
-import com.Nguyen.blogplatform.service.TrafficService;
+import com.Nguyen.blogplatform.service.analytics.TrafficService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

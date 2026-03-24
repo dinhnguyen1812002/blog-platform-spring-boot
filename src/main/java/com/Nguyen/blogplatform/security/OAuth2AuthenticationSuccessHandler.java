@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.security;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;
 import com.Nguyen.blogplatform.repository.UserRepository;
-import com.Nguyen.blogplatform.service.RefreshTokenService;
+import com.Nguyen.blogplatform.service.auth.RefreshTokenService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

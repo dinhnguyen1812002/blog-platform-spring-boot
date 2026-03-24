@@ -4,7 +4,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.Optional;
 
-import com.Nguyen.blogplatform.service.UserDetailsImpl;
+import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;

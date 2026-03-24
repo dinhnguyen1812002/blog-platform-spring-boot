@@ -1,6 +1,6 @@
 package com.Nguyen.blogplatform.security;
 
-import com.Nguyen.blogplatform.service.UserDetailsImpl;
+import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;

@@ -50,7 +50,7 @@ public class User {
     @JsonManagedReference
     private Set<SocialMediaLink> socialMediaLinks = new HashSet<>();
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private Set<Post> posts = new HashSet<>();
 

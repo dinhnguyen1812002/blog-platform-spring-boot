@@ -373,7 +373,7 @@ public class SeriesService {
     /**
      * Map Series entity sang SeriesListDTO (không có posts)
      */
-    private SeriesListDTO mapToListDTO(Series series) {
+    public SeriesListDTO mapToListDTO(Series series) {
         return SeriesListDTO.builder()
                 .id(series.getId())
                 .title(series.getTitle())
@@ -404,7 +404,7 @@ public class SeriesService {
                 .thumbnail(post.getThumbnail())
                 .orderIndex(seriesPost.getOrderIndex())
                 .addedAt(seriesPost.getCreatedAt())
-                .publicDate(post.getPublic_date())
+                .publicDate(post.getPublishedAt())
                 .build();
     }
 }

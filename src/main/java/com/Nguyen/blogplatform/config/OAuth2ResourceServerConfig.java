@@ -11,7 +11,7 @@ import org.springframework.security.oauth2.server.resource.web.BearerTokenAuthen
 import org.springframework.security.oauth2.server.resource.web.access.BearerTokenAccessDeniedHandler;
 import org.springframework.web.cors.CorsConfigurationSource;
 
-@Configuration
+//@Configuration
 public class OAuth2ResourceServerConfig {
 
     @Bean
