@@ -77,5 +77,5 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
 
     List<Post> findByCreatedAtAfter(LocalDateTime createdAtAfter);
 
-    <T> ScopedValue<T> findBySlug(String slug);
+    Optional<Post> findBySlug(String slug);
 }

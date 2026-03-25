@@ -131,7 +131,7 @@ public class PostService {
      */
     @Transactional
     public PostResponse getPostBySlug(String slug) {
-        Post post = (Post) postRepository.findBySlug(slug)
+        Post post = postRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Post not found with slug: " + slug));
         
         enforcePrivacy(post);
