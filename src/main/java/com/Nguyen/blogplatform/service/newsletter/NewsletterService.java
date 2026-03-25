@@ -18,6 +18,8 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -32,6 +34,7 @@ public class NewsletterService {
     private final EmailLogRepository emailLogRepository;
     private final EmailServices emailServices;
     private final ObjectMapper objectMapper;
+    private final TemplateEngine templateEngine;
 
     @Value("${newsletter.confirmation.base-url:http://localhost:8080}")
     private String baseUrl;
@@ -336,10 +339,11 @@ public class NewsletterService {
 
     private void sendWelcomeEmail(NewsletterSubscriber subscriber) {
         try {
+            String unsubscribeUrl = baseUrl + "/api/v1/newsletter/unsubscribe/" + subscriber.getUnsubscribeToken();
             emailServices.sendHtmlEmail(
                 subscriber.getEmail(),
                 "Welcome to Our Newsletter!",
-                buildWelcomeEmail(subscriber.getFirstName())
+                buildWelcomeEmail(subscriber.getFirstName(), unsubscribeUrl, baseUrl)
             );
         } catch (Exception e) {
             log.error("Failed to send welcome email to: {}", subscriber.getEmail(), e);
@@ -405,31 +409,18 @@ public class NewsletterService {
     }
 
     private String buildConfirmationEmail(String firstName, String confirmUrl) {
-        return String.format("""
-            <html>
-            <body>
-                <h2>Hello %s,</h2>
-                <p>Thank you for subscribing to our newsletter!</p>
-                <p>Please click the link below to confirm your subscription:</p>
-                <p><a href="%s" style="padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px;">Confirm Subscription</a></p>
-                <p>If you didn't request this subscription, you can safely ignore this email.</p>
-                <p>This link will expire in 24 hours.</p>
-            </body>
-            </html>
-            """, firstName != null ? firstName : "there", confirmUrl);
+        Context context = new Context();
+        context.setVariable("name", firstName != null ? firstName : "there");
+        context.setVariable("confirmationUrl", confirmUrl);
+        return templateEngine.process("newsletter-subscription-confirmation", context);
     }
 
-    private String buildWelcomeEmail(String firstName) {
-        return String.format("""
-            <html>
-            <body>
-                <h2>Welcome %s!</h2>
-                <p>Thank you for confirming your subscription to our newsletter.</p>
-                <p>You'll now receive the latest updates, articles, and exclusive content directly in your inbox.</p>
-                <p>Stay tuned!</p>
-            </body>
-            </html>
-            """, firstName != null ? firstName : "to our newsletter");
+    private String buildWelcomeEmail(String firstName, String unsubscribeUrl, String blogUrl) {
+        Context context = new Context();
+        context.setVariable("firstName", firstName != null ? firstName : "Subscriber");
+        context.setVariable("unsubscribeUrl", unsubscribeUrl);
+        context.setVariable("blogUrl", blogUrl != null ? blogUrl : baseUrl);
+        return templateEngine.process("newsletter-welcome", context);
     }
 
     private SubscriberResponse mapToSubscriberResponse(NewsletterSubscriber subscriber) {
