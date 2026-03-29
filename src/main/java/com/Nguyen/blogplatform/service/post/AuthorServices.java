@@ -13,6 +13,7 @@ import com.Nguyen.blogplatform.payload.response.PostSummaryResponse;
 import com.Nguyen.blogplatform.payload.response.notification.PublicArticleNotification;
 import com.Nguyen.blogplatform.repository.*;
 import com.Nguyen.blogplatform.service.notification.NotificationService;
+import com.Nguyen.blogplatform.util.ExcerptUtil;
 import com.Nguyen.blogplatform.util.SlugUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -86,10 +87,15 @@ public class AuthorServices {
         PublishStatus visibility = request.visibility() != null ? request.visibility() : PublishStatus.DRAFT;
         LocalDateTime publishedAt = resolvePublishedAt(visibility, request);
 
+        String excerpt = request.excerpt();
+        if (excerpt == null || excerpt.isBlank()) {
+            excerpt = ExcerptUtil.excerpt(request.content());
+        }
+
         Post post = Post.builder()
                 .title(request.title())
                 .slug(slug)
-                .excerpt(request.excerpt())
+                .excerpt(excerpt)
                 .content(request.content())
                 .thumbnail(request.thumbnail())
                 .author(author)
@@ -97,6 +103,7 @@ public class AuthorServices {
                 .tags(tags)
                 .featured(request.featured() != null && request.featured())
                 .visibility(visibility)
+                .isPublish(PublishStatus.PUBLISHED.equals(visibility))
                 .publishedAt(publishedAt)
                 .scheduledPublishAt(PublishStatus.SCHEDULED.equals(visibility) ? request.scheduledPublishAt() : null)
                 .build();
@@ -129,7 +136,13 @@ public class AuthorServices {
 
         post.setTitle(request.title());
         post.setSlug(SlugUtil.toSlug(request.title()));
-        post.setExcerpt(request.excerpt());
+
+        String excerpt = request.excerpt();
+        if (excerpt == null || excerpt.isBlank()) {
+            excerpt = ExcerptUtil.excerpt(request.content());
+        }
+        post.setExcerpt(excerpt);
+
         post.setContent(request.content());
         post.setThumbnail(request.thumbnail());
         post.setCategories(getCategoriesFromIds(request.categories()));
@@ -138,6 +151,7 @@ public class AuthorServices {
         
         if (request.visibility() != null) {
             post.setVisibility(request.visibility());
+            post.setIsPublish(PublishStatus.PUBLISHED.equals(request.visibility()));
             post.setPublishedAt(resolvePublishedAt(request.visibility(), request));
             post.setScheduledPublishAt(PublishStatus.SCHEDULED.equals(request.visibility()) ? request.scheduledPublishAt() : null);
         }

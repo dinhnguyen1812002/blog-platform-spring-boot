@@ -8,11 +8,9 @@ import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.payload.request.LoginRequest;
 import com.Nguyen.blogplatform.payload.request.SignupRequest;
-import com.Nguyen.blogplatform.payload.request.TokenRefreshRequest;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
 import com.Nguyen.blogplatform.payload.response.TokenRefreshResponse;
-import com.Nguyen.blogplatform.repository.RoleRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import com.Nguyen.blogplatform.service.auth.AuthService;
@@ -22,192 +20,183 @@ import com.Nguyen.blogplatform.validation.annotation.WithRateLimitProtection;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * REST controller for authentication endpoints.
+ *
+ * Responsibilities (controller layer only):
+ *  - Route HTTP requests to the appropriate service method
+ *  - Extract cookie / principal from the HTTP context
+ *  - Build HTTP responses (headers, status codes)
+ *
+ * Business logic (validation, token creation, role resolution) lives in AuthService.
+ */
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/auth")
-
+@RequiredArgsConstructor
 public class AuthController {
-    private final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Value("${blog.app.refreshTokenCookieName}")
     private String refreshTokenCookieName;
 
-    @Autowired
-    private AuthService authService;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private RoleRepository roleRepository;
+    private final AuthService authService;
+    private final UserRepository userRepository;
+    private final JwtUtils jwtUtils;
+    private final RefreshTokenService refreshTokenService;
 
-    @Autowired
-    AuthenticationManager authenticationManager;
-
-    @Autowired
-    PasswordEncoder encoder;
-
-    @Autowired
-    JwtUtils jwtUtils;
-
-    @Autowired
-    RefreshTokenService refreshTokenService;
+    // -------------------------------------------------------------------------
+    // POST /login
+    // -------------------------------------------------------------------------
 
     @PostMapping("/login")
     @WithRateLimitProtection
-    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
-        return authService.authenticateUser(loginRequest);
+    public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request) {
+        return authService.authenticateUser(request);
     }
+
+    // -------------------------------------------------------------------------
+    // POST /register
+    // -------------------------------------------------------------------------
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody SignupRequest signUpRequest) {
-        // logger.info("Registering user {} {} {}", signUpRequest.getUsername(), signUpRequest.getEmail(), signUpRequest.getPassword());
-        
-        // AuthService now handles auto login after registration
-        return authService.registerUser(signUpRequest);
+    public ResponseEntity<JwtResponse> register(@Valid @RequestBody SignupRequest request) {
+        return authService.registerUser(request);
     }
 
+    // -------------------------------------------------------------------------
+    // POST /refresh-token
+    // -------------------------------------------------------------------------
 
+    /**
+     * Issues a new access token + rotated refresh token from the refresh token cookie.
+     * Cookie extraction stays here because it requires HttpServletRequest,
+     * which is an HTTP-layer concern, not a business-logic concern.
+     */
     @PostMapping("/refresh-token")
-    public ResponseEntity<?> refreshToken(
-            HttpServletRequest request) {
+    public ResponseEntity<TokenRefreshResponse> refreshToken(HttpServletRequest request) {
+        String rawToken = extractRefreshTokenCookie(request);
 
-        String refreshTokenCookie = null;
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (refreshTokenCookieName.equals(cookie.getName())) {
-                    refreshTokenCookie = cookie.getValue();
-                    break;
-                }
-            }
-        }
-
-        if (refreshTokenCookie == null || refreshTokenCookie.isEmpty()) {
-            throw new TokenRefreshException(null, "Refresh token cookie is missing!");
-        }
-
-        final String refreshTokenCookieFinal = refreshTokenCookie;
-
-        return refreshTokenService.findByToken(refreshTokenCookieFinal)
+        return refreshTokenService.findByToken(rawToken)
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(user -> {
-                    // Tạo access token mới
                     String newAccessToken = jwtUtils.generateTokenFromUserId(user.getId(), user.getEmail());
-
-                    // Xoay vòng refresh token (tạo cái mới / cập nhật cái cũ)
                     RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
 
-                    // Tạo cookies mới
-                    ResponseCookie jwtCookie = ResponseCookie.from(jwtUtils.getJwtCookie(), newAccessToken)
+                    ResponseCookie jwtCookie = ResponseCookie
+                            .from(jwtUtils.getJwtCookie(), newAccessToken)
                             .path("/")
-                            .maxAge(7 * 24 * 60 * 60) // 7 ngày
+                            .maxAge(7 * 24 * 60 * 60)
                             .httpOnly(true)
-
                             .sameSite("Lax")
                             .build();
 
-                    ResponseCookie refreshTokenCookieNew = refreshTokenService.generateRefreshTokenCookie(newRefreshToken.getToken());
+                    ResponseCookie refreshCookie =
+                            refreshTokenService.generateRefreshTokenCookie(newRefreshToken.getToken());
 
-                    // Trả lại access token + refresh token mới
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                            .header(HttpHeaders.SET_COOKIE, refreshTokenCookieNew.toString())
+                            .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                             .body(new TokenRefreshResponse(newAccessToken, newRefreshToken.getToken()));
                 })
-                .orElseThrow(() -> new TokenRefreshException(refreshTokenCookieFinal,
-                        "Refresh token is not in database!"));
+                .orElseThrow(() -> new TokenRefreshException(rawToken, "Refresh token not found in database."));
     }
 
+    // -------------------------------------------------------------------------
+    // POST /logout
+    // -------------------------------------------------------------------------
 
+    /**
+     * Deletes the refresh token from the DB and clears both auth cookies.
+     * Requires an authenticated principal — secured via Spring Security config.
+     */
     @PostMapping("/logout")
-    public ResponseEntity<?> logoutUser() {
-        UserDetailsImpl userDetails = (UserDetailsImpl) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        String userId = userDetails.getId();
-        refreshTokenService.deleteByUserId(userId);
-
-        ResponseCookie jwtCookie = jwtUtils.getCleanJwtCookie();
-        ResponseCookie refreshTokenCookie = refreshTokenService.getCleanRefreshTokenCookie();
+    public ResponseEntity<MessageResponse> logout() {
+        UserDetailsImpl userDetails = currentPrincipal();
+        refreshTokenService.deleteByUserId(userDetails.getId());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
-                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, jwtUtils.getCleanJwtCookie().toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenService.getCleanRefreshTokenCookie().toString())
                 .body(new MessageResponse("You've been signed out!"));
     }
 
+    // -------------------------------------------------------------------------
+    // GET /me
+    // -------------------------------------------------------------------------
 
-
-
+    /**
+     * Returns the profile of the currently authenticated user.
+     *
+     * Authentication null / not-authenticated cases are handled by Spring Security
+     * before reaching this method (401 is returned automatically). The manual
+     * checks in the original code are therefore redundant and removed.
+     *
+     * A dedicated UserProfileResponse DTO is preferred over a raw Map — swap in
+     * one when the response shape stabilises.
+     */
     @GetMapping("/me")
-    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
-        if (authentication == null) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body("No authentication found. Please log in.");
-        }
+    public ResponseEntity<Map<String, Object>> me(@AuthenticationPrincipal UserDetailsImpl userDetails) {
 
-        if (!authentication.isAuthenticated()) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body("Authentication failed: " + authentication.getPrincipal());
-        }
+        User user = userRepository.findById(userDetails.getId())
+                .orElseThrow(() -> new NotFoundException("User not found: " + userDetails.getId()));
 
-        Object principal = authentication.getPrincipal();
-        logger.info("Principal type: " + (principal != null ? principal.getClass().getName() : "null"));
-        logger.info("Principal: " + principal);
+        List<String> roles = user.getRoles().stream()
+                .map(role -> role.getName().name())
+                .toList();
 
-        if (!(principal instanceof UserDetailsImpl userDetails)) {
-            return ResponseEntity
-                    .status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid authentication principal: " +
-                            (principal != null ? principal.getClass().getName() : "null"));
-        }
+        Map<String, Object> body = Map.of(
+                "id",       userDetails.getId(),
+                "username", userDetails.getUsername(),
+                "email",    userDetails.getEmail(),
+                "avatar",   user.getAvatar() != null ? user.getAvatar() : "",
+                "roles",    roles
+        );
 
-        try {
-            // Rest of your existing code...
-            User user = userRepository.findById(userDetails.getId())
-                    .orElseThrow(() ->
-                            new NotFoundException("User not found with id: " + userDetails.getId()));
-
-            List<ERole> roles = user.getRoles().stream()
-                    .map(Role::getName)
-                    .collect(Collectors.toList());
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("id", userDetails.getId());
-            response.put("username", userDetails.getUsername());
-            response.put("email", userDetails.getEmail());
-            response.put("avatar", user.getAvatar());
-            response.put("roles", roles);
-
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            logger.error("Error in /me endpoint", e);
-            return ResponseEntity
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error processing request: " + e.getMessage());
-        }
+        return ResponseEntity.ok(body);
     }
 
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
 
+    /**
+     * Reads the refresh token value from the incoming cookies.
+     * Throws {@link TokenRefreshException} (→ 403) if the cookie is absent.
+     */
+    private String extractRefreshTokenCookie(HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            return Arrays.stream(cookies)
+                    .filter(c -> refreshTokenCookieName.equals(c.getName()))
+                    .map(Cookie::getValue)
+                    .findFirst()
+                    .orElseThrow(() -> new TokenRefreshException(null, "Refresh token cookie is missing."));
+        }
+        throw new TokenRefreshException(null, "Refresh token cookie is missing.");
+    }
+
+    /** Convenience cast — safe because this is only called from secured endpoints. */
+    private UserDetailsImpl currentPrincipal() {
+        return (UserDetailsImpl) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+    }
 }

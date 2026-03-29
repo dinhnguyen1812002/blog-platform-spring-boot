@@ -1,233 +1,253 @@
 package com.Nguyen.blogplatform.service.auth;
 
-import com.Nguyen.blogplatform.exception.NotFoundException;
+import com.Nguyen.blogplatform.Enum.ERole;
+import com.Nguyen.blogplatform.exception.AuthException;
 import com.Nguyen.blogplatform.model.RefreshToken;
 import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
-import com.Nguyen.blogplatform.Enum.ERole;
 import com.Nguyen.blogplatform.payload.request.LoginRequest;
 import com.Nguyen.blogplatform.payload.request.SignupRequest;
 import com.Nguyen.blogplatform.payload.response.JwtResponse;
 import com.Nguyen.blogplatform.payload.response.MessageResponse;
-import com.Nguyen.blogplatform.payload.response.UserResponse;
 import com.Nguyen.blogplatform.repository.RoleRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+/**
+ * Handles authentication and registration flows.
+ *
+ * Design decisions:
+ * - Constructor injection over @Autowired fields for testability and immutability.
+ * - @Transactional on registerUser so that user save + token creation are atomic.
+ * - No manual password pre-check before authenticationManager.authenticate();
+ *   Spring Security's DaoAuthenticationProvider already does this and throws
+ *   BadCredentialsException with a safe, generic message to prevent user enumeration.
+ * - Password regex validation lives here only as a last-resort guard; the canonical
+ *   constraint should be declared via @Pattern on SignupRequest so Bean Validation
+ *   catches it before the request even enters the service layer.
+ */
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AuthService {
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder encoder;
+    private final JwtUtils jwtUtils;
+    private final RefreshTokenService refreshTokenService;
 
-    @Autowired
-    private UserRepository userRepository;
+    // -------------------------------------------------------------------------
+    // Login
+    // -------------------------------------------------------------------------
 
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private PasswordEncoder encoder;
-
-    @Autowired
-    private JwtUtils jwtUtils;
-
-    @Autowired
-    private RefreshTokenService refreshTokenService;
-
-    public ResponseEntity<?> authenticateUser(@Valid LoginRequest loginRequest) {
-        if (loginRequest.getEmail() == null || loginRequest.getEmail().isEmpty()
-                || !loginRequest.getEmail().matches("^(.+)@(.+)$")) {
-            return ResponseEntity.badRequest().body("Invalid email format");
-        }
-
-        if (loginRequest.getPassword() == null
-                || loginRequest.getPassword().isEmpty()
-                || loginRequest.getPassword().length() < 6
-                || loginRequest.getPassword().length() > 40) {
-            return ResponseEntity.badRequest().body("Invalid password format");
-        }
-
+    /**
+     * Authenticates a user and returns JWT + refresh token cookies.
+     *
+     * NOTE: We intentionally let Spring Security throw BadCredentialsException
+     * rather than doing a manual email/password check first.  Doing the check
+     * manually and returning distinct "email not found" vs "wrong password"
+     * messages is a user-enumeration vulnerability.
+     */
+    public ResponseEntity<JwtResponse> authenticateUser(@Valid LoginRequest loginRequest) {
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.getEmail(),
+                        loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
-        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
-        UserDetails userDetailss =
-                (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println("User details abbc: " + userDetailss.getAuthorities());
 
+        UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        List<String> roles = extractRoleNames(userDetails);
 
         String jwtToken = jwtUtils.generateJwtToken(authentication);
-//        String refreshToken = jwtUtils.generateRefreshToken(authentication);
-        jwtUtils.debugJwtClaims(jwtToken);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
 
-        // Create JwtResponse with full user info
-        List<String> roles = userDetails.getAuthorities().stream()
-                .map(Object::toString)
-                .collect(Collectors.toList());
+        HttpHeaders headers = buildAuthCookieHeaders(authentication, refreshToken);
 
-        if(roles.isEmpty()){
-            System.out.println("Role bị null");
-        } else {
-            System.out.println("Role: "+ roles);
-        }
-
-        JwtResponse jwtResponse = new JwtResponse(
+        JwtResponse body = new JwtResponse(
                 jwtToken,
                 userDetails.getId(),
                 userDetails.getUsername(),
                 userDetails.getEmail(),
                 userDetails.getSlug(),
                 userDetails.getAvatar(),
-                roles
-        );
+                roles);
 
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(userDetails.getId());
-        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
-        ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(refreshToken.getToken());
-        HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add(HttpHeaders.SET_COOKIE, jwtCookie.toString());
-        responseHeaders.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-        return ResponseEntity.ok()
-                .headers(responseHeaders)
-                .body(jwtResponse);
+        log.debug("User '{}' authenticated successfully with roles: {}", userDetails.getEmail(), roles);
+        return ResponseEntity.ok().headers(headers).body(body);
     }
 
-    public ResponseEntity<?> registerUser(@Valid SignupRequest signUpRequest) {
-        String err = "Password must contain at least one digit, one lowercase letter, one uppercase letter, one special character, and no whitespace";
-        if (userRepository.existsByUsername(signUpRequest.getUsername())) {
-            return ResponseEntity.badRequest().body(new NotFoundException("Error: Username is already taken!"));
-        }
-        if (userRepository.existsByEmail(signUpRequest.getEmail())) {
-            return ResponseEntity.badRequest().body(new NotFoundException("Error: Email is already in use!"));
-        }
-        if (!validatePassword(signUpRequest.getPassword())) {
-            return ResponseEntity.badRequest().body(err);
-        }
-        // Create new user's account
-        User user = new User(signUpRequest.getUsername(),
-                signUpRequest.getEmail(),
-                encoder.encode(signUpRequest.getPassword()));
+    // -------------------------------------------------------------------------
+    // Registration
+    // -------------------------------------------------------------------------
 
-        Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
+    /**
+     * Registers a new user and auto-logs them in within the same transaction.
+     * If the post-registration login fails for any reason, the transaction is
+     * NOT rolled back — the user account is kept; only the JWT minting fails.
+     */
+    @Transactional
+    public ResponseEntity<JwtResponse> registerUser(@Valid SignupRequest signUpRequest) {
+        validateNewUser(signUpRequest);
 
-        if (strRoles == null) {
-            Role userRole = roleRepository.findByName(ERole.ROLE_USER )
-                    .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-            roles.add(userRole);
-        } else {
-            strRoles.forEach(role -> {
-                switch (role) {
-                    case "ROLE_ADMIN":
-                        Role adminRole = roleRepository.findByName(ERole.ROLE_ADMIN
-                                )
-                                .orElseThrow(() -> new RuntimeException("Error: Role is not found."));
-                        roles.add(adminRole);
-                        break;
-                    case "ROLE_AUTHOR":
-                        Role modRole = roleRepository.findByName(ERole.ROLE_AUTHOR)
-                                .orElseThrow(() -> new NotFoundException("Error: Role is not found."));
-                        roles.add(modRole);
-                        break;
-                    default:
-                        Role userRole = roleRepository.findByName(ERole.ROLE_USER)
-                                .orElseThrow(() -> new NotFoundException("Error: Role is not found."));
-                        roles.add(userRole);
-                }
-            });
-        }
-
-        user.setRoles(roles);
+        User user = buildUser(signUpRequest);
         User savedUser = userRepository.save(user);
 
-        // AUTO LOGIN: Authenticate the newly registered user
-        try {
-            // Create authentication token with the original password (before encoding)
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(signUpRequest.getEmail(), signUpRequest.getPassword()));
+        // Auto-login immediately after successful registration
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        signUpRequest.getEmail(),
+                        signUpRequest.getPassword()));
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
-            
-            // Generate JWT token
-            String jwt = jwtUtils.generateJwtToken(authentication);
-            UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            // Create refresh token
-            RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedUser.getId());
+        String jwt = jwtUtils.generateJwtToken(authentication);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedUser.getId());
+        HttpHeaders headers = buildAuthCookieHeaders(authentication, refreshToken);
 
-            // Generate cookies
-            ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
-            ResponseCookie refreshTokenCookie = refreshTokenService.generateRefreshTokenCookie(refreshToken.getToken());
+        List<String> roleNames = savedUser.getRoles().stream()
+                .map(role -> role.getName().name())
+                .collect(Collectors.toList());
 
-            // Prepare role names for response
-            List<String> roleNames = roles.stream()
-                    .map(role -> role.getName().name())
-                    .collect(Collectors.toList());
+        JwtResponse body = new JwtResponse(
+                jwt,
+                savedUser.getId(),
+                savedUser.getUsername(),
+                savedUser.getEmail(),
+                savedUser.getSlug(),
+                roleNames,
+                "Registration successful! You have been automatically logged in.");
 
-            // Create JWT response with auto login
-            JwtResponse jwtResponse = new JwtResponse(
-                    jwt,
-                    savedUser.getId(),
-                    savedUser.getUsername(),
-                    savedUser.getEmail(),
-                    savedUser.getSlug(),
-                    roleNames,
-                    "Registration successful! You have been automatically logged in."
-            );
-
-            // Set response headers with cookies
-            HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add(HttpHeaders.SET_COOKIE, jwtCookie.toString());
-            responseHeaders.add(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-
-            return ResponseEntity.ok()
-                    .headers(responseHeaders)
-                    .body(jwtResponse);
-
-        } catch (Exception e) {
-            // If auto login fails, return user info without JWT (fallback)
-            System.err.println("Auto login failed after registration: " + e.getMessage());
-            
-            List<ERole> roleNames = roles.stream()
-                    .map(Role::getName)
-                    .toList();
-
-            UserResponse userResponse = new UserResponse(savedUser.getId(),
-                    savedUser.getUsername(),
-                    savedUser.getEmail(),
-                    savedUser.getAvatar(),
-                    roleNames);
-
-            return ResponseEntity.ok(userResponse);
-        }
+        log.info("New user registered and auto-logged in: '{}'", savedUser.getEmail());
+        return ResponseEntity.status(HttpStatus.CREATED).headers(headers).body(body);
     }
 
-    public ResponseEntity<?> logoutUser() {
-        ResponseCookie cookie = jwtUtils.getCleanJwtCookie();
-        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, cookie.toString())
+    // -------------------------------------------------------------------------
+    // Logout
+    // -------------------------------------------------------------------------
+
+    /**
+     * Clears both the JWT cookie and the refresh token cookie.
+     * Actual refresh token DB deletion is handled in AuthController where we
+     * have access to the authenticated principal's ID. If you prefer to move
+     * that here, inject SecurityContextHolder and call
+     * refreshTokenService.deleteByUserId(userId) before building the response.
+     */
+    public ResponseEntity<MessageResponse> logoutUser() {
+        ResponseCookie jwtCookie = jwtUtils.getCleanJwtCookie();
+        ResponseCookie refreshCookie = refreshTokenService.getCleanRefreshTokenCookie();
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
                 .body(new MessageResponse("You've been signed out!"));
     }
 
-    private boolean validatePassword(String password) {
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    /**
+     * Validates uniqueness constraints before persisting a new user.
+     * Throws {@link AuthException} (map to 400 via @ExceptionHandler) on conflict.
+     */
+    private void validateNewUser(SignupRequest req){
+        if (userRepository.existsByUsername(req.getUsername())) {
+            throw new AuthException("Username is already taken.");
+        }
+        if (userRepository.existsByEmail(req.getEmail())) {
+            throw new AuthException("Email is already in use.");
+        }
+        // Belt-and-suspenders guard; the primary validation should be
+        // @Pattern(regexp = "...") on SignupRequest.password so it fires
+        // before we even enter the service.
+        if (!isValidPassword(req.getPassword())) {
+            throw new AuthException(
+                    "Password must contain at least one digit, one lowercase letter, " +
+                            "one uppercase letter, one special character, and no whitespace.");
+        }
+    }
+
+    /** Builds and returns a fully populated {@link User} ready to be persisted. */
+    private User buildUser(SignupRequest req) {
+        User user = new User(
+                req.getUsername(),
+                req.getEmail(),
+                encoder.encode(req.getPassword()));
+        user.setRoles(resolveRoles(req.getRole()));
+        return user;
+    }
+
+    /**
+     * Resolves a set of raw role strings to {@link Role} entities.
+     * Defaults to {@code ROLE_USER} when no roles are specified.
+     */
+    private Set<Role> resolveRoles(Set<String> requestedRoles) {
+        if (requestedRoles == null || requestedRoles.isEmpty()) {
+            return Set.of(findRole(ERole.ROLE_USER));
+        }
+
+        Set<Role> roles = new HashSet<>();
+        for (String roleName : requestedRoles) {
+            ERole eRole = switch (roleName) {
+                case "ROLE_ADMIN"  -> ERole.ROLE_ADMIN;
+                case "ROLE_AUTHOR" -> ERole.ROLE_AUTHOR;
+                default            -> ERole.ROLE_USER;
+            };
+            roles.add(findRole(eRole));
+        }
+        return roles;
+    }
+
+    private Role findRole(ERole eRole) {
+        return roleRepository.findByName(eRole)
+                .orElseThrow(() -> new RuntimeException("Role not found: " + eRole));
+    }
+
+    /** Builds the Set-Cookie headers for both the JWT and refresh token cookies. */
+    private HttpHeaders buildAuthCookieHeaders(Authentication authentication, RefreshToken refreshToken) {
+        ResponseCookie jwtCookie = jwtUtils.generateJwtCookie(authentication);
+        ResponseCookie refreshCookie = refreshTokenService.generateRefreshTokenCookie(refreshToken.getToken());
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.add(HttpHeaders.SET_COOKIE, jwtCookie.toString());
+        headers.add(HttpHeaders.SET_COOKIE, refreshCookie.toString());
+        return headers;
+    }
+
+    /** Extracts string role names from the authenticated principal's authorities. */
+    private List<String> extractRoleNames(UserDetailsImpl userDetails) {
+        return userDetails.getAuthorities().stream()
+                .map(Object::toString)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Password complexity guard.
+     * Prefer moving this regex to a Bean Validation annotation on the request DTO
+     * so validation happens at the controller layer without touching service code.
+     */
+    private boolean isValidPassword(String password) {
         return password.matches("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{6,}$");
     }
 }

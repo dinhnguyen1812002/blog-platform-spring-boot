@@ -24,12 +24,14 @@ import org.springframework.stereotype.Component;
 @Component
 @RequiredArgsConstructor
 public class OAuth2AuthenticationSuccessHandler
-    implements AuthenticationSuccessHandler {
+    extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
     private final UserRepository userRepository;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    @Value("${frontend-url}")
+    private String frontendUrl;
 
     @Override
     public void onAuthenticationSuccess(
@@ -52,24 +54,11 @@ public class OAuth2AuthenticationSuccessHandler
         ResponseCookie refreshTokenCookie = refreshTokenService
             .generateRefreshTokenCookie(refreshToken.getToken());
 
-        List<String> roles = user.getRoles().stream()
-            .map(role -> role.getName().name())
-            .collect(Collectors.toList());
-
-        JwtResponse jwtResponse = new JwtResponse(
-            jwtToken,
-            user.getId(),
-            user.getUsername(),
-            user.getEmail(),
-            user.getSlug(),
-            user.getAvatar(),
-            roles
-        );
-
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
-        objectMapper.writeValue(response.getOutputStream(), jwtResponse);
+
+        String targetUrl = frontendUrl + "/oauth2/redirect?token=" + jwtToken;
+
+        getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 }

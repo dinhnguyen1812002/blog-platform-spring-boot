@@ -17,6 +17,7 @@ public record PostRequest(
         @Size(min = 5, max = 200, message = "Title must be between 5 and 200 characters")
         String title,
 
+        @NotBlank(message = "Excerpt is required")
         @Size(min = 5, message = "Excerpt must be at least 5 characters")
         String excerpt,
 

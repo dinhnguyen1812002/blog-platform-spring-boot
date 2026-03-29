@@ -148,7 +148,7 @@ public class PostService {
         Post post = findPostById(postId);
         post.setFeatured(!post.getFeatured());
         Post updatedPost = postRepository.save(post);
-        return postMapper.toPostResponse(updatedPost, getCurrentUser(), Set.of());
+        return postMapper.toPostResponse(updatedPost, post.getAuthor(), Set.of());
     }
 
     /**

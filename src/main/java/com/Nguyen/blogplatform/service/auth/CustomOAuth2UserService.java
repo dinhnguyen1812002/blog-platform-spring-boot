@@ -5,12 +5,13 @@ import com.Nguyen.blogplatform.model.Role;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.repository.RoleRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
-import com.Nguyen.blogplatform.util.SpringContextUtil;
+import com.Nguyen.blogplatform.security.oauth2.OAuth2UserInfo;
+import com.Nguyen.blogplatform.security.oauth2.OAuth2UserInfoFactory;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -24,44 +25,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private PasswordEncoder passwordEncoder;
-
-    public CustomOAuth2UserService() {}
-
-    public CustomOAuth2UserService(
-        UserRepository userRepository,
-        RoleRepository roleRepository,
-        PasswordEncoder passwordEncoder
-    ) {
-        this.userRepository = userRepository;
-        this.roleRepository = roleRepository;
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    private UserRepository getUserRepository() {
-        if (userRepository == null) {
-            userRepository = SpringContextUtil.getBean(UserRepository.class);
-        }
-        return userRepository;
-    }
-
-    private RoleRepository getRoleRepository() {
-        if (roleRepository == null) {
-            roleRepository = SpringContextUtil.getBean(RoleRepository.class);
-        }
-        return roleRepository;
-    }
-
-    private PasswordEncoder getPasswordEncoder() {
-        if (passwordEncoder == null) {
-            passwordEncoder = SpringContextUtil.getBean(PasswordEncoder.class);
-        }
-        return passwordEncoder;
-    }
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -69,19 +38,12 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         throws OAuth2AuthenticationException {
         OAuth2User oauth2User = super.loadUser(userRequest);
 
-        String registrationId = userRequest
-            .getClientRegistration()
-            .getRegistrationId();
-        Map<String, Object> attributes = new HashMap<>(
-            oauth2User.getAttributes()
-        );
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
 
-        String email = resolveEmail(registrationId, attributes);
-        String providerId = resolveProviderId(registrationId, attributes);
-        String name = resolveName(registrationId, attributes);
-        String avatar = resolveAvatar(registrationId, attributes);
+        OAuth2UserInfo userInfo = OAuth2UserInfoFactory.getOAuth2UserInfo(registrationId, attributes);
 
-        User user = upsertUser(email, name, avatar, registrationId, providerId);
+        User user = upsertUser(userInfo, registrationId);
 
         attributes.put("resolved_email", user.getEmail());
         attributes.put("resolved_user_id", user.getId());
@@ -93,111 +55,44 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         );
     }
 
-    private User upsertUser(
-        String email,
-        String name,
-        String avatar,
-        String provider,
-        String providerId
-    ) {
-        return getUserRepository()
-            .findByEmail(email)
-            .map(existing -> updateExisting(existing, provider, providerId, avatar))
-            .orElseGet(() -> createNew(email, name, avatar, provider, providerId));
-    }
+    private User upsertUser(OAuth2UserInfo userInfo, String provider) {
+        return userRepository.findByEmail(userInfo.getEmail())
+            .map(existing -> {
+                existing.setAuthProvider(provider.toUpperCase());
+                existing.setProviderId(userInfo.getId());
+                if (userInfo.getImageUrl() != null) {
+                    existing.setAvatar(userInfo.getImageUrl());
+                }
+                return userRepository.save(existing);
+            })
+            .orElseGet(() -> {
+                User user = new User();
+                user.setEmail(userInfo.getEmail());
+                user.setUsername(generateUsername(userInfo.getName(), userInfo.getEmail()));
+                user.setPassword(passwordEncoder.encode("Oauth2" + UUID.randomUUID() + "Aa1!"));
+                user.setAvatar(userInfo.getImageUrl());
+                user.setAuthProvider(provider.toUpperCase());
+                user.setProviderId(userInfo.getId());
 
-    private User updateExisting(
-        User existing,
-        String provider,
-        String providerId,
-        String avatar
-    ) {
-        existing.setAuthProvider(provider);
-        existing.setProviderId(providerId);
-        if (avatar != null && !avatar.isBlank()) {
-            existing.setAvatar(avatar);
-        }
-        return getUserRepository().save(existing);
-    }
+                Role userRole = roleRepository.findByName(ERole.ROLE_USER)
+                    .orElseThrow(() -> new IllegalStateException("ROLE_USER not found"));
+                user.setRoles(Set.of(userRole));
 
-    private User createNew(
-        String email,
-        String name,
-        String avatar,
-        String provider,
-        String providerId
-    ) {
-        User user = new User();
-        user.setEmail(email);
-        user.setUsername(generateUsername(name, email));
-        user.setPassword(getPasswordEncoder().encode(generatePasswordSeed()));
-        user.setAvatar(avatar);
-        user.setAuthProvider(provider);
-        user.setProviderId(providerId);
-
-        Role userRole = getRoleRepository()
-            .findByName(ERole.ROLE_USER)
-            .orElseThrow(() -> new IllegalStateException("ROLE_USER not found"));
-        user.setRoles(Set.of(userRole));
-
-        return getUserRepository().save(user);
-    }
-
-    private String resolveEmail(String provider, Map<String, Object> attributes) {
-        String email = (String) attributes.get("email");
-        if (email == null && "github".equals(provider)) {
-            String login = (String) attributes.get("login");
-            email = login + "@github.local";
-        }
-        if (email == null || email.isBlank()) {
-            throw new IllegalStateException("Email not provided by " + provider);
-        }
-        return email.toLowerCase(Locale.ROOT);
-    }
-
-    private String resolveProviderId(String provider, Map<String, Object> attributes) {
-        if ("google".equals(provider)) {
-            return (String) attributes.get("sub");
-        }
-        return String.valueOf(attributes.get("id"));
-    }
-
-    private String resolveName(String provider, Map<String, Object> attributes) {
-        if ("google".equals(provider)) {
-            return (String) attributes.get("name");
-        }
-        if ("github".equals(provider)) {
-            String name = (String) attributes.get("name");
-            return name != null ? name : (String) attributes.get("login");
-        }
-        return "oauth-user";
-    }
-
-    private String resolveAvatar(String provider, Map<String, Object> attributes) {
-        if ("google".equals(provider)) {
-            return (String) attributes.get("picture");
-        }
-        if ("github".equals(provider)) {
-            return (String) attributes.get("avatar_url");
-        }
-        return null;
+                return userRepository.save(user);
+            });
     }
 
     private String generateUsername(String name, String email) {
         String base = (name != null && !name.isBlank())
-            ? name.replaceAll("\\s+", "").toLowerCase(Locale.ROOT)
+            ? name.replaceAll("\\s+", "").toLowerCase()
             : email.substring(0, email.indexOf('@'));
 
         String candidate = base;
         int suffix = 1;
-        while (getUserRepository().existsByUsername(candidate)) {
+        while (userRepository.existsByUsername(candidate)) {
             candidate = base + suffix;
             suffix++;
         }
         return candidate;
-    }
-
-    private String generatePasswordSeed() {
-        return "Oauth2" + UUID.randomUUID() + "Aa1!";
     }
 }

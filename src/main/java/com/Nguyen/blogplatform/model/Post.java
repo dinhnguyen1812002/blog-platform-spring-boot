@@ -79,6 +79,15 @@ public class Post {
     @Builder.Default
     private Long viewCount = 0L;
 
+    @Column(name = "view", nullable = false)
+    @Builder.Default
+    private Long view  = 0L;
+
+
+    @Column(name = "is_publish", nullable = false)
+    @Builder.Default
+    private Boolean isPublish = false;
+
     @ManyToMany
     @JoinTable(
             name = "post_like",

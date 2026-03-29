@@ -76,6 +76,7 @@ public class ScheduledPublishService {
         try {
             // Update status and published time
             post.setVisibility(PublishStatus.PUBLISHED);
+            post.setIsPublish(true);
             post.setPublishedAt(LocalDateTime.now());
             post.setScheduledPublishAt(null);
             
