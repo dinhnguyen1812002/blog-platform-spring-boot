@@ -3,10 +3,14 @@ package com.Nguyen.blogplatform.config;
 import com.Nguyen.blogplatform.exception.CustomAccessDeniedHandler;
 import com.Nguyen.blogplatform.security.AuthEntryPointJwt;
 import com.Nguyen.blogplatform.security.AuthTokenFilter;
+import com.Nguyen.blogplatform.security.OAuth2AuthenticationFailureHandler;
+import com.Nguyen.blogplatform.security.OAuth2AuthenticationSuccessHandler;
+import com.Nguyen.blogplatform.service.auth.CustomOAuth2UserService;
 import com.Nguyen.blogplatform.service.auth.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -27,7 +31,6 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity
-@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final UserDetailsServiceImpl userDetailsService;
@@ -37,21 +40,36 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
+    private final PasswordEncoder passwordEncoder;
+
+    public SecurityConfig(
+            UserDetailsServiceImpl userDetailsService,
+            AuthTokenFilter jwtAuthFilter,
+            AuthEntryPointJwt unauthorizedHandler,
+            CustomAccessDeniedHandler accessDeniedHandler,
+            CustomOAuth2UserService customOAuth2UserService,
+            @Lazy OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
+            OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler,
+            PasswordEncoder passwordEncoder
+    ) {
+        this.userDetailsService = userDetailsService;
+        this.jwtAuthFilter = jwtAuthFilter;
+        this.unauthorizedHandler = unauthorizedHandler;
+        this.accessDeniedHandler = accessDeniedHandler;
+        this.customOAuth2UserService = customOAuth2UserService;
+        this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
+        this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     // -------------------------------------------------------------------------
     // Auth infrastructure beans
     // -------------------------------------------------------------------------
 
     @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
-
-    @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(userDetailsService);
+        provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
 

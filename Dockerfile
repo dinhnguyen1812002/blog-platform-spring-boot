@@ -1,47 +1,60 @@
 # ============================
-# Stage 1: Build the Spring Boot app
+# Stage 1: Build
 # ============================
 FROM eclipse-temurin:25-jdk AS builder
+
 WORKDIR /app
 
-# Copy Gradle wrapper and project files
+# Copy Gradle wrapper (cache tốt hơn)
 COPY gradlew .
-RUN chmod +x gradlew
 COPY gradle gradle
+RUN chmod +x gradlew
+
+# Copy build config
 COPY build.gradle settings.gradle ./
+
+# Cache dependencies
+RUN ./gradlew dependencies --no-daemon || true
+
+# Copy source
 COPY src src
 
-# Build the application (no daemon for CI/CD optimization)
+# Build jar
 RUN ./gradlew clean bootJar --no-daemon
 
 # ============================
-# Stage 2: Run the built jar
+# Stage 2: Runtime
 # ============================
-FROM eclipse-temurin:25-jre-alpine
+FROM eclipse-temurin:25-jre
+
 WORKDIR /app
 
-# Create non-root user first
-RUN addgroup -S spring && adduser -S springuser -G spring
+# Create non-root user
+RUN groupadd -r spring && useradd -r -g spring springuser
 
-# Create necessary directories and set ownership
+# Create directories
 RUN mkdir -p /app/logs /app/uploads && \
-    chown -R springuser:spring /app/logs /app/uploads
+    chown -R springuser:spring /app
 
-# Copy jar file from builder
+# Copy jar
 COPY --from=builder /app/build/libs/*.jar app.jar
 
-# Change ownership of app.jar
+# Set ownership
 RUN chown springuser:spring app.jar
 
-# Switch to non-root user
+# Switch user
 USER springuser
 
+# Activate prod profile
+ENV SPRING_PROFILES_ACTIVE=prod
+
+# Volume for uploads
 VOLUME ["/app/uploads"]
 
 # Expose port
 EXPOSE 8080
 
-# Run the app with JVM optimizations
+# JVM tuning
 ENTRYPOINT ["java", \
     "-XX:+UseContainerSupport", \
     "-XX:MaxRAMPercentage=75.0", \

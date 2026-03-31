@@ -1,64 +1,74 @@
 package com.Nguyen.blogplatform.security;
 
 import com.Nguyen.blogplatform.model.User;
-import com.Nguyen.blogplatform.payload.response.JwtResponse;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.service.auth.RefreshTokenService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2User;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+
+import java.io.IOException;
 
 @Component
 @RequiredArgsConstructor
-public class OAuth2AuthenticationSuccessHandler
-    extends SimpleUrlAuthenticationSuccessHandler {
+public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    private final JwtUtils jwtUtils;
-    private final RefreshTokenService refreshTokenService;
-    private final UserRepository userRepository;
+    private final JwtUtils             jwtUtils;
+    private final RefreshTokenService  refreshTokenService;
+    private final UserRepository       userRepository;
 
     @Value("${frontend-url}")
     private String frontendUrl;
 
     @Override
     public void onAuthenticationSuccess(
-        HttpServletRequest request,
-        HttpServletResponse response,
-        Authentication authentication
+            HttpServletRequest  request,
+            HttpServletResponse response,
+            Authentication      authentication
     ) throws IOException, ServletException {
+
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
-        String userId = (String) oauth2User.getAttributes().get("resolved_user_id");
-        String email = (String) oauth2User.getAttributes().get("resolved_email");
 
-        User user = userRepository
-            .findById(userId)
-            .orElseThrow(() -> new IllegalStateException("User not found"));
+        String userId = getAttribute(oauth2User, "resolved_user_id");
+        String email  = getAttribute(oauth2User, "resolved_email");
 
-        String jwtToken = jwtUtils.generateTokenFromUserId(user.getId(), email);
-        var refreshToken = refreshTokenService.createRefreshToken(user.getId());
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("OAuth2 user not found: " + userId));
 
-        ResponseCookie jwtCookie = jwtUtils.generateCookieFromToken(jwtToken);
-        ResponseCookie refreshTokenCookie = refreshTokenService
-            .generateRefreshTokenCookie(refreshToken.getToken());
+        // Generate tokens
+        String jwtToken   = jwtUtils.generateTokenFromUserId(user.getId(), email);
+        var    refreshToken = refreshTokenService.createRefreshToken(user.getId());
+
+        // Set cookies
+        ResponseCookie jwtCookie     = jwtUtils.generateCookieFromToken(jwtToken);
+        ResponseCookie refreshCookie = refreshTokenService
+                .generateRefreshTokenCookie(refreshToken.getToken());
 
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
-        response.addHeader(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString());
+        response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
+        // Redirect to frontend
         String targetUrl = frontendUrl + "/oauth2/redirect?token=" + jwtToken;
-
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
+    }
+
+    // -------------------------------------------------------------------------
+    // Helpers
+    // -------------------------------------------------------------------------
+
+    private String getAttribute(OAuth2User user, String key) {
+        Object value = user.getAttributes().get(key);
+        if (value == null) {
+            throw new IllegalStateException("Missing OAuth2 attribute: " + key);
+        }
+        return value.toString();
     }
 }

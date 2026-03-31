@@ -73,6 +73,12 @@ public class Comment  {
         replies.add(reply);
         replyCount++;
     }
+
+    public void removeReply(Comment reply) {
+        if (replies.remove(reply)) {
+            replyCount--;
+        }
+    }
     @PrePersist
     public void prePersist() {
         this.createdAt = Instant.now();
@@ -81,6 +87,14 @@ public class Comment  {
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = Instant.now();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Comment comment = (Comment) o;
+        return Objects.equals(id, comment.id);
     }
 
     @Override

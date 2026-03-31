@@ -1,0 +1,78 @@
+spring:
+  application:
+    name: blog-platform
+
+server:
+  port: 8080
+
+# Base URLs
+base-url: ${BASE_URL}
+frontend-url: ${FRONTEND_URL}
+
+# Database
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+# JPA
+  jpa:
+    hibernate:
+      ddl-auto: validate   # ❗ production không dùng update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        default_batch_fetch_size: 20
+    show-sql: false
+
+# JWT
+blog:
+  app:
+    jwtSecret: ${JWT_SECRET}
+    jwtExpirationMs: ${JWT_EXPIRATION}
+    jwtCookieName: token
+    refreshTokenExpirationMs: ${REFRESH_TOKEN_EXPIRATION}
+    refreshTokenCookieName: refresh-token
+    cookieSecure: true
+
+# OAuth2
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+          discord:
+            client-id: ${DISCORD_CLIENT_ID}
+            client-secret: ${DISCORD_CLIENT_SECRET}
+
+# Redis
+spring:
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+# Email
+spring:
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+# Telegram
+telegram:
+  bot:
+    token: ${TELEGRAM_TOKEN}
+  chat:
+    id: ${TELEGRAM_CHAT_ID}

@@ -1,0 +1,106 @@
+base-url: http://localhost:8080
+frontend-url: http://localhost:5173
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/spring_blog
+    username: root
+    password: 123456789
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: false
+        default_batch_fetch_size: 20
+    show-sql: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password:
+
+# Logging
+logging:
+  level:
+    org.springframework: INFO
+    org.springframework.security: DEBUG
+    org.springframework.web.socket: DEBUG
+    com.yourpackage: DEBUG
+
+# JWT
+blog:
+  app:
+    jwtSecret: 48226735186f1841e8d48215f709b70294cad4313ef992ac2d76665cd3a2946e
+    jwtExpirationMs: 180000
+    jwtCookieName: token
+    refreshTokenExpirationMs: 604800000
+    refreshTokenCookieName: refresh-token
+    cookieSecure: false
+
+# OAuth2
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:dummy-google-client-id}
+            client-secret: ${GOOGLE_CLIENT_SECRET:dummy-google-secret}
+          github:
+            client-id: ${GITHUB_CLIENT_ID:dummy-github-client-id}
+            client-secret: ${GITHUB_CLIENT_SECRET:dummy-github-secret}
+          discord:
+            client-id: ${DISCORD_CLIENT_ID:dummy-discord-client-id}
+            client-secret: ${DISCORD_CLIENT_SECRET:dummy-discord-secret}
+        provider:
+          discord:
+            authorization-uri: https://discord.com/api/oauth2/authorize
+            token-uri: https://discord.com/api/oauth2/token
+            user-info-uri: https://discord.com/api/users/@me
+            user-name-attribute: username
+
+# Email
+spring:
+  mail:
+    host: sandbox.smtp.mailtrap.io
+    port: 2525
+    username: 36bdd39ec99eea
+    password: bb76aa0ed9428e
+
+# Telegram
+telegram:
+  bot:
+    token: 8123018192:AAHkj1Pf7aSvJ5IG5bFkktSg3Iq8Dsr8Xbg
+  chat:
+    id: 5624257638
+
+# Upload
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+spring:
+  web:
+    resources:
+      static-locations: classpath:/static/,file:uploads/
+
+# Custom app
+app:
+  rate:
+    limit: 200
+    durationinms: 60000
+
+# Media
+meme:
+  url: /src/main/resources/meme/
+
+video:
+  storage:
+    path: ./videos/

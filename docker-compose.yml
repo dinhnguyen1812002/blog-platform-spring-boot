@@ -4,17 +4,17 @@ services:
     container_name: mysql_db
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: 123456789
-      MYSQL_DATABASE: spring_blog
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     networks:
       - spring_network
-    # Thêm healthcheck để các service khác biết khi nào DB thực sự sẵn sàng
     healthcheck:
-      test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
       timeout: 20s
       retries: 10
 
@@ -32,22 +32,21 @@ services:
       timeout: 5s
       retries: 5
 
-  blog-app: # Đổi từ 'app' thành 'blog-app' để khớp với DNS bạn muốn dùng
-    build:
-      context: .
-      dockerfile: Dockerfile
+  blog-app:
+    image: dinhnguyen1812002/webtracker:1.0.0   # ✅ dùng image thay vì build
     container_name: blog-app
     restart: always
     ports:
       - "8080:8080"
+    env_file:
+      - .env
     environment:
-      # Chú ý: dùng tên service 'mysql' ở đây là đúng
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/spring_blog
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 123456789
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
-      SPRING_DATA_REDIS_HOST: valkey
-      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATASOURCE_URL: ${DB_URL}
+      SPRING_DATASOURCE_USERNAME: ${DB_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      SPRING_DATA_REDIS_HOST: ${REDIS_HOST}
+      SPRING_DATA_REDIS_PORT: ${REDIS_PORT}
+      SPRING_JPA_HIBERNATE_DDL_AUTO: validate
     depends_on:
       mysql:
         condition: service_healthy
@@ -78,8 +77,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
     depends_on:
       - prometheus
     networks:
