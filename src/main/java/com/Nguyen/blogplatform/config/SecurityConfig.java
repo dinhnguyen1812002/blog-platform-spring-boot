@@ -3,6 +3,7 @@ package com.Nguyen.blogplatform.config;
 import com.Nguyen.blogplatform.exception.CustomAccessDeniedHandler;
 import com.Nguyen.blogplatform.security.AuthEntryPointJwt;
 import com.Nguyen.blogplatform.security.AuthTokenFilter;
+import com.Nguyen.blogplatform.security.apikey.ApiKeyAuthenticationFilter;
 import com.Nguyen.blogplatform.security.OAuth2AuthenticationFailureHandler;
 import com.Nguyen.blogplatform.security.OAuth2AuthenticationSuccessHandler;
 import com.Nguyen.blogplatform.service.auth.CustomOAuth2UserService;
@@ -41,6 +42,7 @@ public class SecurityConfig {
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
     private final PasswordEncoder passwordEncoder;
+    private final ApiKeyAuthenticationFilter apiKeyAuthFilter;
 
     public SecurityConfig(
             UserDetailsServiceImpl userDetailsService,
@@ -50,7 +52,8 @@ public class SecurityConfig {
             CustomOAuth2UserService customOAuth2UserService,
             @Lazy OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler,
             OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler,
-            PasswordEncoder passwordEncoder
+            PasswordEncoder passwordEncoder,
+            ApiKeyAuthenticationFilter apiKeyAuthFilter
     ) {
         this.userDetailsService = userDetailsService;
         this.jwtAuthFilter = jwtAuthFilter;
@@ -60,6 +63,7 @@ public class SecurityConfig {
         this.oAuth2AuthenticationSuccessHandler = oAuth2AuthenticationSuccessHandler;
         this.oAuth2AuthenticationFailureHandler = oAuth2AuthenticationFailureHandler;
         this.passwordEncoder = passwordEncoder;
+        this.apiKeyAuthFilter = apiKeyAuthFilter;
     }
 
     // -------------------------------------------------------------------------
@@ -95,6 +99,7 @@ public class SecurityConfig {
                 )
                 .authenticationProvider(authenticationProvider())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(apiKeyAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
 
                         // --- Infrastructure & docs ---
@@ -102,6 +107,9 @@ public class SecurityConfig {
 
                         // --- Auth endpoints ---
                         .requestMatchers(PUBLIC_AUTH).permitAll()
+
+                        // --- External API with API Key ---
+                        .requestMatchers(PUBLIC_EXTERNAL).authenticated()
 
                         // --- Public GET: posts / search / categories / tags ---
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET_CONTENT).permitAll()
@@ -185,7 +193,12 @@ public class SecurityConfig {
             "/api/v1/series/**"
     };
 
+    private static final String[] PUBLIC_EXTERNAL = {
+            "/api/v1/external/**"
+    };
+
     private static final String[] PUBLIC_GET_CONTENT = {
+            "/",
             "/api/v1/post",
             "/api/v1/post/featured",
             "/api/v1/post/search",
@@ -228,7 +241,8 @@ public class SecurityConfig {
             "/api/v1/post/{postId}/bookmark/**",
             "/api/v1/post/{postId}/featured",
             "/api/v1/newsletter/subscribers/**",
-            "/api/v1/notifications/**"
+            "/api/v1/notifications/**",
+            "/api/v1/api-keys/**"
     };
 
     private static final List<String> ALLOWED_ORIGINS = List.of(

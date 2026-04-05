@@ -204,25 +204,6 @@ public class JwtUtils {
     }
 
     /**
-     * Debug method to print all claims in a JWT token
-     */
-    public void debugJwtClaims(String token) {
-        try {
-            Claims claims = getAllClaimsFromToken(token);
-
-            logger.info("=== JWT Claims Debug ===");
-            logger.info("Subject (User ID): {}", claims.getSubject());
-            logger.info("Email: {}", claims.get("email"));
-            logger.info("Issued At: {}", claims.getIssuedAt());
-            logger.info("Expires At: {}", claims.getExpiration());
-            logger.info("All Claims: {}", claims);
-            logger.info("========================");
-        } catch (Exception e) {
-            logger.error("Error debugging JWT claims: {}", e.getMessage());
-        }
-    }
-
-    /**
      * Refresh token (generate new token with same user info)
      */
     public String refreshToken(String oldToken) {

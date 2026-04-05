@@ -39,22 +39,21 @@ public class TrafficService {
     }
 
     private void upsert(PeriodType type, LocalDate dateKey) {
-        int updated = trafficRepository.incrementCounter(type, dateKey, 1L);
-        if (updated == 0) {
-            // Check if it exists first to minimize race conditions that cause "null identifier" warnings
-            if (trafficRepository.findByPeriodTypeAndPeriodDate(type, dateKey).isEmpty()) {
+        try {
+            int updated = trafficRepository.incrementCounter(type, dateKey, 1L);
+            if (updated == 0) {
+                // No rows were updated, so we need to insert a new record
+                // Use saveAndFlush to ensure the entity is immediately persisted
                 Traffic entity = new Traffic(dateKey, type);
                 entity.setAccessCount(1);
-                try {
-                    trafficRepository.save(entity);
-                } catch (Exception ex) {
-                    // Handle unique constraint race; retry increment
-                    log.debug("Traffic upsert race for {} {}: {}", type, dateKey, ex.getMessage());
-                    trafficRepository.incrementCounter(type, dateKey, 1L);
-                }
-            } else {
-                trafficRepository.incrementCounter(type, dateKey, 1L);
+                trafficRepository.saveAndFlush(entity);
             }
+        } catch (Exception ex) {
+            // Handle race condition where another thread inserted the record
+            // between our update attempt and insert attempt
+            log.debug("Traffic upsert race for {} {}: {}", type, dateKey, ex.getMessage());
+            // Retry the update operation
+            trafficRepository.incrementCounter(type, dateKey, 1L);
         }
     }
 
@@ -74,9 +73,7 @@ public class TrafficService {
         List<TrafficPoint> points = new ArrayList<>();
         for (Traffic t : rows) {
             String label = switch (type) {
-                case DAY -> t.getPeriodDate().format(fmt);
-                case MONTH -> t.getPeriodDate().format(fmt);
-                case YEAR -> t.getPeriodDate().format(fmt);
+                case DAY, MONTH, YEAR -> t.getPeriodDate().format(fmt);
             };
             points.add(new TrafficPoint(label,
                     t.getAccessCount(),

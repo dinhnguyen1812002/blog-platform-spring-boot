@@ -14,6 +14,7 @@ import com.Nguyen.blogplatform.repository.PostRepository;
 import com.Nguyen.blogplatform.repository.RatingRepository;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.repository.specification.PostSpecification;
+import com.Nguyen.blogplatform.service.analytics.ViewCountService;
 import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -43,13 +44,13 @@ public class PostService {
     private final RatingRepository ratingRepository;
     private final BookmarkRepository bookmarkRepository;
     private final PostMapper postMapper;
+    private final ViewCountService viewCountService;
 
     /**
-     * Increments the view count of a post.
+     * Increments the view count of a post using ViewCountService.
      */
-    @Transactional
     public void incrementViewCount(String postId) {
-        postRepository.incrementViewCount(postId);
+        viewCountService.recordView(ViewCountService.ENTITY_TYPE_POST, postId);
     }
 
     /**

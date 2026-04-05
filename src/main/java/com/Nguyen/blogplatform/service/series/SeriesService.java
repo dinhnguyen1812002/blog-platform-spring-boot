@@ -4,6 +4,7 @@ import com.Nguyen.blogplatform.exception.NotFoundException;
 import com.Nguyen.blogplatform.model.*;
 import com.Nguyen.blogplatform.payload.request.series.*;
 import com.Nguyen.blogplatform.repository.*;
+import com.Nguyen.blogplatform.service.analytics.ViewCountService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.coyote.BadRequestException;
@@ -27,6 +28,7 @@ public class SeriesService {
     private final SeriesPostRepository seriesPostRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
+    private final ViewCountService viewCountService;
 
     /**
      * Tạo mới series
@@ -118,9 +120,8 @@ public class SeriesService {
         Series series = seriesRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("Series not found with slug: " + slug));
 
-        // Tăng view count
-        series.incrementViewCount();
-        seriesRepository.save(series);
+        // Tăng view count bằng ViewCountService
+        viewCountService.recordView(ViewCountService.ENTITY_TYPE_SERIES, series.getId());
 
         return mapToResponseDTO(series);
     }

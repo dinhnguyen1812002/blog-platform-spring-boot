@@ -1,32 +1,77 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: blog-platform
 
-server:
-  port: 8080
-
-# Base URLs
-base-url: ${BASE_URL}
-frontend-url: ${FRONTEND_URL}
-
-# Database
-spring:
   datasource:
     url: ${DB_URL}
     username: ${DB_USERNAME}
     password: ${DB_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-# JPA
   jpa:
     hibernate:
-      ddl-auto: validate   # ❗ production không dùng update
+      ddl-auto: validate   # production: validate hoặc none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
         format_sql: false
         default_batch_fetch_size: 20
     show-sql: false
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}
+      password: ${REDIS_PASSWORD}
+
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+          github:
+            client-id: ${GITHUB_CLIENT_ID}
+            client-secret: ${GITHUB_CLIENT_SECRET}
+            scope:
+              - read:user
+              - user:email
+          discord:
+            client-id: ${DISCORD_CLIENT_ID}
+            client-secret: ${DISCORD_CLIENT_SECRET}
+            scope:
+              - identify
+              - email
+            authorization-grant-type: authorization_code
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+        provider:
+          discord:
+            authorization-uri: https://discord.com/api/oauth2/authorize
+            token-uri: https://discord.com/api/oauth2/token
+            user-info-uri: https://discord.com/api/users/@me
+            user-name-attribute: username
+
+# Base URLs
+base-url: ${BASE_URL}
+frontend-url: ${FRONTEND_URL}
 
 # JWT
 blog:
@@ -38,37 +83,9 @@ blog:
     refreshTokenCookieName: refresh-token
     cookieSecure: true
 
-# OAuth2
-spring:
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: ${GOOGLE_CLIENT_ID}
-            client-secret: ${GOOGLE_CLIENT_SECRET}
-          github:
-            client-id: ${GITHUB_CLIENT_ID}
-            client-secret: ${GITHUB_CLIENT_SECRET}
-          discord:
-            client-id: ${DISCORD_CLIENT_ID}
-            client-secret: ${DISCORD_CLIENT_SECRET}
-
-# Redis
-spring:
-  data:
-    redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
-      password: ${REDIS_PASSWORD}
-
-# Email
-spring:
-  mail:
-    host: ${MAIL_HOST}
-    port: ${MAIL_PORT}
-    username: ${MAIL_USERNAME}
-    password: ${MAIL_PASSWORD}
+  openapi:
+    dev-url: ${DEV_URL:http://localhost:8080}
+    prod-url: ${PROD_URL}
 
 # Telegram
 telegram:
@@ -76,3 +93,18 @@ telegram:
     token: ${TELEGRAM_TOKEN}
   chat:
     id: ${TELEGRAM_CHAT_ID}
+
+# Logging (production nên giảm log)
+logging:
+  level:
+    root: INFO
+    org.springframework.security: WARN
+    org.hibernate: WARN
+
+# Upload
+
+
+
+  web:
+    resources:
+      static-locations: classpath:/static/,file:uploads/

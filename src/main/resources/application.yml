@@ -1,6 +1,9 @@
 spring:
   application:
     name: blog-platform
+  banner:
+    location: nguyen.txt
+
 
   profiles:
     active: ${SPRING_PROFILES_ACTIVE:local}
@@ -32,6 +35,4 @@ management:
     health:
       show-details: always
 
-spring:
-  banner:
-    location: nguyen.txt
+

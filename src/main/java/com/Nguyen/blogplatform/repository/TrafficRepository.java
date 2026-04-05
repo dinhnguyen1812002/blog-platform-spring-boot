@@ -19,7 +19,7 @@ public interface TrafficRepository extends JpaRepository<Traffic, Long> {
 
     List<Traffic> findAllByPeriodTypeAndPeriodDateBetweenOrderByPeriodDateAsc(PeriodType periodType, LocalDate start, LocalDate end);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Modifying
     @Query("update Traffic t set t.accessCount = t.accessCount + :delta where t.periodType = :type and t.periodDate = :date")
     int incrementCounter(@Param("type") PeriodType type, @Param("date") LocalDate date, @Param("delta") long delta);
 }

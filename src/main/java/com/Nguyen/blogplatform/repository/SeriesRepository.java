@@ -6,9 +6,11 @@ import com.Nguyen.blogplatform.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +20,11 @@ import java.util.Optional;
  */
 @Repository
 public interface SeriesRepository extends JpaRepository<Series, String> {
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Series s SET s.viewCount = s.viewCount + :increment WHERE s.id = :id")
+    void updateViewCount(@Param("id") String id, @Param("increment") Long increment);
 
     /**
      * Tìm series theo slug

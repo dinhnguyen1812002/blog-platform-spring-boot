@@ -16,10 +16,10 @@ import java.util.List;
 @Configuration
 public class OpenAPIConfig {
 
-    @Value("${blog.openapi.dev-url}")
+    @Value("${blog.openapi.dev-url:http://localhost:8080}")
     private String devUrl;
 
-    @Value("${blog.openapi.prod-url}")
+    @Value("${blog.openapi.prod-url:https://api.example.com}")
     private String prodUrl;
 
     @Bean

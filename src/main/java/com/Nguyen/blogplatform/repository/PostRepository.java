@@ -39,6 +39,10 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
     List<Post> findTop5ByAuthorAndFeaturedTrueOrderByCreatedAtDesc(User author);
 
     @Modifying
+    @Query("UPDATE Post p SET p.viewCount = p.viewCount + :increment WHERE p.id = :postId")
+    void updateViewCount(@Param("postId") String postId, @Param("increment") Long increment);
+
+    @Modifying
     @Query("UPDATE Post p SET p.viewCount = p.viewCount + 1 WHERE p.id = :postId")
     void incrementViewCount(@Param("postId") String postId);
 
@@ -78,4 +82,7 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
     List<Post> findByCreatedAtAfter(LocalDateTime createdAtAfter);
 
     Optional<Post> findBySlug(String slug);
+
+    @EntityGraph(attributePaths = { "author" })
+    Page<Post> findByAuthorAndVisibility(User author, PublishStatus visibility, Pageable pageable);
 }
