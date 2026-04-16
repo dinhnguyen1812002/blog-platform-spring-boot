@@ -1,6 +1,5 @@
 package com.Nguyen.blogplatform.security.apikey;
 
-import com.Nguyen.blogplatform.model.apikey.ApiKey;
 import com.Nguyen.blogplatform.service.apikey.ApiKeyService;
 import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;
 import jakarta.servlet.FilterChain;

@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.controller.apikey;
 
 import com.Nguyen.blogplatform.Enum.PublishStatus;
-import com.Nguyen.blogplatform.dto.apikey.ExternalPostResponse;
+import com.Nguyen.blogplatform.payload.apikey.ExternalPostResponse;
 import com.Nguyen.blogplatform.model.Post;
 import com.Nguyen.blogplatform.repository.PostRepository;
 import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;

@@ -27,8 +27,8 @@ spring:
   mail:
     host: sandbox.smtp.mailtrap.io
     port: 2525
-    username: 36bdd39ec99eea
-    password: bb76aa0ed9428e
+    username: 
+    password: 
 
   servlet:
     multipart:
@@ -81,7 +81,7 @@ logging:
 # JWT
 blog:
   app:
-    jwtSecret: 48226735186f1841e8d48215f709b70294cad4313ef992ac2d76665cd3a2946e
+    jwtSecret: 
     jwtExpirationMs: 180000
     jwtCookieName: token
     refreshTokenExpirationMs: 604800000
@@ -94,9 +94,9 @@ blog:
 # Telegram
 telegram:
   bot:
-    token: 8123018192:...
+    token: 
   chat:
-    id: 5624257638
+    id: 
 
 # Custom app
 app:

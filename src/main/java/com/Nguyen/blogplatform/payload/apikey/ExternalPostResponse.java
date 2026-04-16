@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.dto.apikey;
+package com.Nguyen.blogplatform.payload.apikey;
 
 import java.time.LocalDateTime;
 

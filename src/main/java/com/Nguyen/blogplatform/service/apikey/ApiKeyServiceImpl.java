@@ -1,10 +1,10 @@
 package com.Nguyen.blogplatform.service.apikey;
 
-import com.Nguyen.blogplatform.dto.apikey.ApiKeyCreatedResponse;
-import com.Nguyen.blogplatform.dto.apikey.ApiKeyCreateRequest;
-import com.Nguyen.blogplatform.dto.apikey.ApiKeyResponse;
+import com.Nguyen.blogplatform.payload.apikey.ApiKeyCreatedResponse;
+import com.Nguyen.blogplatform.payload.apikey.ApiKeyCreateRequest;
+import com.Nguyen.blogplatform.payload.apikey.ApiKeyResponse;
 import com.Nguyen.blogplatform.model.User;
-import com.Nguyen.blogplatform.model.apikey.ApiKey;
+import com.Nguyen.blogplatform.model.ApiKey;
 import com.Nguyen.blogplatform.repository.apikey.ApiKeyRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

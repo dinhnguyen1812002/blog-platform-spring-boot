@@ -1,8 +1,8 @@
 package com.Nguyen.blogplatform.controller.apikey;
 
-import com.Nguyen.blogplatform.dto.apikey.ApiKeyCreatedResponse;
-import com.Nguyen.blogplatform.dto.apikey.ApiKeyCreateRequest;
-import com.Nguyen.blogplatform.dto.apikey.ApiKeyResponse;
+import com.Nguyen.blogplatform.payload.apikey.ApiKeyCreatedResponse;
+import com.Nguyen.blogplatform.payload.apikey.ApiKeyCreateRequest;
+import com.Nguyen.blogplatform.payload.apikey.ApiKeyResponse;
 import com.Nguyen.blogplatform.model.User;
 import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.service.apikey.ApiKeyService;

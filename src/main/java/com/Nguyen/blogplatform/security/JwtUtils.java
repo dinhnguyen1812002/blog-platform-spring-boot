@@ -1,13 +1,21 @@
 package com.Nguyen.blogplatform.security;
 
 import java.security.Key;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
 import java.util.Optional;
+import java.util.UUID;
 
+import com.Nguyen.blogplatform.model.JwtBlacklist;
+import com.Nguyen.blogplatform.model.User;
+import com.Nguyen.blogplatform.repository.JwtBlacklistRepository;
+import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +30,12 @@ import org.springframework.web.util.WebUtils;
 import javax.crypto.SecretKey;
 
 @Component
+@RequiredArgsConstructor
 public class JwtUtils {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtils.class);
+
+    private final UserRepository userRepository;
+    private final JwtBlacklistRepository jwtBlacklistRepository;
 
     @Value("${blog.app.jwtSecret}")
     private String jwtSecret;
@@ -48,14 +60,19 @@ public class JwtUtils {
 
     /**
      * Generate JWT token from userId and email
+     * Optimized: Only stores userId in token, email is fetched from DB when needed
+     * Enhanced: Includes JTI (JWT ID) claim for token revocation support
      */
     public String generateTokenFromUserId(String userId, String email) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationMs);
+        
+        // Generate unique JWT ID for revocation support
+        String jti = UUID.randomUUID().toString();
 
         return Jwts.builder()
+                .id(jti)  // JTI claim for token revocation
                 .subject(userId)
-                .claim("email", email)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
@@ -138,14 +155,12 @@ public class JwtUtils {
 
     /**
      * Extract email from JWT token
+     * @deprecated Email is no longer stored in JWT. Use UserService to fetch email by userId.
      */
+    @Deprecated
     public String getEmailFromJwtToken(String token) {
-        Claims claims = Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-        return claims.get("email", String.class);
+        logger.warn("getEmailFromJwtToken is deprecated. Email is not stored in JWT anymore.");
+        return null;
     }
 
     /**
@@ -180,10 +195,92 @@ public class JwtUtils {
     }
 
     /**
+     * Check if a token is blacklisted
+     * 
+     * @param token JWT token
+     * @return true if token is blacklisted
+     */
+    public boolean isTokenBlacklisted(String token) {
+        try {
+            String tokenHash = hashToken(token);
+            return jwtBlacklistRepository.existsByTokenHash(tokenHash);
+        } catch (Exception e) {
+            logger.error("Error checking token blacklist: {}", e.getMessage());
+            return false;
+        }
+    }
+
+    /**
+     * Add a token to the blacklist
+     * 
+     * @param token JWT token to blacklist
+     * @param userId User ID who owned the token
+     * @param reason Reason for revocation
+     */
+    public void addToBlacklist(String token, String userId, String reason) {
+        try {
+            String tokenHash = hashToken(token);
+            
+            // Extract expiration date from token
+            Claims claims = Jwts.parser()
+                    .verifyWith(getSigningKey())
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+            
+            Date expiration = claims.getExpiration();
+            
+            JwtBlacklist blacklistEntry = JwtBlacklist.builder()
+                    .tokenHash(tokenHash)
+                    .expiryDate(expiration.toInstant())
+                    .userId(userId)
+                    .reason(reason)
+                    .build();
+            
+            jwtBlacklistRepository.save(blacklistEntry);
+            logger.info("Token blacklisted for user: {}, reason: {}", userId, reason);
+        } catch (Exception e) {
+            logger.error("Error adding token to blacklist: {}", e.getMessage());
+            throw new RuntimeException("Failed to blacklist token", e);
+        }
+    }
+
+    /**
+     * Hash a JWT token using SHA-256
+     * 
+     * @param token JWT token
+     * @return SHA-256 hash as hex string
+     */
+    private String hashToken(String token) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hashBytes = digest.digest(token.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hashBytes) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) {
+                    hexString.append('0');
+                }
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        }
+    }
+
+    /**
      * Validate JWT token
+     * Enhanced: Checks token blacklist before validation
      */
     public boolean validateJwtToken(String authToken) {
         try {
+            // First check if token is blacklisted
+            if (isTokenBlacklisted(authToken)) {
+                logger.warn("JWT token is blacklisted");
+                return false;
+            }
+            
             Jwts.parser()
                     .verifyWith(getSigningKey())
                     .build()
@@ -205,12 +302,17 @@ public class JwtUtils {
 
     /**
      * Refresh token (generate new token with same user info)
+     * Fetches user data from database to regenerate token
      */
     public String refreshToken(String oldToken) {
         try {
             String userId = getUserIdFromJwtToken(oldToken);
-            String email = getEmailFromJwtToken(oldToken);
-            return generateTokenFromUserId(userId, email);
+            
+            // Fetch user from database to get current email
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("User not found with ID: " + userId));
+            
+            return generateTokenFromUserId(userId, user.getEmail());
         } catch (Exception e) {
             logger.error("Error refreshing token: {}", e.getMessage());
             throw new RuntimeException("Cannot refresh token", e);

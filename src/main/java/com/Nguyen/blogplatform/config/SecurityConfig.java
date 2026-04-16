@@ -240,6 +240,8 @@ public class SecurityConfig {
             "/api/v1/saved-posts/**",
             "/api/v1/post/{postId}/bookmark/**",
             "/api/v1/post/{postId}/featured",
+            "/api/v1/posts/{postId}/report",     // report post requires auth
+            "/api/v1/posts/reports/**",          // view own reports requires auth
             "/api/v1/newsletter/subscribers/**",
             "/api/v1/notifications/**",
             "/api/v1/api-keys/**"

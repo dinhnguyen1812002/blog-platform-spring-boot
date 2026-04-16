@@ -15,6 +15,7 @@ import com.Nguyen.blogplatform.repository.UserRepository;
 import com.Nguyen.blogplatform.security.JwtUtils;
 import com.Nguyen.blogplatform.service.auth.AuthService;
 import com.Nguyen.blogplatform.service.auth.RefreshTokenService;
+import com.Nguyen.blogplatform.service.auth.TokenRevocationService;
 import com.Nguyen.blogplatform.service.auth.UserDetailsImpl;
 import com.Nguyen.blogplatform.validation.annotation.WithRateLimitProtection;
 import jakarta.servlet.http.Cookie;
@@ -60,6 +61,7 @@ public class AuthController {
     private final UserRepository userRepository;
     private final JwtUtils jwtUtils;
     private final RefreshTokenService refreshTokenService;
+    private final TokenRevocationService tokenRevocationService;
 
     // -------------------------------------------------------------------------
     // POST /login
@@ -124,13 +126,26 @@ public class AuthController {
     // -------------------------------------------------------------------------
 
     /**
-     * Deletes the refresh token from the DB and clears both auth cookies.
+     * Deletes the refresh token from the DB, revokes the JWT token, and clears both auth cookies.
      * Requires an authenticated principal — secured via Spring Security config.
+     * Enhanced with token revocation to immediately invalidate the JWT token.
      */
     @PostMapping("/logout")
-    public ResponseEntity<MessageResponse> logout() {
+    public ResponseEntity<MessageResponse> logout(HttpServletRequest request) {
         UserDetailsImpl userDetails = currentPrincipal();
-        refreshTokenService.deleteByUserId(userDetails.getId());
+        
+        try {
+            // Revoke the current JWT token (add to blacklist)
+            tokenRevocationService.revokeTokenFromRequest(request, userDetails.getId());
+            
+            // Delete refresh token
+            refreshTokenService.deleteByUserId(userDetails.getId());
+            
+            log.info("User {} logged out successfully, tokens revoked", userDetails.getId());
+        } catch (Exception e) {
+            log.error("Error during logout for user {}: {}", userDetails.getId(), e.getMessage());
+            // Continue with cleanup even if revocation fails
+        }
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, jwtUtils.getCleanJwtCookie().toString())

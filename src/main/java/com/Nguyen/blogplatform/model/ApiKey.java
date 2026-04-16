@@ -1,6 +1,5 @@
-package com.Nguyen.blogplatform.model.apikey;
+package com.Nguyen.blogplatform.model;
 
-import com.Nguyen.blogplatform.model.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

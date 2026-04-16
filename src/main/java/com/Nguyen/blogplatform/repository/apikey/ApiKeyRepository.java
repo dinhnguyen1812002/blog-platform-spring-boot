@@ -1,7 +1,7 @@
 package com.Nguyen.blogplatform.repository.apikey;
 
 import com.Nguyen.blogplatform.model.User;
-import com.Nguyen.blogplatform.model.apikey.ApiKey;
+import com.Nguyen.blogplatform.model.ApiKey;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
