@@ -1,0 +1,78 @@
+# Build artifacts
+build/
+out/
+target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Gradle
+.gradle/
+gradle-app/
+!gradle/wrapper/gradle-wrapper.jar
+
+# Maven
+.mvn/
+.mvnw
+.mvnw.cmd
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Docker
+docker-compose.override.yml
+Dockerfile.backup
+
+# Test artifacts
+.coverage
+.pytest_cache/
+htmlcov/
+.tox/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Dependency caches (optional, speeds up rebuilds if kept)
+# Uncomment if you want to rebuild dependencies each time:
+# .gradle/caches/
+# .gradle/native/
+# .gradle/wrapper/
+
+# Certificates for HTTPS in dev (if not needed)
+*.pem
+*.crt
+*.key
+
+# Videos and large uploads (mounted as volumes in production)
+uploads/
+videos/
+/src/main/resources/meme/
+
+# Database initialization (handled separately)
+*.sql.gz
+backup*.sql
+
+# Documentation build
+site/
+docs/_build/

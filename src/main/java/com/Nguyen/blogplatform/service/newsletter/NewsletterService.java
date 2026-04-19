@@ -124,6 +124,9 @@ public class NewsletterService {
 
         subscriberRepository.confirmSubscription(subscriber.getId(), LocalDateTime.now());
         subscriber.setConfirmedIp(ipAddress);
+        subscriber.setStatus(ENewsletterStatus.ACTIVE);
+        subscriber.setConfirmedAt(LocalDateTime.now());
+        subscriberRepository.save(subscriber);
 
         sendWelcomeEmail(subscriber);
 

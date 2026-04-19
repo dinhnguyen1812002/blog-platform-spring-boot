@@ -210,7 +210,8 @@ public class SecurityConfig {
             "/api/v1/search",
             "/api/v1/category/**",
             "/api/v1/tags/**",
-            "/api/v1/traffic/**"
+            "/api/v1/traffic/**",
+            "/auth"
     };
 
     private static final String[] PUBLIC_USER_PROFILES = {
