@@ -38,6 +38,9 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/,file:uploads/
+  
+
+# Security
 
   security:
     oauth2:
@@ -90,6 +93,10 @@ blog:
   openapi:
     dev-url: http://localhost:8080
     prod-url: https://your-domain.com
+
+  rate:
+    limit: ${APP_RATE_LIMIT:200}
+    durationinms: ${APP_RATE_DURATION:60000}
 
 # Telegram
 telegram:

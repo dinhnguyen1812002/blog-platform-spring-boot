@@ -40,6 +40,7 @@ public class SeriesController {
             @Valid @RequestBody CreateSeriesDTO dto,
             Authentication authentication) throws BadRequestException {
 
+
         String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId(); // Lấy user ID từ principal
 
         SeriesResponseDTO response = seriesService.createSeries(dto, userId);
@@ -78,9 +79,9 @@ public class SeriesController {
 
     /**
      * Lấy chi tiết series theo slug
-     * GET /api/series/slug/{slug}
+     * GET /api/series/detail/{slug}
      */
-    @GetMapping("/slug/{slug}")
+    @GetMapping("/detail/{slug}")
     @Operation(summary = "Get series by slug", description = "Retrieve series details by slug")
     public ResponseEntity<ApiResponse<SeriesResponseDTO>> getSeriesBySlug(@PathVariable String slug) {
         SeriesResponseDTO response = seriesService.getSeriesBySlug(slug);

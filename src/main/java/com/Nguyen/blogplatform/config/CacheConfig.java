@@ -9,4 +9,11 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableCaching
 public class CacheConfig {
+
+    @Bean
+    public CacheManager cacheManager() {
+        ConcurrentMapCacheManager cacheManager = new ConcurrentMapCacheManager();
+        cacheManager.setCacheNames(java.util.List.of("analytics", "trafficStats", "comments", "replies"));
+        return cacheManager;
+    }
 }

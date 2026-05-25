@@ -1,4 +1,4 @@
-package com.Nguyen.blogplatform.controller.admin;
+package com.Nguyen.blogplatform.controller.Admin;
 
 import com.Nguyen.blogplatform.Enum.ReportCategory;
 import com.Nguyen.blogplatform.Enum.ReportStatus;
@@ -31,7 +31,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Tag(name = "Admin Report Management", description = "Admin APIs for managing article reports")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("hasRole('ADMIN')")
+@PreAuthorize("hasAuthority('ADMIN')")
 public class ReportManagementController {
 
     private final AdminReportService adminReportService;
@@ -79,6 +79,8 @@ public class ReportManagementController {
         
         return ResponseEntity.ok(adminReportService.getReportById(reportId));
     }
+
+
 
     /**
      * Update report status.

@@ -13,7 +13,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * Service xử lý business logic cho Series
@@ -190,8 +189,9 @@ public class SeriesService {
             throw new BadRequestException("You don't have permission to modify this series");
         }
 
-        Post post = postRepository.findById(dto.getPostId())
-                .orElseThrow(() -> new NotFoundException("Post not found with id: " + dto.getPostId()));
+        if (!postRepository.existsById(dto.getPostId())) {
+            throw new NotFoundException("Post not found with id: " + dto.getPostId());
+        }
 
         // Kiểm tra post đã có trong series chưa
         if (seriesPostRepository.existsBySeriesIdAndPostId(seriesId, dto.getPostId())) {
@@ -199,13 +199,16 @@ public class SeriesService {
         }
 
         // Xác định order index
+        int currentPostCount = seriesPostRepository.countBySeriesId(seriesId).intValue();
         Integer orderIndex = dto.getOrderIndex();
         if (orderIndex == null) {
             // Thêm vào cuối
-             orderIndex = seriesPostRepository
-                    .findMaxOrderIndexBySeriesId(seriesId)
-                    .orElse(0) + 1;
+            orderIndex = currentPostCount + 1;
         } else {
+            if (orderIndex < 1 || orderIndex > currentPostCount + 1) {
+                throw new BadRequestException("Invalid order index");
+            }
+
             // Dịch chuyển các bài viết khác
             List<SeriesPost> affectedPosts = seriesPostRepository
                     .findBySeriesIdAndOrderIndexGreaterThan(seriesId, orderIndex - 1);
@@ -216,14 +219,14 @@ public class SeriesService {
         // Tạo SeriesPost mới
         SeriesPost seriesPost = SeriesPost.builder()
                 .series(series)
-                .post(post)
+                .post(postRepository.getReferenceById(dto.getPostId()))
                 .orderIndex(orderIndex)
                 .build();
 
         seriesPostRepository.save(seriesPost);
 
         // Cập nhật totalPosts
-        series.setTotalPosts(seriesPostRepository.countBySeriesId(seriesId).intValue());
+        series.setTotalPosts(currentPostCount + 1);
         seriesRepository.save(series);
 
         log.info("Post added to series successfully");
@@ -346,11 +349,7 @@ public class SeriesService {
      * Map Series entity sang SeriesResponseDTO
      */
     private SeriesResponseDTO mapToResponseDTO(Series series) {
-        List<SeriesPostDTO> posts = seriesPostRepository
-                .findBySeriesIdOrderByOrderIndexAsc(series.getId())
-                .stream()
-                .map(this::mapToSeriesPostDTO)
-                .collect(Collectors.toList());
+        List<SeriesPostDTO> posts = seriesPostRepository.findPostDtosBySeriesId(series.getId());
 
         return SeriesResponseDTO.builder()
                 .id(series.getId())
@@ -392,20 +391,4 @@ public class SeriesService {
                 .build();
     }
 
-    /**
-     * Map SeriesPost entity sang SeriesPostDTO
-     */
-    private SeriesPostDTO mapToSeriesPostDTO(SeriesPost seriesPost) {
-        Post post = seriesPost.getPost();
-        return SeriesPostDTO.builder()
-                .postId(post.getId())
-                .title(post.getTitle())
-                .slug(post.getSlug())
-                .excerpt(post.getExcerpt())
-                .thumbnail(post.getThumbnail())
-                .orderIndex(seriesPost.getOrderIndex())
-                .addedAt(seriesPost.getCreatedAt())
-                .publicDate(post.getPublishedAt())
-                .build();
-    }
 }

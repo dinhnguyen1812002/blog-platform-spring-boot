@@ -61,4 +61,31 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findAllByOrderByCreatedAtDesc(Pageable pageable);
     boolean existsByRoles_Name(ERole name);
+
+    @Query("SELECT COUNT(u) FROM User u WHERE u.createdAt >= :since")
+    Long countActiveUsers(@Param("since") LocalDateTime since);
+
+@Query("SELECT new com.Nguyen.blogplatform.payload.response.analytics.MonthlyStatDTO(" +
+            "CAST(YEAR(u.createdAt) AS int), CAST(MONTH(u.createdAt) AS int), COUNT(u)) " +
+            "FROM User u " +
+            "WHERE YEAR(u.createdAt) = :year " +
+            "GROUP BY YEAR(u.createdAt), MONTH(u.createdAt) " +
+            "ORDER BY MONTH(u.createdAt) ASC")
+    List<com.Nguyen.blogplatform.payload.response.analytics.MonthlyStatDTO> countNewUsersPerMonth(@Param("year") int year);
+
+    // Active users - users who logged in within the specified period
+    // Uses OAuthAuditLog for login tracking since User doesn't have lastLoginAt
+    @Query("SELECT COUNT(DISTINCT o.userId) FROM OAuthAuditLog o WHERE o.eventType = 'LOGIN' AND o.createdAt >= :since")
+    Long countActiveUsersByLogin(@Param("since") LocalDateTime since);
+
+    // Top authors by total views and likes across all their posts
+    @Query("SELECT NEW com.Nguyen.blogplatform.payload.response.analytics.TopAuthorDTO(" +
+           "u.id, u.username, " +
+           "COALESCE(SUM(p.viewCount), 0), " +
+           "COALESCE(SUM(SIZE(p.likes)), 0), " +
+           "COUNT(p)) " +
+           "FROM User u LEFT JOIN Post p ON p.author = u " +
+           "GROUP BY u.id, u.username " +
+           "ORDER BY (COALESCE(SUM(p.viewCount), 0) + COALESCE(SUM(SIZE(p.likes)), 0)) DESC")
+    List<com.Nguyen.blogplatform.payload.response.analytics.TopAuthorDTO> findTopAuthorsByEngagement(Pageable pageable);
 }

@@ -1,18 +1,19 @@
 package com.Nguyen.blogplatform.model;
 
+import com.Nguyen.blogplatform.config.BooleanIntegerConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
+
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
+
 import java.util.List;
-import java.util.Set;
+
 
 /**
  * Entity đại diện cho một Series (chuỗi bài viết)
@@ -20,6 +21,7 @@ import java.util.Set;
  */
 @Entity
 @Table(name = "series")
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -60,6 +62,8 @@ public class Series {
     @OrderBy("orderIndex ASC")
     @Builder.Default
     private List<SeriesPost> seriesPosts = new ArrayList<>();
+
+  // Series.java
 
     @Column(name = "is_active", nullable = false)
     @Builder.Default

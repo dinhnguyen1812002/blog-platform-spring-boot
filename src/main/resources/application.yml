@@ -1,6 +1,8 @@
 spring:
   application:
     name: blog-platform
+  mail:
+    host: localhost
   banner:
     location: nguyen.txt
 

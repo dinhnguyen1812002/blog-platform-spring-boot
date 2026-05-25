@@ -1,5 +1,6 @@
 package com.Nguyen.blogplatform.model;
 
+import com.Nguyen.blogplatform.config.BooleanIntegerConverter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -82,6 +83,7 @@ public class User {
     private String customProfileMarkdown;
 
     @Column(name = "banned", nullable = false)
+    @Convert(converter = BooleanIntegerConverter.class)
     private boolean banned = false;
 
     @Column(name = "ban_reason")

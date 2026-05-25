@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.repository;
 
 import com.Nguyen.blogplatform.model.SeriesPost;
+import com.Nguyen.blogplatform.payload.request.series.SeriesPostDTO;
 import jakarta.validation.constraints.NotEmpty;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -15,9 +16,6 @@ public interface SeriesPostRepository extends JpaRepository<SeriesPost, Long> {
 
     Optional<SeriesPost> findBySeriesIdAndPostId(String seriesId, String postId);
 
-    @Query("select coalesce(max(sp.orderIndex), 0) from SeriesPost sp where sp.series.id = :seriesId")
-//    Integer findMaxPositionBySeriesId(@Param("seriesId") String seriesId);
-
 //    void deleteBySeriesIdAndPostId(String seriesId, String postId);
 
     boolean existsBySeriesIdAndPostId(String seriesId, @NotEmpty(message = "Post ID is required") String postId);
@@ -30,4 +28,22 @@ public interface SeriesPostRepository extends JpaRepository<SeriesPost, Long> {
     Number countBySeriesId(String seriesId);
 
     List<SeriesPost> findBySeriesIdOrderByOrderIndexAsc(String seriesId);
+
+    @Query("""
+            SELECT new com.Nguyen.blogplatform.payload.request.series.SeriesPostDTO(
+                p.id,
+                p.title,
+                p.slug,
+                p.excerpt,
+                p.thumbnail,
+                sp.orderIndex,
+                sp.createdAt,
+                p.publishedAt
+            )
+            FROM SeriesPost sp
+            JOIN sp.post p
+            WHERE sp.series.id = :seriesId
+            ORDER BY sp.orderIndex ASC
+            """)
+    List<SeriesPostDTO> findPostDtosBySeriesId(@Param("seriesId") String seriesId);
 }

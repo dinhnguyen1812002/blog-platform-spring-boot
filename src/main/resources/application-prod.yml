@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+
 spring:
   application:
     name: blog-platform
@@ -13,7 +14,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: validate   # production: validate hoặc none
+      ddl-auto: update   # production: validate hoặc none
     properties:
       hibernate:
         dialect: org.hibernate.dialect.MySQLDialect
@@ -82,6 +83,11 @@ blog:
     refreshTokenExpirationMs: ${REFRESH_TOKEN_EXPIRATION}
     refreshTokenCookieName: refresh-token
     cookieSecure: true
+
+
+  rate:
+    limit: ${APP_RATE_LIMIT:200}
+    durationinms: ${APP_RATE_DURATION:60000}
 
   openapi:
     dev-url: ${DEV_URL:http://localhost:8080}

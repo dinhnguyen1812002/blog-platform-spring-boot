@@ -30,9 +30,20 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
     ```json
     {
       "title": "Tiêu đề series",
-      "description": "Mô tả series"
+      "slug": "slug-series",
+      "description": "Mô tả series",
+      "thumbnail": "https://example.com/image.jpg",
+      "isActive": true,
+      "isCompleted": false
     }
     ```
+- **Validation:**
+  - `title`: Bắt buộc, độ dài 5-200 ký tự
+  - `slug`: Bắt buộc, độ dài 5-250 ký tự, phải là duy nhất
+  - `description`: Tối thiểu 10 ký tự
+  - `thumbnail`: Tùy chọn (URL hình ảnh)
+  - `isActive`: Tùy chọn, mặc định là `true`
+  - `isCompleted`: Tùy chọn, mặc định là `false`
 - **Phản hồi:**
   ```json
   {
@@ -43,13 +54,17 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
       "title": "string",
       "slug": "string",
       "description": "string",
-      "author": {
-        "id": "string",
-        "username": "string"
-      },
-      "posts": [],
+      "thumbnail": "string",
+      "userId": "string",
+      "username": "string",
+      "userAvatar": "string",
+      "isActive": true,
+      "isCompleted": false,
+      "totalPosts": 0,
+      "viewCount": 0,
       "createdAt": "2025-10-10T10:00:00.000Z",
-      "updatedAt": "2025-10-10T10:00:00.000Z"
+      "updatedAt": "2025-10-10T10:00:00.000Z",
+      "posts": []
     }
   }
   ```
@@ -67,9 +82,18 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
     ```json
     {
       "title": "Tiêu đề series mới",
-      "description": "Mô tả series mới"
+      "description": "Mô tả series mới",
+      "thumbnail": "https://example.com/new-image.jpg",
+      "isActive": true,
+      "isCompleted": false
     }
     ```
+- **Validation:**
+  - `title`: Tùy chọn, độ dài 5-200 ký tự
+  - `description`: Tùy chọn, tối thiểu 10 ký tự
+  - `thumbnail`: Tùy chọn (URL hình ảnh)
+  - `isActive`: Tùy chọn
+  - `isCompleted`: Tùy chọn
 - **Phản hồi:**
   ```json
   {
@@ -80,13 +104,17 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
       "title": "string",
       "slug": "string",
       "description": "string",
-      "author": {
-        "id": "string",
-        "username": "string"
-      },
-      "posts": [],
+      "thumbnail": "string",
+      "userId": "string",
+      "username": "string",
+      "userAvatar": "string",
+      "isActive": true,
+      "isCompleted": false,
+      "totalPosts": 0,
+      "viewCount": 0,
       "createdAt": "2025-10-10T10:00:00.000Z",
-      "updatedAt": "2025-10-10T10:00:00.000Z"
+      "updatedAt": "2025-10-10T10:00:00.000Z",
+      "posts": []
     }
   }
   ```
@@ -109,19 +137,28 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
       "title": "string",
       "slug": "string",
       "description": "string",
-      "author": {
-        "id": "string",
-        "username": "string"
-      },
+      "thumbnail": "string",
+      "userId": "string",
+      "username": "string",
+      "userAvatar": "string",
+      "isActive": true,
+      "isCompleted": false,
+      "totalPosts": 5,
+      "viewCount": 100,
+      "createdAt": "2025-10-10T10:00:00.000Z",
+      "updatedAt": "2025-10-10T10:00:00.000Z",
       "posts": [
         {
-          "id": "string",
+          "postId": "string",
           "title": "string",
-          "slug": "string"
+          "slug": "string",
+          "excerpt": "string",
+          "thumbnail": "string",
+          "orderIndex": 1,
+          "addedAt": "2025-10-10T10:00:00.000Z",
+          "publicDate": "2025-10-10T10:00:00.000Z"
         }
-      ],
-      "createdAt": "2025-10-10T10:00:00.000Z",
-      "updatedAt": "2025-10-10T10:00:00.000Z"
+      ]
     }
   }
   ```
@@ -143,7 +180,7 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
 - **Endpoint:** `GET /api/v1/series`
 - **Mô tả:** Lấy danh sách tất cả các series với phân trang.
 - **Yêu cầu:**
-  - Query params: `page`, `size`, `sortBy`, `sortDirection`
+  - Query params: `page` (mặc định: 0), `size` (mặc định: 10), `sortBy` (mặc định: createdAt), `sortDirection` (mặc định: DESC)
 - **Phản hồi:**
   ```json
   {
@@ -155,11 +192,16 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
           "id": "string",
           "title": "string",
           "slug": "string",
-          "author": {
-            "id": "string",
-            "username": "string"
-          },
-          "postCount": 0
+          "description": "string",
+          "thumbnail": "string",
+          "username": "string",
+          "userAvatar": "string",
+          "isActive": true,
+          "isCompleted": false,
+          "totalPosts": 5,
+          "viewCount": 100,
+          "createdAt": "2025-10-10T10:00:00.000Z",
+          "updatedAt": "2025-10-10T10:00:00.000Z"
         }
       ],
       "pageable": {
@@ -244,9 +286,13 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
   - Body:
     ```json
     {
-      "postId": "string"
+      "postId": "string",
+      "orderIndex": 1
     }
     ```
+- **Validation:**
+  - `postId`: Bắt buộc
+  - `orderIndex`: Tùy chọn, nếu null sẽ thêm vào cuối series
 - **Phản hồi:** (Tương tự như cập nhật series)
 
 ---
@@ -265,16 +311,20 @@ Tính năng này cho phép người dùng tạo, quản lý và sắp xếp các
 ### Sắp xếp lại thứ tự bài viết trong series
 
 - **Endpoint:** `PUT /api/v1/series/{seriesId}/posts/reorder`
-- **Mô tả:** Thay đổi thứ tự của các bài viết trong series.
+- **Mô tả:** Thay đổi thứ tự của một bài viết cụ thể trong series.
 - **Yêu cầu:**
   - Header: `Authorization: Bearer <token>`
   - Path variable: `seriesId`
   - Body:
     ```json
     {
-      "postIds": ["postId1", "postId2", "postId3"]
+      "postId": "string",
+      "newOrderIndex": 2
     }
     ```
+- **Validation:**
+  - `postId`: Bắt buộc
+  - `newOrderIndex`: Bắt buộc, vị trí mới của bài viết (1-based)
 - **Phản hồi:** (Tương tự như cập nhật series)
 
 ---

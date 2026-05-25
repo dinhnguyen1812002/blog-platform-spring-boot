@@ -34,4 +34,6 @@ public class LogController {
                     .body("Error reading log file: " + e.getMessage());
         }
     }
+
+
 }

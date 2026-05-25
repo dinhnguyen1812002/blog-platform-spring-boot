@@ -190,7 +190,8 @@ public class SecurityConfig {
             "/oauth2/**",
             "/login/oauth2/**",
             "/api/v1/oauth/**",
-            "/api/v1/series/**"
+            "/api/v1/series/**",
+            "/api/v1/admin/**"
     };
 
     private static final String[] PUBLIC_EXTERNAL = {
@@ -204,11 +205,11 @@ public class SecurityConfig {
             "/api/v1/post/search",
             "/api/v1/post/latest",
             "/api/v1/post/{slug}",
-            "/api/v1/post/category/{slug}",
+            "/api/v1/post/categories/{slug}",
             "/api/v1/posts/{postId}/comments",   // read comments is public
             "/api/v1/comments/{commentId}/replies",
             "/api/v1/search",
-            "/api/v1/category/**",
+            "/api/v1/categories/**",
             "/api/v1/tags/**",
             "/api/v1/traffic/**",
             "/auth"

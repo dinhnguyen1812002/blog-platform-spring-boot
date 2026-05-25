@@ -204,7 +204,6 @@ public class NewsletterService {
     }
 
     @Async("newsletterTaskExecutor")
-    @Transactional
     public void sendCampaign(String campaignId) {
         NewsletterCampaign campaign = campaignRepository.findById(campaignId)
             .orElseThrow(() -> new RuntimeException("Campaign not found"));
@@ -368,7 +367,7 @@ public class NewsletterService {
                 personalizedHtml
             );
 
-            EmailLog log = EmailLog.builder()
+            EmailLog emailLog    = EmailLog.builder()
                 .campaignId(campaign.getId())
                 .subscriberId(subscriber.getId())
                 .recipientEmail(subscriber.getEmail())
@@ -377,7 +376,7 @@ public class NewsletterService {
                 .sentAt(LocalDateTime.now())
                 .build();
 
-            emailLogRepository.save(log);
+            emailLogRepository.save(emailLog);
 
             subscriber.setLastSentAt(LocalDateTime.now());
             subscriberRepository.save(subscriber);

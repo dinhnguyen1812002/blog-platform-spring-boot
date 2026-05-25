@@ -77,4 +77,5 @@ public class GlobalSearchService {
                 .users(users)
                 .build();
     }
+
 }

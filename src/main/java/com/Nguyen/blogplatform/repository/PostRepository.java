@@ -85,4 +85,38 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
 
     @EntityGraph(attributePaths = { "author" })
     Page<Post> findByAuthorAndVisibility(User author, PublishStatus visibility, Pageable pageable);
+
+    @Query("SELECT SUM(p.viewCount) FROM Post p")
+    Long sumAllViewCounts();
+
+    @Query("SELECT SUM(SIZE(p.likes)) FROM Post p")
+    Long sumAllLikes();
+
+    @Query("SELECT NEW com.Nguyen.blogplatform.payload.response.analytics.TopPostDTO(" +
+           "p.id, p.title, u.username, p.viewCount, SIZE(p.likes)) " +
+           "FROM Post p JOIN p.author u " +
+           "ORDER BY p.viewCount DESC")
+    List<com.Nguyen.blogplatform.payload.response.analytics.TopPostDTO> findTopPostsByViews(Pageable pageable);
+
+    @Query("SELECT NEW com.Nguyen.blogplatform.payload.response.analytics.TopPostDTO(" +
+           "p.id, p.title, u.username, p.viewCount, SIZE(p.likes)) " +
+           "FROM Post p JOIN p.author u " +
+           "ORDER BY SIZE(p.likes) DESC")
+    List<com.Nguyen.blogplatform.payload.response.analytics.TopPostDTO> findTopPostsByLikes(Pageable pageable);
+
+    @Query("SELECT NEW com.Nguyen.blogplatform.payload.response.analytics.MonthlyStatDTO(" +
+           "CAST(YEAR(p.createdAt) AS int), CAST(MONTH(p.createdAt) AS int), COUNT(p)) " +
+           "FROM Post p " +
+           "WHERE YEAR(p.createdAt) = :year " +
+           "GROUP BY YEAR(p.createdAt), MONTH(p.createdAt) " +
+           "ORDER BY MONTH(p.createdAt) ASC")
+    List<com.Nguyen.blogplatform.payload.response.analytics.MonthlyStatDTO> countPostsPerMonth(@Param("year") int year);
+
+    @Query("SELECT CAST(YEAR(p.createdAt) AS int), CAST(MONTH(p.createdAt) AS int), " +
+           "SUM(p.viewCount), COUNT(p) " +
+           "FROM Post p " +
+           "WHERE YEAR(p.createdAt) = :year " +
+           "GROUP BY YEAR(p.createdAt), MONTH(p.createdAt) " +
+           "ORDER BY MONTH(p.createdAt) ASC")
+    List<Object[]> getMonthlyStatsWithViewsAndPosts(@Param("year") int year);
 }

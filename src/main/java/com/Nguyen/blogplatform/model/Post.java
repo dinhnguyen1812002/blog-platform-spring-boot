@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.model;
 
 import com.Nguyen.blogplatform.Enum.PublishStatus;
+import com.Nguyen.blogplatform.config.BooleanIntegerConverter;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -59,6 +60,7 @@ public class Post {
     private LocalDateTime updatedAt;
 
     @Column(name = "featured", nullable = false)
+    @Convert(converter = BooleanIntegerConverter.class)
     @Builder.Default
     private Boolean featured = false;
 
@@ -85,6 +87,7 @@ public class Post {
 
 
     @Column(name = "is_publish", nullable = false)
+    @Convert(converter = BooleanIntegerConverter.class)
     @Builder.Default
     private Boolean isPublish = false;
 

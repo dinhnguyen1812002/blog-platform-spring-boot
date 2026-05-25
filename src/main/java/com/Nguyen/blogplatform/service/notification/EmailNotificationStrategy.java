@@ -25,6 +25,7 @@ import java.util.Map;
 @Component
 @RequiredArgsConstructor
 @Slf4j
+
 public class EmailNotificationStrategy implements NotificationStrategy {
 
     private final JavaMailSender mailSender;
@@ -99,7 +100,7 @@ public class EmailNotificationStrategy implements NotificationStrategy {
     private String getEmailAddress(String userId, User user) {
         return preferencesRepository.findByUserIdAndChannel(userId, EDeliveryChannel.EMAIL)
             .map(UserNotificationPreferences::getEmailAddress)
-            .filter(email -> email != null && !email.isEmpty())
+            .filter(email -> !email.isEmpty())
             .orElse(user.getEmail());
     }
 
