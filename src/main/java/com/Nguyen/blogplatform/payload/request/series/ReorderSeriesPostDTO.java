@@ -1,6 +1,7 @@
 package com.Nguyen.blogplatform.payload.request.series;
 
-import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,9 +12,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class ReorderSeriesPostDTO {
-    @NotEmpty(message = "Post ID is required")
+    @NotBlank(message = "Post ID is required")
     private String postId;
 
-    @NotEmpty(message = "New order index is required")
+    @NotNull(message = "New order index is required")
     private Integer newOrderIndex;
 }
