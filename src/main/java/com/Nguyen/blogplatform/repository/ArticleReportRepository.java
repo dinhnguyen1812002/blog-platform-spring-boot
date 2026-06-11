@@ -135,9 +135,9 @@ public interface ArticleReportRepository extends JpaRepository<ArticleReport, St
      * @param minReports Minimum number of reports
      * @return List of posts with their report counts
      */
-    @Query("SELECT ar.post, COUNT(ar) as reportCount FROM ArticleReport ar " +
+    @Query("SELECT ar.post.id, COUNT(ar) as reportCount FROM ArticleReport ar " +
            "WHERE ar.status = :status " +
-           "GROUP BY ar.post " +
+           "GROUP BY ar.post.id " +
            "HAVING COUNT(ar) >= :minReports " +
            "ORDER BY reportCount DESC")
     List<Object[]> findMostReportedPosts(@Param("status") ReportStatus status, 

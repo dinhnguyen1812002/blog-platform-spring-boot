@@ -216,6 +216,11 @@ public class SeriesController {
             Authentication authentication) throws BadRequestException {
 
         String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
+
+        if (userId == null) {
+            throw new BadRequestException("User ID is required");
+        }
+
         seriesService.deleteSeries(seriesId, userId);
 
         return ResponseEntity.ok(new ApiResponse<>(true, "Series deleted successfully", null));

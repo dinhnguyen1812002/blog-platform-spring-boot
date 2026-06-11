@@ -79,4 +79,12 @@ public class PostController {
     public ResponseEntity<PostResponse> toggleFeatured(@PathVariable String id) {
         return ResponseEntity.ok(postService.toggleFeatured(id));
     }
+
+    @Operation(summary = "Get related posts")
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<PostSummaryResponse>> getRelatedPosts(
+            @PathVariable String id,
+            @RequestParam(defaultValue = "5") int limit) {
+        return ResponseEntity.ok(postService.getRelatedPosts(id, limit));
+    }
 }

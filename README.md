@@ -415,6 +415,7 @@ Interactive documentation available at:
 | DELETE | `/api/v1/post/{id}` | Yes | Delete post |
 | POST | `/api/v1/post/{id}/like` | Yes | Toggle like |
 | POST | `/api/v1/post/{id}/rate` | Yes | Rate post (1-5) |
+| GET | `/api/v1/post/{id}/related` | No | Get related posts |
 
 ### Admin Endpoints
 

@@ -71,10 +71,10 @@ public class AnalyticsServiceImpl implements AnalyticsService {
         List<MonthlyGrowthDTO> result = new ArrayList<>();
 
         for (Object[] row : monthlyData) {
-            int rowYear = ((Number) row[0]).intValue();
-            int month = ((Number) row[1]).intValue();
-            Long views = (Long) row[2];
-            Long posts = (Long) row[3];
+            int rowYear = ((Number) row[0]).intValue();  // YEAR
+            int month   = ((Number) row[1]).intValue();  // MONTH
+            long views  = row[2] != null ? ((Number) row[2]).longValue() : 0L;
+            long posts  = row[3] != null ? ((Number) row[3]).longValue() : 0L;
 
             long newUsers = monthlyUsers.stream()
                     .filter(m -> m.month() == month)
@@ -94,7 +94,7 @@ public class AnalyticsServiceImpl implements AnalyticsService {
                     .month(month)
                     .newUsers(newUsers)
                     .newPosts(posts)
-                    .totalViews(views != null ? views : 0L)
+                    .totalViews(views)
                     .totalLikes(likes)
                     .growthRate(growthRate)
                     .build());

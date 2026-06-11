@@ -104,19 +104,61 @@ public interface PostRepository extends JpaRepository<Post, String>, JpaSpecific
            "ORDER BY SIZE(p.likes) DESC")
     List<com.Nguyen.blogplatform.payload.response.analytics.TopPostDTO> findTopPostsByLikes(Pageable pageable);
 
-    @Query("SELECT NEW com.Nguyen.blogplatform.payload.response.analytics.MonthlyStatDTO(" +
-           "CAST(YEAR(p.createdAt) AS int), CAST(MONTH(p.createdAt) AS int), COUNT(p)) " +
+    @Query("SELECT new com.Nguyen.blogplatform.payload.response.analytics.MonthlyStatDTO(" +
+           "YEAR(p.createdAt), MONTH(p.createdAt), COUNT(p)) " +
            "FROM Post p " +
            "WHERE YEAR(p.createdAt) = :year " +
            "GROUP BY YEAR(p.createdAt), MONTH(p.createdAt) " +
            "ORDER BY MONTH(p.createdAt) ASC")
     List<com.Nguyen.blogplatform.payload.response.analytics.MonthlyStatDTO> countPostsPerMonth(@Param("year") int year);
 
-    @Query("SELECT CAST(YEAR(p.createdAt) AS int), CAST(MONTH(p.createdAt) AS int), " +
-           "SUM(p.viewCount), COUNT(p) " +
-           "FROM Post p " +
-           "WHERE YEAR(p.createdAt) = :year " +
-           "GROUP BY YEAR(p.createdAt), MONTH(p.createdAt) " +
-           "ORDER BY MONTH(p.createdAt) ASC")
+    @Query("SELECT YEAR(p.createdAt), MONTH(p.createdAt), SUM(p.viewCount), COUNT(p.id) " +
+            "FROM Post p " +
+            "WHERE YEAR(p.createdAt) = :year " +
+            "GROUP BY YEAR(p.createdAt), MONTH(p.createdAt) " +
+            "ORDER BY MONTH(p.createdAt) ASC")
     List<Object[]> getMonthlyStatsWithViewsAndPosts(@Param("year") int year);
+
+    @Query("""
+            SELECT p FROM Post p
+            WHERE p.id != :excludePostId
+            AND p.visibility = 'PUBLISHED'
+            AND (p.publishedAt IS NULL OR p.publishedAt <= :now)
+            AND p.id IN (
+                SELECT sp.post.id FROM SeriesPost sp WHERE sp.series.id IN (
+                    SELECT isp.series.id FROM SeriesPost isp WHERE isp.post.id = :excludePostId
+                )
+            )
+            ORDER BY p.publishedAt DESC
+            """)
+    List<Post> findRelatedBySeries(@Param("excludePostId") String excludePostId,
+                                   @Param("now") LocalDateTime now);
+
+    @Query("""
+            SELECT DISTINCT p FROM Post p
+            JOIN p.categories c
+            WHERE p.id != :excludePostId
+            AND p.visibility = 'PUBLISHED'
+            AND (p.publishedAt IS NULL OR p.publishedAt <= :now)
+            AND c.id IN (
+                SELECT ic.id FROM Post ip JOIN ip.categories ic WHERE ip.id = :excludePostId
+            )
+            ORDER BY p.publishedAt DESC
+            """)
+    List<Post> findRelatedByCategories(@Param("excludePostId") String excludePostId,
+                                       @Param("now") LocalDateTime now);
+
+    @Query("""
+            SELECT DISTINCT p FROM Post p
+            JOIN p.tags t
+            WHERE p.id != :excludePostId
+            AND p.visibility = 'PUBLISHED'
+            AND (p.publishedAt IS NULL OR p.publishedAt <= :now)
+            AND t.uuid IN (
+                SELECT it.uuid FROM Post ip JOIN ip.tags it WHERE ip.id = :excludePostId
+            )
+            ORDER BY p.publishedAt DESC
+            """)
+    List<Post> findRelatedByTags(@Param("excludePostId") String excludePostId,
+                                 @Param("now") LocalDateTime now);
 }

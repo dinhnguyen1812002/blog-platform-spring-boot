@@ -66,3 +66,16 @@
 -   **Path Variable:** `id` - ID của bài viết.
 -   **Query Params:**
 -   `score`: Điểm số (từ 1 đến 5).
+
+## 9. Lấy bài viết liên quan (Related Posts)
+
+-   **Method:** `GET`
+-   **URL:** `http://localhost:8080/api/v1/post/{id}/related`
+-   **Authorization:** Không bắt buộc (API công khai).
+-   **Path Variable:** `id` - ID của bài viết hiện tại.
+-   **Query Params:**
+    -   `limit`: Số lượng bài viết liên quan tối đa cần lấy (mặc định: `5`).
+-   **Logic ưu tiên:**
+    1. Cùng Series
+    2. Cùng Category
+    3. Cùng Tag

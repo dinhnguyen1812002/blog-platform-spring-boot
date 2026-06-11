@@ -28,8 +28,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service for public post management (listing, viewing, liking, rating).
@@ -221,5 +224,49 @@ public class PostService {
         }
 
         throw new NotFoundException("Post not found");
+    }
+
+    /**
+     * Retrieves related posts based on priority: Same Series > Same Category > Same Tag.
+     * Excludes the current post and ensures no duplicates.
+     *
+     * @param postId The ID of the current post
+     * @param limit  The maximum number of related posts to return
+     * @return List of PostSummaryResponse
+     */
+    @Transactional(readOnly = true)
+    public List<PostSummaryResponse> getRelatedPosts(String postId, int limit) {
+        LocalDateTime now = LocalDateTime.now();
+        Set<Post> relatedPosts = new LinkedHashSet<>();
+
+        // 1. Priority: Same Series
+        List<Post> seriesPosts = postRepository.findRelatedBySeries(postId, now);
+        addPostsWithLimit(relatedPosts, seriesPosts, limit);
+
+        // 2. Priority: Same Category
+        if (relatedPosts.size() < limit) {
+            List<Post> categoryPosts = postRepository.findRelatedByCategories(postId, now);
+            addPostsWithLimit(relatedPosts, categoryPosts, limit);
+        }
+
+        // 3. Priority: Same Tag
+        if (relatedPosts.size() < limit) {
+            List<Post> tagPosts = postRepository.findRelatedByTags(postId, now);
+            addPostsWithLimit(relatedPosts, tagPosts, limit);
+        }
+
+        User currentUser = getCurrentUser();
+        List<Post> finalPosts = new ArrayList<>(relatedPosts);
+        return postMapper.toPostSummaryList(finalPosts, currentUser, bookmarkRepository);
+    }
+
+    /**
+     * Helper to add posts to a set up to a specific limit.
+     */
+    private void addPostsWithLimit(Set<Post> target, List<Post> source, int limit) {
+        for (Post post : source) {
+            if (target.size() >= limit) break;
+            target.add(post);
+        }
     }
 }

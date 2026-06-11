@@ -28,9 +28,9 @@ public class InitRole implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        log.info("🔍 Checking admin existence...");
+        log.info(" Checking admin existence...");
 
-        // 1️⃣ Nếu đã có ADMIN → dừng
+        // Nếu đã có ADMIN → dừng
         if (userRepository.existsByRoles_Name(ERole.ROLE_ADMIN)) {
             log.info("Admin already exists. Skipping admin initialization.");
             return;

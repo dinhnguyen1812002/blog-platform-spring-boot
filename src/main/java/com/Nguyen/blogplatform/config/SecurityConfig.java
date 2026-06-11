@@ -201,10 +201,12 @@ public class SecurityConfig {
     private static final String[] PUBLIC_GET_CONTENT = {
             "/",
             "/api/v1/post",
+
             "/api/v1/post/featured",
             "/api/v1/post/search",
             "/api/v1/post/latest",
             "/api/v1/post/{slug}",
+            "/api/v1/post/{id}/related",
             "/api/v1/post/categories/{slug}",
             "/api/v1/posts/{postId}/comments",   // read comments is public
             "/api/v1/comments/{commentId}/replies",
