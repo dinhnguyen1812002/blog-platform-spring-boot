@@ -1,89 +1,95 @@
-# OAuth2 Authentication Documentation (Google, GitHub, Discord)
+# OAuth2 Authentication (Google, GitHub, Discord)
 
-Tài liệu này hướng dẫn Frontend cách tích hợp tính năng đăng nhập bằng mạng xã hội (OAuth2) với Backend.
+Tài liệu hướng dẫn Frontend tích hợp đăng nhập/đăng ký bằng OAuth2.
 
-## 1. Luồng hoạt động (Flow)
+## 1. Luồng redirect (khuyến nghị)
 
-1. **Khởi tạo**: Frontend điều hướng người dùng đến URL khởi tạo OAuth2 của Backend.
-2. **Xác thực**: Backend chuyển hướng người dùng đến trang đăng nhập của Provider (Google/GitHub/Discord).
-3. **Ủy quyền**: Sau khi người dùng đồng ý, Provider gửi mã code về Backend.
-4. **Xử lý**: Backend xác thực với Provider, tạo/cập nhật User trong Database và tạo JWT Token.
-5. **Kết thúc**: Backend chuyển hướng người dùng quay lại Frontend kèm theo Token trên URL và Cookie.
+1. Frontend điều hướng người dùng đến endpoint khởi tạo OAuth2 của Backend.
+2. Backend chuyển hướng đến trang đăng nhập của Provider.
+3. Provider gửi authorization code về Backend.
+4. Backend tạo/cập nhật User, phát hành JWT + refresh token.
+5. Backend redirect về Frontend kèm token trên URL và cookie.
 
----
+### Endpoint khởi tạo
 
-## 2. Các Endpoint khởi tạo (Backend)
-
-Frontend chỉ cần đặt các link sau vào nút "Login with...":
-
-| Provider | Endpoint Khởi tạo (GET) |
+| Provider | URL |
 | :--- | :--- |
-| **Google** | `http://localhost:8080/oauth2/authorization/google` |
-| **GitHub** | `http://localhost:8080/oauth2/authorization/github` |
-| **Discord** | `http://localhost:8080/oauth2/authorization/discord` |
+| Google | `{BASE_URL}/oauth2/authorization/google` |
+| GitHub | `{BASE_URL}/oauth2/authorization/github` |
+| Discord | `{BASE_URL}/oauth2/authorization/discord` |
 
----
+### Redirect sau khi thành công
 
-## 3. Xử lý sau khi đăng nhập thành công
-
-Sau khi xử lý xong, Backend sẽ redirect người dùng về địa chỉ:
 `{FRONTEND_URL}/oauth2/redirect?token={JWT_TOKEN}`
 
-**Ví dụ thực tế:**
-`http://localhost:5173/oauth2/redirect?token=eyJhbGciOiJIUzI1NiJ9...`
+Backend đồng thời set cookie:
 
-### Đồng thời Backend cũng trả về các Cookie:
-* `token`: Chứa JWT Access Token.
-* `refresh-token`: Chứa Refresh Token.
+- `token`: JWT access token
+- `refresh-token`: refresh token
 
----
+### Redirect khi lỗi
 
-## 4. Hướng dẫn cho Frontend
-
-### Bước 1: Tạo Route xử lý Redirect
-Frontend cần tạo một route ví dụ `/oauth2/redirect`. Component xử lý route này nên thực hiện:
-
-1. Lấy `token` từ Query Parameter trên URL.
-2. Lưu `token` vào `localStorage` hoặc `Context/Redux`.
-3. Kiểm tra thông tin User hiện tại (gọi API `/api/v1/auth/me`).
-4. Chuyển hướng người dùng vào trang chủ (Dashboard/Home).
-
-**Mẫu code xử lý (React):**
-```javascript
-import { useEffect } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-
-const OAuth2RedirectHandler = () => {
-    const [searchParams] = useSearchParams();
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const token = searchParams.get('token');
-
-        if (token) {
-            localStorage.setItem('token', token);
-            // Có thể gọi thêm API fetch thông tin user tại đây
-            navigate('/');
-        } else {
-            navigate('/login?error=oauth2_failed');
-        }
-    }, [searchParams, navigate]);
-
-    return <div>Đang xử lý đăng nhập...</div>;
-};
-```
-
----
-
-## 5. Xử lý lỗi
-
-Nếu có lỗi xảy ra trong quá trình xác thực, Backend sẽ redirect về:
 `{FRONTEND_URL}/oauth2/redirect?error={message}`
 
-Frontend nên hiển thị thông báo lỗi phù hợp cho người dùng.
+---
+
+## 2. Luồng token API (SPA tự xử lý OAuth)
+
+Dùng khi Frontend tự đổi code lấy access token từ Provider, rồi gửi token cho Backend.
+
+### POST `/api/v1/oauth/verify`
+
+Xác minh access token và lấy profile từ Provider.
+
+```json
+{
+  "provider": "google",
+  "accessToken": "ya29...."
+}
+```
+
+### POST `/api/v1/oauth/login`
+
+Đăng ký/đăng nhập, trả về JWT và set cookie giống `/api/v1/auth/login`.
+
+```json
+{
+  "provider": "github",
+  "accessToken": "gho_...."
+}
+```
+
+`provider` hỗ trợ: `google`, `github`, `discord`.
 
 ---
 
-## 6. Lưu ý bảo mật
-* Backend đã được cấu hình để tự động tạo tài khoản nếu email chưa tồn tại.
-* Mật khẩu cho các tài khoản OAuth2 được tạo ngẫu nhiên và bảo mật cao, người dùng có thể đặt lại mật khẩu sau nếu muốn đăng nhập bằng Username/Password truyền thống.
+## 3. Cấu hình Provider
+
+### Google
+
+- Redirect URI: `http://localhost:8080/login/oauth2/code/google`
+- Scopes: `email`, `profile`
+
+### GitHub
+
+- Redirect URI: `http://localhost:8080/login/oauth2/code/github`
+- Scopes: `read:user`, `user:email`
+
+### Discord
+
+- Redirect URI: `http://localhost:8080/login/oauth2/code/discord`
+- Scopes: `identify`, `email`
+
+Biến môi trường (xem `.env.example`):
+
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+- `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
+- `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`
+
+---
+
+## 4. Ghi chú bảo mật
+
+- Email chưa tồn tại → tự động tạo tài khoản mới với role `ROLE_USER`.
+- Email đã tồn tại → liên kết provider và cập nhật avatar nếu có.
+- Mật khẩu OAuth được tạo ngẫu nhiên; người dùng có thể đặt lại mật khẩu để đăng nhập bằng email/password.

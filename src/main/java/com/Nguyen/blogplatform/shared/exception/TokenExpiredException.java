@@ -1,0 +1,9 @@
+package com.Nguyen.blogplatform.shared.exception;
+
+
+
+public class TokenExpiredException extends RuntimeException {
+    public TokenExpiredException(String message) {
+        super(message);
+    }
+}

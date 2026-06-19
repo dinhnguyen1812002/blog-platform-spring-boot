@@ -1,0 +1,28 @@
+package com.Nguyen.blogplatform.domain.notification.infrastructure.repository;
+
+
+
+import com.Nguyen.blogplatform.domain.notification.domain.model.Notifications;
+import java.util.List;
+import java.util.Optional;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+public interface NotificationRepository
+    extends JpaRepository<Notifications, String> {
+    @Modifying
+    @Query(
+        "UPDATE Notifications n SET n.isRead = true WHERE n.user.id = :userId"
+    )
+    void markAllAsRead(@Param("userId") String userId);
+
+    List<Notifications> findByUser_IdOrderByCreatedAtDesc(String userId);
+
+    List<Notifications> findByUser_IdAndIsReadFalse(String userId);
+
+    Long countByUser_IdAndIsReadFalse(String userId);
+
+    Optional<Notifications> findById(String id);
+}

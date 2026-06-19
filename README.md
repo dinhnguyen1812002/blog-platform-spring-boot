@@ -46,7 +46,7 @@ Blog Platform is a comprehensive content management system designed for bloggers
 ### Core Value Propositions
 
 - **Scalability**: Horizontal scaling support with Redis caching and stateless authentication
-- **Security**: Enterprise-grade security with JWT tokens, OAuth2, API keys, and XSS prevention
+- **Security**: Enterprise-grade security with JWT tokens, API keys, and XSS prevention
 - **Performance**: Optimized view counting, async processing, and database indexing
 - **Observability**: Full monitoring with Prometheus, Grafana, and structured logging
 
@@ -73,7 +73,7 @@ Blog Platform is a comprehensive content management system designed for bloggers
 │                    APPLICATION LAYER                           │
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐    │
 │  │   Auth Layer   │  │   Business   │  │   Notification   │    │
-│  │  JWT/OAuth2/   │  │    Logic     │  │   WebSocket/     │    │
+│  │  JWT/API Keys  │  │    Logic     │  │   WebSocket/     │    │
 │  │    API Keys    │  │   Services   │  │   Email/Kafka    │    │
 │  └──────────────┘  └──────────────┘  └──────────────────┘    │
 └─────────────────────────────────────────────────────────────────┘
@@ -88,7 +88,7 @@ Blog Platform is a comprehensive content management system designed for bloggers
 
 ### Data Flow
 
-1. **Authentication Flow**: OAuth2/JWT → Security Filter Chain → User Context → Service Layer
+1. **Authentication Flow**: JWT → Security Filter Chain → User Context → Service Layer
 2. **Content Creation**: Request → Validation → Sanitization (OWASP) → Database → Cache Invalidation
 3. **Real-time Notifications**: Event → Kafka/WebSocket → User Subscription → Push Delivery
 4. **View Counting**: Request → Valkey (buffer) → Scheduled Sync → MySQL (persistent)
@@ -123,8 +123,7 @@ src/main/java/com/Nguyen/blogplatform/
 │   └── scheduled/                  # Background tasks
 ├── security/                       # Security components
 │   ├── JwtUtils.java               # Token management
-│   ├── AuthTokenFilter.java        # JWT filter
-│   └── oauth2/                     # OAuth2 handlers
+│   └── AuthTokenFilter.java        # JWT filter
 └── util/                           # Utility classes
 ```
 
@@ -172,9 +171,6 @@ src/main/java/com/Nguyen/blogplatform/
 
 | Service | Purpose |
 |---------|---------|
-| Google OAuth2 | Social authentication |
-| GitHub OAuth2 | Developer authentication |
-| Discord OAuth2 | Community authentication |
 | SMTP (Mailtrap/SES) | Email delivery |
 | Telegram Bot | Admin alerts |
 
@@ -184,10 +180,9 @@ src/main/java/com/Nguyen/blogplatform/
 
 ### 1. Multi-Channel Authentication System
 
-The platform supports three authentication methods with seamless integration:
+The platform supports two authentication methods with seamless integration:
 
 - **JWT Token Authentication**: Stateless authentication with refresh tokens
-- **OAuth2 Social Login**: Google, GitHub, Discord providers
 - **API Key Authentication**: For external service integrations
 
 ### 2. Content Management System
@@ -278,16 +273,7 @@ public class CacheConfig {
 
 **Location**: `@/home/ng-dev/ng-dev/java/blog-platform-spring-boot/src/main/java/com/Nguyen/blogplatform/security/JwtUtils.java:203-246`
 
-### Challenge 2: OAuth2 User Linking
-
-**Problem**: Users may have multiple OAuth accounts; need to link them without creating duplicate users.
-
-**Solution**:
-- `OAuthAccount` entity stores provider-specific data
-- Email-based matching for automatic account linking
-- Manual linking flow with verification
-
-### Challenge 3: XSS Prevention in Rich Content
+### Challenge 2: XSS Prevention in Rich Content
 
 **Problem**: Blog posts may contain HTML; need to sanitize while preserving allowed tags.
 
@@ -298,7 +284,7 @@ public class CacheConfig {
 
 **Location**: `@/home/ng-dev/ng-dev/java/blog-platform-spring-boot/build.gradle:78`
 
-### Challenge 4: Real-time Notification Delivery
+### Challenge 3: Real-time Notification Delivery
 
 **Problem**: Delivering notifications to specific users across multiple sessions and channels.
 
@@ -310,7 +296,7 @@ public class CacheConfig {
 
 **Location**: `@/home/ng-dev/ng-dev/java/blog-platform-spring-boot/src/main/java/com/Nguyen/blogplatform/service/notification/NotificationService.java:38-126`
 
-### Challenge 5: Database Migration in Production
+### Challenge 4: Database Migration in Production
 
 **Problem**: Zero-downtime schema changes with data preservation.
 
@@ -372,10 +358,6 @@ DB_URL=jdbc:mysql://localhost:3306/spring_blog
 # JWT
 JWT_SECRET=your-256-bit-secret-key-here
 JWT_EXPIRATION=86400000
-
-# OAuth2 (optional)
-GOOGLE_CLIENT_ID=your_client_id
-GOOGLE_CLIENT_SECRET=your_client_secret
 
 # Email
 MAIL_HOST=smtp.gmail.com

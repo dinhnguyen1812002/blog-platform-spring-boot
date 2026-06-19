@@ -38,9 +38,6 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/,file:uploads/
-  
-
-# Security
 
   security:
     oauth2:

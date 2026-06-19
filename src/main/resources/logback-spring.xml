@@ -21,7 +21,7 @@
         </rollingPolicy>
     </appender>
 
-    <appender name="WEBSOCKET" class="com.Nguyen.blogplatform.Component.WebSocketLogAppender">
+    <appender name="WEBSOCKET" class="com.Nguyen.blogplatform.shared.component.WebSocketLogAppender">
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
             <level>INFO</level>
         </filter>
