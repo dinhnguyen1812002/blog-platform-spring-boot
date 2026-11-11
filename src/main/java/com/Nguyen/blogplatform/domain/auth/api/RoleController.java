@@ -24,6 +24,7 @@ public class RoleController {
         return ResponseEntity.ok(role);
     }
 
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<Role> createRole(@RequestBody Role role){
         Role newRole= roleServices.saveRole(role);

@@ -2,6 +2,7 @@ package com.Nguyen.blogplatform.domain.post.api;
 
 
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.Nguyen.blogplatform.domain.post.application.TagServices;
 import com.Nguyen.blogplatform.domain.post.dto.TagRequest;
 import com.Nguyen.blogplatform.domain.post.dto.TagResponse;
@@ -19,6 +20,7 @@ public class TagController {
     @Autowired
     private TagServices tagServices;
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<String> createTag(@RequestBody TagRequest tagRequest) {
         tagServices.saveTag(tagRequest);
@@ -37,12 +39,14 @@ public class TagController {
         return ResponseEntity.ok(response);
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<String> updateTag(@PathVariable UUID id, @RequestBody TagRequest tagRequest) {
         tagServices.updateTag(id, tagRequest);
         return ResponseEntity.ok("Tag updated successfully");
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteTag(@PathVariable UUID id) {
         tagServices.deleteTag(id);

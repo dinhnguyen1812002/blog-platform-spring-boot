@@ -2,6 +2,7 @@ package com.Nguyen.blogplatform.domain.operations.api;
 
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -15,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+@Slf4j
 @Controller
 @RequestMapping("/logs")
 public class LogController {
@@ -32,8 +34,9 @@ public class LogController {
             String content = Files.readString(path);
             return ResponseEntity.ok(content);
         } catch (Exception e) {
+            log.error("Error reading log file", e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error reading log file: " + e.getMessage());
+                    .body("Error reading log file");
         }
     }
 

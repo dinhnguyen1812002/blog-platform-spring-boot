@@ -2,6 +2,7 @@ package com.Nguyen.blogplatform.domain.report.application;
 
 
 
+import com.Nguyen.blogplatform.shared.exception.BusinessRuleException;
 import com.Nguyen.blogplatform.domain.notification.application.NotificationService;
 import com.Nguyen.blogplatform.domain.post.domain.model.Post;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.PostRepository;
@@ -62,6 +63,10 @@ public class ReportService {
         // Validate request
         if (!request.isValid()) {
             throw new IllegalArgumentException("Description is required when category is OTHER");
+        }
+
+        if (post.getAuthor().getId().equals(reporterId)) {
+            throw new BusinessRuleException("You cannot report your own post");
         }
 
         // Check for duplicate report

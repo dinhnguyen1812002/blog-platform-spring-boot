@@ -68,6 +68,12 @@ public class AuthController {
     // POST /login
     // -------------------------------------------------------------------------
 
+    @GetMapping("/csrf")
+    public ResponseEntity<Map<String, String>> csrf(org.springframework.security.web.csrf.CsrfToken token) {
+        return ResponseEntity.ok().cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(Map.of("headerName", token.getHeaderName(), "token", token.getToken()));
+    }
+
     @PostMapping("/login")
     @WithRateLimitProtection
     public ResponseEntity<JwtResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -79,6 +85,7 @@ public class AuthController {
     // -------------------------------------------------------------------------
 
     @PostMapping("/register")
+    @WithRateLimitProtection
     public ResponseEntity<JwtResponse> register(@Valid @RequestBody SignupRequest request) {
         return authService.registerUser(request);
     }
@@ -98,18 +105,13 @@ public class AuthController {
 
         return refreshTokenService.findByToken(rawToken)
                 .map(refreshTokenService::verifyExpiration)
-                .map(RefreshToken::getUser)
-                .map(user -> {
+                .map(existing -> {
+                    var user = existing.getUser();
                     String newAccessToken = jwtUtils.generateTokenFromUserId(user.getId(), user.getEmail());
-                    RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
+                    // Rotate the value but keep the original expiry (no endless sliding sessions)
+                    RefreshToken newRefreshToken = refreshTokenService.rotateRefreshToken(existing);
 
-                    ResponseCookie jwtCookie = ResponseCookie
-                            .from(jwtUtils.getJwtCookie(), newAccessToken)
-                            .path("/")
-                            .maxAge(7 * 24 * 60 * 60)
-                            .httpOnly(true)
-                            .sameSite("Lax")
-                            .build();
+                    ResponseCookie jwtCookie = jwtUtils.generateCookieFromToken(newAccessToken);
 
                     ResponseCookie refreshCookie =
                             refreshTokenService.generateRefreshTokenCookie(newRefreshToken.getToken());
@@ -117,9 +119,9 @@ public class AuthController {
                     return ResponseEntity.ok()
                             .header(HttpHeaders.SET_COOKIE, jwtCookie.toString())
                             .header(HttpHeaders.SET_COOKIE, refreshCookie.toString())
-                            .body(new TokenRefreshResponse(newAccessToken, newRefreshToken.getToken()));
+                            .body(new TokenRefreshResponse(newAccessToken));
                 })
-                .orElseThrow(() -> new TokenRefreshException(rawToken, "Refresh token not found in database."));
+                .orElseThrow(() -> new TokenRefreshException("", "Refresh token not found"));
     }
 
     // -------------------------------------------------------------------------

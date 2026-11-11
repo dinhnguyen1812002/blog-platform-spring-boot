@@ -24,6 +24,11 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
     private final ApiKeyService apiKeyService;
 
     @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        return !request.getServletPath().startsWith("/api/v1/external/");
+    }
+
+    @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
 
@@ -33,6 +38,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
         if (apiKeyHeader != null && apiSecretHeader != null) {
             apiKeyService.validateApiKey(apiKeyHeader, apiSecretHeader).ifPresent(apiKey -> {
                 UserDetailsImpl userDetails = UserDetailsImpl.build(apiKey.getUser());
+                if (!userDetails.isAccountNonLocked() || !userDetails.isEnabled()) return;
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

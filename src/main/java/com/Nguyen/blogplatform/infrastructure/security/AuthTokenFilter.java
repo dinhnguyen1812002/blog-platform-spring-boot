@@ -29,11 +29,14 @@ public class AuthTokenFilter extends OncePerRequestFilter {
 
     private final JwtUtils jwtUtils;
     private final UserDetailsServiceImpl userDetailsService;
+    private final TokenVersionService tokenVersionService;
 
     @Autowired
-    public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService) {
+    public AuthTokenFilter(JwtUtils jwtUtils, UserDetailsServiceImpl userDetailsService,
+                           TokenVersionService tokenVersionService) {
         this.jwtUtils = jwtUtils;
         this.userDetailsService = userDetailsService;
+        this.tokenVersionService = tokenVersionService;
     }
 
     @Override
@@ -42,10 +45,22 @@ public class AuthTokenFilter extends OncePerRequestFilter {
         try {
             String jwt = parseJwt(request);
             if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
-                String userId = jwtUtils.getUserIdFromJwtToken(jwt);
+                var claims = jwtUtils.getAllClaimsFromToken(jwt);
+                String userId = claims.getSubject();
 
-                logger.info("Authenticated user ID: {}", userId);
+                // Revoked by a token-version bump (password change/reset, ban)?
+                Number tv = claims.get(TokenVersionService.CLAIM, Number.class);
+                if (!tokenVersionService.isCurrent(userId, tv == null ? 0L : tv.longValue())) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
+
+                logger.debug("Authenticated user ID: {}", userId);
                 UserDetails userDetails = userDetailsService.loadUserById(userId);
+                if (!userDetails.isAccountNonLocked() || !userDetails.isEnabled()) {
+                    filterChain.doFilter(request, response);
+                    return;
+                }
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

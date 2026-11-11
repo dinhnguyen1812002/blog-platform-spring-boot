@@ -14,6 +14,7 @@ public class Video {
     @Id
     private String id;
     private String title;
+    @com.fasterxml.jackson.annotation.JsonIgnore // server path, never expose to clients
     private String filePath;
     private String contentType;
     private String url;

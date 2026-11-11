@@ -35,6 +35,9 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @org.springframework.beans.factory.annotation.Value("${frontend-url}")
+    private String frontendUrl;
+
     private final UserDetailsServiceImpl userDetailsService;
     private final AuthTokenFilter        jwtAuthFilter;
     private final AuthEntryPointJwt      unauthorizedHandler;
@@ -91,7 +94,15 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(AbstractHttpConfigurer::disable)
+                .csrf(csrf -> csrf.requireCsrfProtectionMatcher(request -> {
+                    String method = request.getMethod();
+                    if (java.util.Set.of("GET", "HEAD", "TRACE", "OPTIONS").contains(method)) return false;
+                    boolean hasCookies = request.getCookies() != null && request.getCookies().length > 0;
+                    String authorization = request.getHeader("Authorization");
+                    boolean bearer = authorization != null && authorization.startsWith("Bearer ");
+                    boolean apiKey = request.getHeader("X-API-KEY") != null && request.getHeader("X-API-SECRET") != null;
+                    return hasCookies || (!bearer && !apiKey);
+                }))
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 // IF_REQUIRED: OAuth2 redirect flow needs HttpSession for authorization request state.
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
@@ -117,10 +128,20 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, PUBLIC_GET_CONTENT).permitAll()
 
                         // --- Public: user profiles ---
-                        .requestMatchers(PUBLIC_USER_PROFILES).permitAll()
+                        .requestMatchers(HttpMethod.GET, PUBLIC_USER_PROFILES).permitAll()
 
                         // --- Public: newsletter opt-in ---
                         .requestMatchers(PUBLIC_NEWSLETTER).permitAll()
+
+                        .requestMatchers(HttpMethod.GET, "/api/v1/series/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/series/search").permitAll()
+
+                        // --- Operations: log viewer / log stream are admin-only ---
+                        .requestMatchers("/logs/**", "/ws-logs/**").hasRole("ADMIN")
+
+                        // --- Video: streaming is public, management is admin-only ---
+                        .requestMatchers(HttpMethod.GET, "/video/**").permitAll()
+                        .requestMatchers("/video/**").hasRole("ADMIN")
 
                         // --- Authenticated: general user actions ---
                         .requestMatchers(AUTHENTICATED_USER).authenticated()
@@ -148,7 +169,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(ALLOWED_ORIGINS);
+        config.setAllowedOrigins(List.of(frontendUrl.replaceAll("/+$", "")));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization", "Set-Cookie"));
@@ -165,7 +186,7 @@ public class SecurityConfig {
     // =========================================================================
 
     private static final String[] PUBLIC_INFRA = {
-            "/actuator/**",
+            "/actuator/health",
             "/images/**",
             "/uploads/**",
             "/uploads/thumbnail/**",
@@ -174,26 +195,23 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/api-docs/**",
             "/ws/**",
-            "/ws-logs/**",
-            "/video/**",
-            "/logs/**",
-            "/logger/**",
             "/traffic",
             "/profile/avatar/**"
     };
 
     private static final String[] PUBLIC_AUTH = {
+            "/api/v1/auth/csrf",
             "/api/v1/auth/login",
             "/api/v1/auth/register",
             "/api/v1/auth/refresh-token",
-            "/api/v1/jwt/decode",
-            "/api/v1/jwt/validate",
-            "/auth/**",
+            "/api/v1/auth/forgot-password",
+            "/api/v1/auth/reset-password",
+            // Thymeleaf password pages (PasswordController)
+            "/auth/forgot-password",
+            "/auth/reset-password",
             "/oauth2/**",
             "/login/oauth2/**",
-            "/api/v1/oauth/**",
-            "/api/v1/series/**",
-            "/api/v1/admin/**"
+            "/api/v1/oauth/**"
     };
 
     private static final String[] PUBLIC_EXTERNAL = {
@@ -215,14 +233,11 @@ public class SecurityConfig {
             "/api/v1/search",
             "/api/v1/categories/**",
             "/api/v1/tags/**",
-            "/api/v1/traffic/**",
-            "/auth"
+            "/api/v1/traffic/**"
     };
 
     private static final String[] PUBLIC_USER_PROFILES = {
             "/api/v1/users/profile/{slug}",
-            "/api/v1/user/profile/**",
-            "/api/v1/profile/**",
             "/api/v1/users/top-authors",
             "/api/v1/users/public/{username}"
     };
@@ -238,9 +253,9 @@ public class SecurityConfig {
             "/api/v1/auth/logout",
             "/api/v1/author/**",
             "/api/v1/user/profile",
-            "/api/v1/user/update-password",
+            "/api/v1/auth/update-password",
             "/api/v1/profile",
-            "/api/v1/jwt/roles",
+            "/api/v1/profile/**",
             "/api/v1/posts/{postId}/comments",   // write comment requires auth
             "/api/v1/comments/**",
             "/api/v1/saved-posts/**",
@@ -253,12 +268,4 @@ public class SecurityConfig {
             "/api/v1/api-keys/**"
     };
 
-    private static final List<String> ALLOWED_ORIGINS = List.of(
-            "http://localhost:3000",
-            "http://localhost:5173",
-            "http://localhost:5174",
-            "http://localhost:5000",
-            "http://localhost:9090"
-            // Thêm production domain vào đây — không hardcode ngrok URL
-    );
 }

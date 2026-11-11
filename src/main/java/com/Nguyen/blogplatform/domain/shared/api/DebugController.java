@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
+@org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
 @RequestMapping("/api/debug")
 public class DebugController {
     private final Logger logger = LoggerFactory.getLogger(DebugController.class);

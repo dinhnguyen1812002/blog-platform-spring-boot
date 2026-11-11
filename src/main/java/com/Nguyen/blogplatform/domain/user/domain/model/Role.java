@@ -3,14 +3,11 @@ package com.Nguyen.blogplatform.domain.user.domain.model;
 
 
 import com.Nguyen.blogplatform.shared.enums.ERole;
-import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.HashSet;
-import java.util.Set;
 
 @Entity
 @Table(name = "roles")
@@ -24,7 +21,7 @@ public class Role {
     private Integer id;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 20)
+    @Column(length = 20, nullable = false, unique = true)
     private ERole name;
 
     public Role() {

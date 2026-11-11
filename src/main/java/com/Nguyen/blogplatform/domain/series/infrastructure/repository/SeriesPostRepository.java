@@ -49,4 +49,25 @@ public interface SeriesPostRepository extends JpaRepository<SeriesPost, Long> {
             ORDER BY sp.orderIndex ASC
             """)
     List<SeriesPostDTO> findPostDtosBySeriesId(@Param("seriesId") String seriesId);
+
+    /** Public view: only posts that are currently published. */
+    @Query("""
+            SELECT new com.Nguyen.blogplatform.domain.series.dto.SeriesPostDTO(
+                p.id,
+                p.title,
+                p.slug,
+                p.excerpt,
+                p.thumbnail,
+                sp.orderIndex,
+                sp.createdAt,
+                p.publishedAt
+            )
+            FROM SeriesPost sp
+            JOIN sp.post p
+            WHERE sp.series.id = :seriesId
+              AND p.visibility = com.Nguyen.blogplatform.shared.enums.PublishStatus.PUBLISHED
+              AND (p.publishedAt IS NULL OR p.publishedAt <= CURRENT_TIMESTAMP)
+            ORDER BY sp.orderIndex ASC
+            """)
+    List<SeriesPostDTO> findPublishedPostDtosBySeriesId(@Param("seriesId") String seriesId);
 }

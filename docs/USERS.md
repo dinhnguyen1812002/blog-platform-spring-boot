@@ -41,7 +41,7 @@ Tài liệu này mô tả các API để quản lý người dùng.
 ## 3. Cập nhật mật khẩu
 
 - **Method:** `PATCH`
-- **URL:** `http://localhost:8080/api/user/update-password`
+- **URL:** `http://localhost:8080/api/v1/auth/update-password` (PATCH, JSON `{ oldPassword, newPassword }`)
 - **Authorization:** Bắt buộc.
 - **Body:** `raw` - `JSON`
 

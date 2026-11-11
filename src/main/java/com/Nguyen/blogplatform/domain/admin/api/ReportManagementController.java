@@ -33,7 +33,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Tag(name = "Admin Report Management", description = "Admin APIs for managing article reports")
 @SecurityRequirement(name = "bearerAuth")
-@PreAuthorize("hasAuthority('ADMIN')")
+@PreAuthorize("hasRole('ADMIN')")
 public class ReportManagementController {
 
     private final AdminReportService adminReportService;

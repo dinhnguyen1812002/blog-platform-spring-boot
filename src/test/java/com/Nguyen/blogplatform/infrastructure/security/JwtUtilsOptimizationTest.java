@@ -50,8 +50,6 @@ public class JwtUtilsOptimizationTest {
         // Verify token validation works
         assertTrue(jwtUtils.validateJwtToken(optimizedToken), "Optimized token should be valid");
 
-        System.out.println("\nOld token: " + oldStyleToken);
-        System.out.println("\nNew token: " + optimizedToken);
     }
 
     @Test
@@ -78,7 +76,8 @@ public class JwtUtilsOptimizationTest {
 
         return Jwts.builder()
                 .subject(userId)
-                .claim("email", email)  // Old style included email
+                .id(java.util.UUID.randomUUID().toString())
+                .claim("email", email)  // Compare tokens with the same revocation claim
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(key)

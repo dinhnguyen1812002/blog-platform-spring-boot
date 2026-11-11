@@ -8,7 +8,7 @@ import com.Nguyen.blogplatform.domain.post.domain.model.Bookmark;
 import com.Nguyen.blogplatform.domain.post.domain.model.Post;
 import com.Nguyen.blogplatform.domain.post.domain.model.Rating;
 import com.Nguyen.blogplatform.infrastructure.config.BooleanIntegerConverter;
-import com.Nguyen.blogplatform.shared.util.SlugUtil;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -46,6 +46,7 @@ public class User {
     @NotEmpty(message = "*Please provide an email")
     private String email;
 
+    @JsonIgnore // never serialize the password hash
     @Column(name = "password", nullable = false)
     @Size(min = 6, message = "*Your password must have at least 6 characters")
     @Pattern(regexp = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{6,}$", message = "Password must contain at least one digit, one lowercase letter, one uppercase letter, one special character, and no whitespace")
@@ -67,7 +68,9 @@ public class User {
     @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
+    @JsonIgnore // knowing this token == being able to reset the password
     private String resetToken;
+    @JsonIgnore
     private LocalDateTime resetTokenExpiry;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
@@ -79,9 +82,6 @@ public class User {
     @JsonManagedReference("user-ratings")
     private Set<Rating> ratings = new HashSet<>();
 
-    @ManyToMany
-    @JoinTable(name = "user_like", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "post_id"))
-    private Set<Post> like = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Bookmark> savedPosts = new HashSet<>();

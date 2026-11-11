@@ -8,7 +8,7 @@ Tài liệu hướng dẫn Frontend tích hợp đăng nhập/đăng ký bằng 
 2. Backend chuyển hướng đến trang đăng nhập của Provider.
 3. Provider gửi authorization code về Backend.
 4. Backend tạo/cập nhật User, phát hành JWT + refresh token.
-5. Backend redirect về Frontend kèm token trên URL và cookie.
+5. Backend đặt cookie HttpOnly và redirect về Frontend không kèm token trên URL.
 
 ### Endpoint khởi tạo
 
@@ -20,7 +20,7 @@ Tài liệu hướng dẫn Frontend tích hợp đăng nhập/đăng ký bằng 
 
 ### Redirect sau khi thành công
 
-`{FRONTEND_URL}/oauth2/redirect?token={JWT_TOKEN}`
+`{FRONTEND_URL}/oauth2/redirect`
 
 Backend đồng thời set cookie:
 

@@ -54,7 +54,7 @@ public class OAuth2AuthenticationSuccessHandler extends SimpleUrlAuthenticationS
         response.addHeader(HttpHeaders.SET_COOKIE, jwtCookie.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
 
-        String targetUrl = frontendUrl + "/oauth2/redirect?token=" + jwtToken;
+        String targetUrl = frontendUrl + "/oauth2/redirect";
         getRedirectStrategy().sendRedirect(request, response, targetUrl);
     }
 

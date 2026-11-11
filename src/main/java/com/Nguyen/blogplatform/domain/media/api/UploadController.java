@@ -135,10 +135,9 @@ public class UploadController {
 
             return ResponseEntity.ok(response);
 
-        } catch (IOException e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error uploading file: " + e.getMessage()));
         } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Unexpected error: " + e.getMessage()));
+            org.slf4j.LoggerFactory.getLogger(UploadController.class).error("Avatar upload failed", e);
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "Error uploading file"));
         }
     }
 

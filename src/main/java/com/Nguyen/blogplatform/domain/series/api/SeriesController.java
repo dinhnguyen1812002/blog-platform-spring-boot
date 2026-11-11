@@ -3,6 +3,7 @@ package com.Nguyen.blogplatform.domain.series.api;
 
 
 
+import com.Nguyen.blogplatform.shared.exception.UnauthorizedException;
 import com.Nguyen.blogplatform.domain.auth.application.UserDetailsImpl;
 import com.Nguyen.blogplatform.domain.post.domain.model.Post;
 import com.Nguyen.blogplatform.domain.series.application.SeriesService;
@@ -20,7 +21,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +49,7 @@ public class SeriesController {
     @Operation(summary = "Create a new series", description = "Create a new series for organizing posts")
     public ResponseEntity<ApiResponse<SeriesResponseDTO>> createSeries(
             @Valid @RequestBody CreateSeriesDTO dto,
-            Authentication authentication) throws BadRequestException {
+            Authentication authentication) {
 
 
         String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId(); // Lấy user ID từ principal
@@ -69,7 +69,7 @@ public class SeriesController {
     public ResponseEntity<ApiResponse<SeriesResponseDTO>> updateSeries(
             @PathVariable String seriesId,
             @Valid @RequestBody UpdateSeriesDTO dto,
-            Authentication authentication) throws BadRequestException {
+            Authentication authentication) {
 
         String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         SeriesResponseDTO response = seriesService.updateSeries(seriesId, dto, userId);
@@ -112,7 +112,7 @@ public class SeriesController {
             @RequestParam(defaultValue = "DESC") String sortDirection) {
 
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(com.Nguyen.blogplatform.shared.util.PageLimits.page(page), com.Nguyen.blogplatform.shared.util.PageLimits.size(size), Sort.by(direction, sortBy));
 
         Page<SeriesListDTO> response = seriesService.getAllSeries(pageable);
         return ResponseEntity.ok(new ApiResponse<>(true, "Series list retrieved successfully", response));
@@ -132,7 +132,7 @@ public class SeriesController {
             @RequestParam(defaultValue = "DESC") String sortDirection) {
 
         Sort.Direction direction = Sort.Direction.fromString(sortDirection);
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+        Pageable pageable = PageRequest.of(com.Nguyen.blogplatform.shared.util.PageLimits.page(page), com.Nguyen.blogplatform.shared.util.PageLimits.size(size), Sort.by(direction, sortBy));
 
         Page<SeriesListDTO> response = seriesService.getSeriesByUserId(userId, pageable);
         return ResponseEntity.ok(new ApiResponse<>(true, "User series retrieved successfully", response));
@@ -174,7 +174,7 @@ public class SeriesController {
     public ResponseEntity<ApiResponse<SeriesResponseDTO>> addPostToSeries(
             @PathVariable String seriesId,
             @Valid @RequestBody AddPostToSeriesDTO dto,
-            Authentication authentication) throws BadRequestException {
+            Authentication authentication) {
 
         String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         SeriesResponseDTO response = seriesService.addPostToSeries(seriesId, dto, userId);
@@ -191,7 +191,7 @@ public class SeriesController {
     public ResponseEntity<ApiResponse<SeriesResponseDTO>> removePostFromSeries(
             @PathVariable String seriesId,
             @PathVariable String postId,
-            Authentication authentication) throws BadRequestException {
+            Authentication authentication) {
 
         String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         SeriesResponseDTO response = seriesService.removePostFromSeries(seriesId, postId, userId);
@@ -208,7 +208,7 @@ public class SeriesController {
     public ResponseEntity<ApiResponse<SeriesResponseDTO>> reorderPost(
             @PathVariable String seriesId,
             @Valid @RequestBody ReorderSeriesPostDTO dto,
-            Authentication authentication) throws BadRequestException {
+            Authentication authentication) {
 
         String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
         SeriesResponseDTO response = seriesService.reorderPost(seriesId, dto, userId);
@@ -224,12 +224,12 @@ public class SeriesController {
     @Operation(summary = "Delete series", description = "Delete a series")
     public ResponseEntity<ApiResponse<Void>> deleteSeries(
             @PathVariable String seriesId,
-            Authentication authentication) throws BadRequestException {
+            Authentication authentication) {
 
         String userId = ((UserDetailsImpl) authentication.getPrincipal()).getId();
 
         if (userId == null) {
-            throw new BadRequestException("User ID is required");
+            throw new UnauthorizedException("Authentication required");
         }
 
         seriesService.deleteSeries(seriesId, userId);

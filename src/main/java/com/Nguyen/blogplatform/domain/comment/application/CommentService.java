@@ -1,12 +1,9 @@
 package com.Nguyen.blogplatform.domain.comment.application;
 
-
-
 import com.Nguyen.blogplatform.domain.comment.domain.model.Comment;
 import com.Nguyen.blogplatform.domain.comment.dto.CommentRequest;
 import com.Nguyen.blogplatform.domain.comment.dto.CommentResponse;
 import com.Nguyen.blogplatform.domain.comment.infrastructure.repository.CommentRepository;
-import com.Nguyen.blogplatform.domain.notification.application.NotificationService;
 import com.Nguyen.blogplatform.domain.post.domain.model.Post;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.PostRepository;
 import com.Nguyen.blogplatform.domain.user.domain.model.User;
@@ -24,11 +21,11 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,13 +34,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentService {
 
-    private static final int MAX_REPLY_DEPTH       = 3;
+    private static final int MAX_REPLY_DEPTH = 3;
     private static final int MAX_REPLIES_PER_LEVEL = 5;
 
-    private final CommentRepository   commentRepository;
-    private final PostRepository      postRepository;
-    private final UserRepository      userRepository;
-    private final NotificationService notificationService;
+    private final CommentRepository commentRepository;
+    private final PostRepository postRepository;
+    private final UserRepository userRepository;
+    private final CommentNotificationDispatcher notificationDispatcher;
 
     // -------------------------------------------------------------------------
     // Create
@@ -52,8 +49,7 @@ public class CommentService {
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "comments", allEntries = true),
-            @CacheEvict(value = "replies", key = "#request.parentCommentId",
-                    condition = "#request.parentCommentId != null")
+            @CacheEvict(value = "replies", allEntries = true)
     })
     public CommentResponse createComment(String postId, CommentRequest request, String userId) {
         Post post = postRepository.findById(postId)
@@ -63,10 +59,21 @@ public class CommentService {
                 .orElseThrow(() -> new NotFoundException("User not found: " + userId));
 
         Comment comment = buildComment(request, post, user);
-        Comment saved   = commentRepository.save(comment);
+        Comment saved = commentRepository.save(comment);
         CommentResponse response = convertToResponse(saved);
 
-        dispatchNotifications(post, user, postId, response);
+        String authorId = post.getAuthor().getId();
+        String commenterId = user.getId();
+        String commenterName = user.getUsername();
+        String postTitle = post.getTitle();
+        TransactionSynchronizationManager.registerSynchronization(
+                new org.springframework.transaction.support.TransactionSynchronization() {
+                    @Override
+                    public void afterCommit() {
+                        notificationDispatcher.dispatch(authorId, commenterId, commenterName, postTitle, postId,
+                                response);
+                    }
+                });
         return response;
     }
 
@@ -76,12 +83,13 @@ public class CommentService {
 
     /**
      * Only the comment owner may edit content.
-     * Admins use deleteComment; editing someone else's words is not permitted even for admins.
+     * Admins use deleteComment; editing someone else's words is not permitted even
+     * for admins.
      */
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "comments", allEntries = true),
-            @CacheEvict(value = "replies",  allEntries = true)
+            @CacheEvict(value = "replies", allEntries = true)
     })
     public CommentResponse updateComment(String commentId, CommentRequest request, String userId) {
         Comment comment = findCommentById(commentId);
@@ -100,16 +108,19 @@ public class CommentService {
 
     /**
      * Owner can delete their own comment.
-     * Admin (isAdmin = true, resolved in controller via @PreAuthorize) can delete any comment.
+     * Admin (isAdmin = true, resolved in controller via @PreAuthorize) can delete
+     * any comment.
      *
-     * Deleting a parent comment also removes its entire reply subtree (cascade DELETE
-     * should be configured on Comment.replies; if not, use commentRepository.deleteById
+     * Deleting a parent comment also removes its entire reply subtree (cascade
+     * DELETE
+     * should be configured on Comment.replies; if not, use
+     * commentRepository.deleteById
      * with CascadeType.REMOVE or handle it explicitly here).
      */
     @Transactional
     @Caching(evict = {
             @CacheEvict(value = "comments", allEntries = true),
-            @CacheEvict(value = "replies",  allEntries = true)
+            @CacheEvict(value = "replies", allEntries = true)
     })
     public void deleteComment(String commentId, String userId, boolean isAdmin) {
         Comment comment = findCommentById(commentId);
@@ -134,26 +145,24 @@ public class CommentService {
     // -------------------------------------------------------------------------
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "comments",
-            key   = "#postId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "comments", key = "#postId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<CommentResponse> getTopLevelComments(String postId, Pageable pageable) {
         PageRequest pr = toSortedPageRequest(pageable, "createdAt", Sort.Direction.DESC);
-        return commentRepository
-                .findByPostIdAndParentCommentIsNull(postId, pr)
-                .map(this::convertToResponse);
+        Page<Comment> page = commentRepository.findByPostIdAndParentCommentIsNull(postId, pr);
+        Map<String, CommentResponse> responses = mapCommentTrees(page.getContent());
+        return page.map(comment -> responses.get(comment.getId()));
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "replies",
-            key   = "#commentId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "replies", key = "#commentId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<CommentResponse> getReplies(String commentId, Pageable pageable) {
         if (!commentRepository.existsById(commentId)) {
             throw new NotFoundException("Comment not found: " + commentId);
         }
         PageRequest pr = toSortedPageRequest(pageable, "createdAt", Sort.Direction.DESC);
-        return commentRepository
-                .findByParentCommentId(commentId, pr)
-                .map(this::convertToResponse);
+        Page<Comment> page = commentRepository.findByParentCommentId(commentId, pr);
+        Map<String, CommentResponse> responses = mapCommentTrees(page.getContent());
+        return page.map(comment -> responses.get(comment.getId()));
     }
 
     // -------------------------------------------------------------------------
@@ -207,7 +216,59 @@ public class CommentService {
     // Private — mapping
     // -------------------------------------------------------------------------
 
+    @Transactional(readOnly = true)
+    public Map<String, List<CommentResponse>> getFirstCommentsForPosts(List<String> postIds, int limit) {
+        if (postIds.isEmpty())
+            return Map.of();
+        List<String> ids = commentRepository.findLatestTopLevelIds(postIds, limit);
+        if (ids.isEmpty())
+            return Map.of();
+        List<Comment> roots = commentRepository.findByIdIn(ids);
+        Map<String, CommentResponse> responses = mapCommentTrees(roots);
+        Map<String, List<CommentResponse>> result = new HashMap<>();
+        roots.stream().sorted(Comparator.comparing(Comment::getCreatedAt).reversed()
+                .thenComparing(Comment::getId, Comparator.reverseOrder()))
+                .forEach(c -> result.computeIfAbsent(c.getPost().getId(), ignored -> new ArrayList<>())
+                        .add(responses.get(c.getId())));
+        return result;
+    }
+
+    private Map<String, CommentResponse> mapCommentTrees(List<Comment> roots) {
+        Map<String, CommentResponse> result = new HashMap<>();
+        List<Comment> current = roots;
+        while (!current.isEmpty()) {
+            for (Comment comment : current)
+                result.computeIfAbsent(comment.getId(), ignored -> mapComment(comment));
+            List<String> parents = current.stream()
+                    .filter(c -> c.getDepth() < MAX_REPLY_DEPTH && c.getReplyCount() > 0)
+                    .map(Comment::getId).toList();
+            if (parents.isEmpty())
+                break;
+            List<String> childIds = commentRepository.findLatestReplyIds(parents, MAX_REPLIES_PER_LEVEL);
+            if (childIds.isEmpty())
+                break;
+            List<Comment> children = new ArrayList<>(commentRepository.findByIdIn(childIds));
+            children.sort(Comparator.comparing(Comment::getCreatedAt).reversed()
+                    .thenComparing(Comment::getId, Comparator.reverseOrder()));
+            for (Comment child : children) {
+                CommentResponse parent = result.get(child.getParentComment().getId());
+                if (parent.getReplies() == null)
+                    parent.setReplies(new ArrayList<>());
+                CommentResponse childResponse = mapComment(child);
+                parent.getReplies().add(childResponse);
+                result.put(child.getId(), childResponse);
+            }
+            // Preserve the same response objects when the next level is populated.
+            current = children;
+        }
+        return result;
+    }
+
     private CommentResponse convertToResponse(Comment comment) {
+        return mapCommentTrees(List.of(comment)).get(comment.getId());
+    }
+
+    private CommentResponse mapComment(Comment comment) {
         CommentResponse response = new CommentResponse();
         response.setId(comment.getId());
         response.setContent(comment.getContent());
@@ -215,25 +276,12 @@ public class CommentService {
         response.setUpdatedAt(comment.getUpdatedAt());
         response.setDepth(comment.getDepth());
         response.setReplyCount(comment.getReplyCount());
-
-        if (comment.getUser() != null) {
+        if (comment.getUser() != null)
             response.setUser(toUserResponse(comment.getUser()));
-        }
-        if (comment.getParentComment() != null) {
+        if (comment.getParentComment() != null)
             response.setParentCommentId(comment.getParentComment().getId());
-        }
-        if (comment.getDepth() < MAX_REPLY_DEPTH && comment.getReplyCount() > 0
-                && !comment.getReplies().isEmpty()) {
-
-            List<CommentResponse> replies = comment.getReplies().stream()
-                    .sorted(Comparator.comparing(Comment::getCreatedAt).reversed())
-                    .limit(MAX_REPLIES_PER_LEVEL)
-                    .map(this::convertToResponse)
-                    .collect(Collectors.toList());
-
-            response.setReplies(replies);
-            response.setHasMoreReplies(comment.getReplyCount() > MAX_REPLIES_PER_LEVEL);
-        }
+        response.setHasMoreReplies(
+                comment.getDepth() < MAX_REPLY_DEPTH && comment.getReplyCount() > MAX_REPLIES_PER_LEVEL);
         return response;
     }
 
@@ -247,48 +295,13 @@ public class CommentService {
     }
 
     // -------------------------------------------------------------------------
-    // Private — async notifications
-    // -------------------------------------------------------------------------
-
-    private void dispatchNotifications(Post post, User commenter,
-                                       String postId, CommentResponse response) {
-        if (!post.getAuthor().getId().equals(commenter.getId())) {
-            sendAuthorNotification(post.getAuthor().getId(),
-                    commenter.getUsername(), post.getTitle(), postId);
-        }
-        sendRealtimeNotifications(postId, response, commenter.getUsername(), post.getTitle());
-    }
-
-    @Async
-    protected void sendAuthorNotification(String authorId, String commenterName,
-                                          String postTitle, String postId) {
-        try {
-            notificationService.notifyPostAuthorAboutComment(
-                    authorId, commenterName, postTitle, postId);
-        } catch (Exception e) {
-            log.warn("Failed to notify post author '{}': {}", authorId, e.getMessage());
-        }
-    }
-
-    @Async
-    protected void sendRealtimeNotifications(String postId, CommentResponse response,
-                                             String commenterName, String postTitle) {
-        try {
-            notificationService.sendCommentNotification(postId, response);
-            notificationService.sendGlobalNotification(
-                    "New comment from: " + commenterName + " on post: " + postTitle);
-        } catch (Exception e) {
-            log.warn("Failed to send real-time notification: {}", e.getMessage());
-        }
-    }
-
-    // -------------------------------------------------------------------------
     // Private — utilities
     // -------------------------------------------------------------------------
 
     private PageRequest toSortedPageRequest(Pageable pageable,
-                                            String field, Sort.Direction direction) {
-        return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(),
+            String field, Sort.Direction direction) {
+        return PageRequest.of(pageable.getPageNumber(),
+                com.Nguyen.blogplatform.shared.util.PageLimits.size(pageable.getPageSize()),
                 Sort.by(direction, field));
     }
 }

@@ -38,6 +38,7 @@ public class JwtUtils {
 
     private final UserRepository userRepository;
     private final JwtBlacklistRepository jwtBlacklistRepository;
+    private final TokenVersionService tokenVersionService;
 
     @Value("${blog.app.jwtSecret}")
     private String jwtSecret;
@@ -72,9 +73,13 @@ public class JwtUtils {
         // Generate unique JWT ID for revocation support
         String jti = UUID.randomUUID().toString();
 
+        // Token version: bumping it in Valkey revokes every token issued before
+        long tokenVersion = Math.max(0L, tokenVersionService.currentVersion(userId));
+
         return Jwts.builder()
                 .id(jti)  // JTI claim for token revocation
                 .subject(userId)
+                .claim(TokenVersionService.CLAIM, tokenVersion)
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(getSigningKey())
@@ -97,7 +102,7 @@ public class JwtUtils {
                 .httpOnly(true)
                 .secure(cookieSecure)
                 .path("/")
-                .maxAge(24 * 60 * 60) // 24 hours
+                .maxAge(java.time.Duration.ofMillis(jwtExpirationMs))
                 .sameSite("Lax")
                 .build();
     }

@@ -69,7 +69,7 @@ public class NewsletterController {
     }
 
     @GetMapping("/subscribers")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get all subscribers (Admin only)")
     public ResponseEntity<Page<SubscriberResponse>> getSubscribers(
@@ -81,7 +81,7 @@ public class NewsletterController {
     }
 
     @GetMapping("/subscribers/count")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get active subscriber count (Admin only)")
     public ResponseEntity<Long> getActiveSubscriberCount() {
@@ -89,7 +89,7 @@ public class NewsletterController {
     }
 
     @PostMapping("/campaigns")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Create and schedule a campaign (Admin only)")
     public ResponseEntity<CampaignResponse> createCampaign(
@@ -100,7 +100,7 @@ public class NewsletterController {
     }
 
     @PostMapping("/campaigns/{id}/send")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Send campaign immediately (Admin only)")
     public ResponseEntity<MessageResponse> sendCampaign(@PathVariable String id) {
@@ -109,7 +109,7 @@ public class NewsletterController {
     }
 
     @GetMapping("/campaigns")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Get all campaigns (Admin only)")
     public ResponseEntity<Page<CampaignResponse>> getCampaigns(Pageable pageable) {
@@ -117,7 +117,7 @@ public class NewsletterController {
     }
 
     @PostMapping("/import")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     @SecurityRequirement(name = "bearerAuth")
     @Operation(summary = "Bulk import subscribers (Admin only)")
     public ResponseEntity<ImportResultResponse> importSubscribers(

@@ -50,27 +50,6 @@ public class ProfileCustomizationController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Get the custom profile markdown content for a specific user
-     * 
-     * @param username The username of the user
-     * @return The user profile with processed markdown content
-     */
-    @GetMapping("/{username}")
-    public ResponseEntity<UserProfileResponse> getCustomProfile(@PathVariable String username) {
-        UserProfileResponse response = userProfileService.getUserProfileByUsername(username);
-        return ResponseEntity.ok(response);
-    }
-
-//    @PutMapping("/profile")
-//    public ResponseEntity<UserProfileResponse> updateProfile(
-//            @AuthenticationPrincipal UserDetailsImpl userDetails,
-//            @Valid @RequestBody UserProfileUpdateRequest request) throws ConflictException {
-//        UserProfileResponse response = userProfileService.updateUserProfile(userDetails.getId(), request);
-//        return ResponseEntity.ok(response);
-//    }
-
-
     @PostMapping(value = "/avatar", consumes = {"multipart/form-data"})
     public ResponseEntity<AvatarUploadResponse> uploadAvatar(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
@@ -87,9 +66,4 @@ public class ProfileCustomizationController {
         return ResponseEntity.ok(response);
     }
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserProfileResponse> getProfileById(@PathVariable String userId) {
-        UserProfileResponse response = userProfileService.getUserProfileById(userId);
-        return ResponseEntity.ok(response);
-    }
 }

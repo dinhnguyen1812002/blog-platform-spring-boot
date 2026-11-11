@@ -2,6 +2,7 @@ package com.Nguyen.blogplatform.domain.post.api;
 
 
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import com.Nguyen.blogplatform.domain.post.application.CategoryServices;
 import com.Nguyen.blogplatform.domain.post.domain.model.Category;
 import com.Nguyen.blogplatform.domain.post.dto.CategoryRequest;
@@ -35,6 +36,7 @@ public class CategoryController {
     }
 
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/add")
     public ResponseEntity<MessageResponse> createCategory(@RequestBody CategoryRequest categoryRequest) {
         if (categoryServices.isCategoryExit(categoryRequest)) {
@@ -52,6 +54,7 @@ public class CategoryController {
         return ResponseEntity.ok(new MessageResponse("Category created successfully"));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Category> update(@PathVariable Long id, @RequestBody CategoryRequest categoryRequest) {
         Optional<Category> categoryUpdate = Optional.ofNullable(categoryServices.getCategoryById(id));
@@ -65,6 +68,7 @@ public class CategoryController {
         }).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Category> deleteCategory(@PathVariable Long id)
     {

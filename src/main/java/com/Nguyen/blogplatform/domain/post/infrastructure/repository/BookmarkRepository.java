@@ -8,6 +8,7 @@ import com.Nguyen.blogplatform.domain.user.domain.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -27,9 +28,11 @@ public interface BookmarkRepository extends JpaRepository<Bookmark, String> {
     @Query("SELECT sp FROM Bookmark sp WHERE sp.user.username = :username ORDER BY sp.savedAt DESC")
     List<Bookmark> findByUserUsernameOrderBySavedAtDesc(@Param("username") String username);
     
+    @EntityGraph(attributePaths = {"post", "user"})
     @Query("SELECT sp FROM Bookmark sp WHERE sp.user = :user ORDER BY sp.savedAt DESC")
     Page<Bookmark> findByUserOrderBySavedAtDesc(@Param("user") User user, Pageable pageable);
     
+    @EntityGraph(attributePaths = {"post", "user"})
     @Query("SELECT sp FROM Bookmark sp WHERE sp.user = :user ORDER BY sp.savedAt DESC")
     List<Bookmark> findByUserOrderBySavedAtDesc(@Param("user") User user);
     

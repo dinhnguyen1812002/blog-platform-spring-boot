@@ -197,29 +197,8 @@ public class AuthService {
                 req.getUsername(),
                 req.getEmail(),
                 encoder.encode(req.getPassword()));
-        user.setRoles(resolveRoles(req.getRole()));
+        user.setRoles(Set.of(findRole(ERole.ROLE_USER)));
         return user;
-    }
-
-    /**
-     * Resolves a set of raw role strings to {@link Role} entities.
-     * Defaults to {@code ROLE_USER} when no roles are specified.
-     */
-    private Set<Role> resolveRoles(Set<String> requestedRoles) {
-        if (requestedRoles == null || requestedRoles.isEmpty()) {
-            return Set.of(findRole(ERole.ROLE_USER));
-        }
-
-        Set<Role> roles = new HashSet<>();
-        for (String roleName : requestedRoles) {
-            ERole eRole = switch (roleName) {
-                case "ROLE_ADMIN"  -> ERole.ROLE_ADMIN;
-                case "ROLE_AUTHOR" -> ERole.ROLE_AUTHOR;
-                default            -> ERole.ROLE_USER;
-            };
-            roles.add(findRole(eRole));
-        }
-        return roles;
     }
 
     private Role findRole(ERole eRole) {

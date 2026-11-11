@@ -34,7 +34,7 @@ public class NotificationController {
     private final NotificationService notificationService;
 
     @PostMapping("/send")
-    @PreAuthorize("hasRole('ADMIN') or hasRole('MODERATOR')")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Send notification to users")
     public ResponseEntity<MessageResponse> sendNotification(@Valid @RequestBody SendNotificationRequest request) {
         if (request.isBulk() && request.getUserIds() != null && !request.getUserIds().isEmpty()) {

@@ -8,6 +8,7 @@ import com.Nguyen.blogplatform.domain.user.domain.model.User;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,6 +23,9 @@ import java.util.Optional;
  */
 @Repository
 public interface SeriesRepository extends JpaRepository<Series, String> {
+    @Override
+    @EntityGraph(attributePaths = "user")
+    Page<Series> findAll(Pageable pageable);
 
     @Modifying
     @Transactional
@@ -46,21 +50,25 @@ public interface SeriesRepository extends JpaRepository<Series, String> {
     /**
      * Lấy danh sách series của một tác giả theo user ID
      */
+    @EntityGraph(attributePaths = "user")
     Page<Series> findByUserId(String userId, Pageable pageable);
 
     /**
      * Tìm series đang active
      */
+    @EntityGraph(attributePaths = "user")
     Page<Series> findByIsActiveTrue(Pageable pageable);
 
     /**
      * Tìm series đã hoàn thành
      */
+    @EntityGraph(attributePaths = "user")
     Page<Series> findByIsCompletedTrue(Pageable pageable);
 
     /**
      * Tìm series của một tác giả và active
      */
+    @EntityGraph(attributePaths = "user")
     Page<Series> findByUserIdAndIsActiveTrue(String userId, Pageable pageable);
 
     /**
@@ -69,12 +77,14 @@ public interface SeriesRepository extends JpaRepository<Series, String> {
     @Query("SELECT s FROM Series s WHERE " +
             "LOWER(s.title) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
             "LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
+    @EntityGraph(attributePaths = "user")
     Page<Series> searchByKeyword(@Param("keyword") String keyword, Pageable pageable);
 
     /**
      * Lấy series phổ biến nhất (theo view count)
      */
     @Query("SELECT s FROM Series s WHERE s.isActive = true ORDER BY s.viewCount DESC")
+    @EntityGraph(attributePaths = "user")
     Page<Series> findMostViewed(Pageable pageable);
 
     /**

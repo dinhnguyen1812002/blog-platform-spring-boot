@@ -1,6 +1,13 @@
 package com.Nguyen.blogplatform.domain.series.application;
 
 
+import com.Nguyen.blogplatform.shared.security.SecurityUtils;
+import com.Nguyen.blogplatform.domain.auth.application.UserDetailsImpl;
+import org.springframework.security.core.context.SecurityContextHolder;
+import com.Nguyen.blogplatform.shared.enums.PublishStatus;
+import com.Nguyen.blogplatform.shared.exception.BusinessRuleException;
+import com.Nguyen.blogplatform.shared.exception.ConflictException;
+import com.Nguyen.blogplatform.shared.exception.ForbiddenException;
 import com.Nguyen.blogplatform.domain.analytics.application.ViewCountService;
 import com.Nguyen.blogplatform.domain.post.domain.model.Post;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.PostRepository;
@@ -21,7 +28,6 @@ import com.Nguyen.blogplatform.domain.user.infrastructure.repository.UserReposit
 import com.Nguyen.blogplatform.shared.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +52,7 @@ public class SeriesService {
     /**
      * Tạo mới series
      */
-    public SeriesResponseDTO createSeries(CreateSeriesDTO dto, String userId) throws BadRequestException {
+    public SeriesResponseDTO createSeries(CreateSeriesDTO dto, String userId) {
         log.info("Creating new series: {} by user: {}", dto.getTitle(), userId);
 
         // Kiểm tra user tồn tại
@@ -55,7 +61,7 @@ public class SeriesService {
 
         // Kiểm tra slug đã tồn tại chưa
         if (seriesRepository.existsBySlug(dto.getSlug())) {
-            throw new BadRequestException("Series with slug '" + dto.getSlug() + "' already exists");
+            throw new ConflictException("Series with slug '" + dto.getSlug() + "' already exists");
         }
 
         // Tạo series mới
@@ -80,15 +86,15 @@ public class SeriesService {
     /**
      * Cập nhật thông tin series
      */
-    public SeriesResponseDTO updateSeries(String seriesId, UpdateSeriesDTO dto, String userId) throws BadRequestException {
+    public SeriesResponseDTO updateSeries(String seriesId, UpdateSeriesDTO dto, String userId) {
         log.info("Updating series: {} by user: {}", seriesId, userId);
 
         Series series = seriesRepository.findById(seriesId)
                 .orElseThrow(() -> new NotFoundException("Series not found with id: " + seriesId));
 
         // Kiểm tra quyền sở hữu
-        if (!series.getUser().getId().equals(userId)) {
-            throw new BadRequestException("You don't have permission to update this series");
+        if (!SecurityUtils.isOwnerOrAdmin(series.getUser().getId(), userId)) {
+            throw new ForbiddenException("You don't have permission to update this series");
         }
 
         // Cập nhật thông tin
@@ -122,7 +128,7 @@ public class SeriesService {
         Series series = seriesRepository.findById(seriesId)
                 .orElseThrow(() -> new NotFoundException("Series not found with id: " + seriesId));
 
-        return mapToResponseDTO(series);
+        return mapToPublicResponseDTO(series);
     }
 
     /**
@@ -136,7 +142,7 @@ public class SeriesService {
         // Tăng view count bằng ViewCountService
         viewCountService.recordView(ViewCountService.ENTITY_TYPE_SERIES, series.getId());
 
-        return mapToResponseDTO(series);
+        return mapToPublicResponseDTO(series);
     }
 
     /**
@@ -163,8 +169,8 @@ public class SeriesService {
     @Transactional(readOnly = true)
     public Page<SeriesListDTO> searchSeries(SeriesSearchDTO searchDTO) {
         Pageable pageable = PageRequest.of(
-                searchDTO.getPage(),
-                searchDTO.getSize(),
+                com.Nguyen.blogplatform.shared.util.PageLimits.page(searchDTO.getPage()),
+                com.Nguyen.blogplatform.shared.util.PageLimits.size(searchDTO.getSize()),
                 Sort.by(Sort.Direction.fromString(searchDTO.getSortDirection()), searchDTO.getSortBy())
         );
 
@@ -192,24 +198,34 @@ public class SeriesService {
     /**
      * Thêm bài viết vào series
      */
-    public SeriesResponseDTO addPostToSeries(String seriesId, AddPostToSeriesDTO dto, String userId) throws BadRequestException {
+    public SeriesResponseDTO addPostToSeries(String seriesId, AddPostToSeriesDTO dto, String userId) {
         log.info("Adding post: {} to series: {}", dto.getPostId(), seriesId);
 
         Series series = seriesRepository.findById(seriesId)
                 .orElseThrow(() -> new NotFoundException("Series not found with id: " + seriesId));
 
         // Kiểm tra quyền sở hữu
-        if (!series.getUser().getId().equals(userId)) {
-            throw new BadRequestException("You don't have permission to modify this series");
+        if (!SecurityUtils.isOwnerOrAdmin(series.getUser().getId(), userId)) {
+            throw new ForbiddenException("You don't have permission to modify this series");
         }
 
-        if (!postRepository.existsById(dto.getPostId())) {
-            throw new NotFoundException("Post not found with id: " + dto.getPostId());
+        Post post = postRepository.findById(dto.getPostId())
+                .orElseThrow(() -> new NotFoundException("Post not found with id: " + dto.getPostId()));
+
+        // A series may only group its owner's own posts...
+        // A series groups its owner's posts (also when an admin manages it)
+        if (!post.getAuthor().getId().equals(series.getUser().getId())) {
+            throw new ForbiddenException("Only the series owner's posts can be added to this series");
+        }
+        // ...and series are public, so drafts/private posts must not be exposed through them.
+        // SCHEDULED is allowed: it becomes public on its own at the scheduled time.
+        if (!post.isPublished() && !PublishStatus.SCHEDULED.equals(post.getVisibility())) {
+            throw new BusinessRuleException("Only published or scheduled posts can be added to a series");
         }
 
         // Kiểm tra post đã có trong series chưa
         if (seriesPostRepository.existsBySeriesIdAndPostId(seriesId, dto.getPostId())) {
-            throw new BadRequestException("Post already exists in this series");
+            throw new ConflictException("Post already exists in this series");
         }
 
         // Xác định order index
@@ -220,7 +236,7 @@ public class SeriesService {
             orderIndex = currentPostCount + 1;
         } else {
             if (orderIndex < 1 || orderIndex > currentPostCount + 1) {
-                throw new BadRequestException("Invalid order index");
+                throw new IllegalArgumentException("Invalid order index");
             }
 
             // Dịch chuyển các bài viết khác
@@ -250,15 +266,15 @@ public class SeriesService {
     /**
      * Xóa bài viết khỏi series
      */
-    public SeriesResponseDTO removePostFromSeries(String seriesId, String postId, String userId) throws BadRequestException {
+    public SeriesResponseDTO removePostFromSeries(String seriesId, String postId, String userId) {
         log.info("Removing post: {} from series: {}", postId, seriesId);
 
         Series series = seriesRepository.findById(seriesId)
                 .orElseThrow(() -> new NotFoundException("Series not found with id: " + seriesId));
 
         // Kiểm tra quyền sở hữu
-        if (!series.getUser().getId().equals(userId)) {
-            throw new BadRequestException("You don't have permission to modify this series");
+        if (!SecurityUtils.isOwnerOrAdmin(series.getUser().getId(), userId)) {
+            throw new ForbiddenException("You don't have permission to modify this series");
         }
 
         SeriesPost seriesPost = seriesPostRepository.findBySeriesIdAndPostId(seriesId, postId)
@@ -284,15 +300,15 @@ public class SeriesService {
     /**
      * Sắp xếp lại thứ tự bài viết trong series
      */
-    public SeriesResponseDTO reorderPost(String seriesId, ReorderSeriesPostDTO dto, String userId) throws BadRequestException {
+    public SeriesResponseDTO reorderPost(String seriesId, ReorderSeriesPostDTO dto, String userId) {
         log.info("Reordering post: {} in series: {}", dto.getPostId(), seriesId);
 
         Series series = seriesRepository.findById(seriesId)
                 .orElseThrow(() -> new NotFoundException("Series not found with id: " + seriesId));
 
         // Kiểm tra quyền sở hữu
-        if (!series.getUser().getId().equals(userId)) {
-            throw new BadRequestException("You don't have permission to modify this series");
+        if (!SecurityUtils.isOwnerOrAdmin(series.getUser().getId(), userId)) {
+            throw new ForbiddenException("You don't have permission to modify this series");
         }
 
         SeriesPost seriesPost = seriesPostRepository.findBySeriesIdAndPostId(seriesId, dto.getPostId())
@@ -309,7 +325,7 @@ public class SeriesService {
         List<SeriesPost> allPosts = seriesPostRepository.findBySeriesIdOrderByOrderIndexAsc(seriesId);
 
         if (newIndex < 1 || newIndex > allPosts.size()) {
-            throw new BadRequestException("Invalid order index");
+            throw new IllegalArgumentException("Invalid order index");
         }
 
         // Xóa post khỏi vị trí cũ
@@ -332,15 +348,15 @@ public class SeriesService {
     /**
      * Xóa series
      */
-    public void deleteSeries(String seriesId, String userId) throws BadRequestException {
+    public void deleteSeries(String seriesId, String userId) {
         log.info("Deleting series: {} by user: {}", seriesId, userId);
 
         Series series = seriesRepository.findById(seriesId)
                 .orElseThrow(() -> new NotFoundException("Series not found with id: " + seriesId));
 
         // Kiểm tra quyền sở hữu
-        if (!series.getUser().getId().equals(userId)) {
-            throw new BadRequestException("You don't have permission to delete this series");
+        if (!SecurityUtils.isOwnerOrAdmin(series.getUser().getId(), userId)) {
+            throw new ForbiddenException("You don't have permission to delete this series");
         }
 
         seriesRepository.delete(series);
@@ -352,7 +368,7 @@ public class SeriesService {
      */
     @Transactional(readOnly = true)
     public Page<SeriesListDTO> getMostViewedSeries(int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(com.Nguyen.blogplatform.shared.util.PageLimits.page(page), com.Nguyen.blogplatform.shared.util.PageLimits.size(size));
         Page<Series> seriesPage = seriesRepository.findMostViewed(pageable);
         return seriesPage.map(this::mapToListDTO);
     }
@@ -362,8 +378,24 @@ public class SeriesService {
     /**
      * Map Series entity sang SeriesResponseDTO
      */
+    /**
+     * Read endpoints: the owner and admins see every post (to manage the series); everyone else only
+     * sees posts that are currently published, even if a post was unpublished after being added.
+     */
+    private SeriesResponseDTO mapToPublicResponseDTO(Series series) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        boolean isOwner = auth != null && auth.getPrincipal() instanceof UserDetailsImpl user
+                && user.getId().equals(series.getUser().getId());
+        return isOwner || SecurityUtils.isCurrentUserAdmin()
+                ? mapToResponseDTO(series)
+                : mapToResponseDTO(series, seriesPostRepository.findPublishedPostDtosBySeriesId(series.getId()));
+    }
+
     private SeriesResponseDTO mapToResponseDTO(Series series) {
-        List<SeriesPostDTO> posts = seriesPostRepository.findPostDtosBySeriesId(series.getId());
+        return mapToResponseDTO(series, seriesPostRepository.findPostDtosBySeriesId(series.getId()));
+    }
+
+    private SeriesResponseDTO mapToResponseDTO(Series series, List<SeriesPostDTO> posts) {
 
         return SeriesResponseDTO.builder()
                 .id(series.getId())
@@ -376,7 +408,7 @@ public class SeriesService {
                 .userAvatar(series.getUser().getAvatar())
                 .isActive(series.getIsActive())
                 .isCompleted(series.getIsCompleted())
-                .totalPosts(series.getTotalPosts())
+                .totalPosts(posts.size())
                 .viewCount(series.getViewCount())
                 .createdAt(series.getCreatedAt())
                 .updatedAt(series.getUpdatedAt())

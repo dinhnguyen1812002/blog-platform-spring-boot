@@ -9,7 +9,7 @@ import com.Nguyen.blogplatform.domain.post.domain.model.Post;
 import com.Nguyen.blogplatform.domain.post.dto.PostSummaryResponse;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.BookmarkRepository;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.PostRepository;
-import com.Nguyen.blogplatform.domain.user.domain.model.Role;
+
 import com.Nguyen.blogplatform.domain.user.domain.model.SocialMediaLink;
 import com.Nguyen.blogplatform.domain.user.domain.model.User;
 import com.Nguyen.blogplatform.domain.user.dto.PublicProfileResponse;
@@ -22,7 +22,7 @@ import com.Nguyen.blogplatform.shared.enums.ESocialMediaPlatform;
 import com.Nguyen.blogplatform.shared.exception.ConflictException;
 import com.Nguyen.blogplatform.shared.exception.NotFoundException;
 import com.Nguyen.blogplatform.shared.mapper.PostMapper;
-import com.Nguyen.blogplatform.shared.util.SlugUtil;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
@@ -401,12 +401,18 @@ public class UserProfileService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public PublicProfileResponse getPublicProfileBySlug(String slug) {
         User user = userRepository.findBySlug(slug)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         long postCount = postRepository.countByAuthor(user);
-        List<Post> featured = postRepository.findTop5ByAuthorAndFeaturedTrueOrderByCreatedAtDesc(user);
+        List<Post> featured = postRepository.findPublicFeaturedByAuthor(
+                user, com.Nguyen.blogplatform.shared.enums.PublishStatus.PUBLISHED, java.time.LocalDateTime.now(),
+                org.springframework.data.domain.PageRequest.of(0, 5));
         List<PostSummaryResponse> featuredDtos = postMapper.toPostSummaryList(featured, null, savedPostRepository);
+        featuredDtos.forEach(post -> {
+            if (post.author() != null) post.author().setEmail(null);
+        });
 
         Map<ESocialMediaPlatform, String> socialMediaLinks = user.getSocialMediaLinks().stream()
                 .filter(link -> link.getUrl() != null)

@@ -1,8 +1,10 @@
 # Blog Platform - Spring Boot Backend
 
+> Tài liệu kỹ thuật và kiến trúc cập nhật theo mã hiện tại: [docs/ARCHITECTURE_AND_OPERATIONS.md](docs/ARCHITECTURE_AND_OPERATIONS.md). Các phần bên dưới có thể chưa phản ánh những thay đổi mới nhất.
+
 [![Java](https://img.shields.io/badge/Java-25-ED8B00.svg?style=flat&logo=openjdk&logoColor=white)](https://jdk.java.net/25/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.0-6DB33F.svg?style=flat&logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
-[![Gradle](https://img.shields.io/badge/Gradle-8.5-02303A.svg?style=flat&logo=gradle&logoColor=white)](https://gradle.org/)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.1.2-6DB33F.svg?style=flat&logo=spring&logoColor=white)](https://spring.io/projects/spring-boot)
+[![Gradle](https://img.shields.io/badge/Gradle-9.2.0-02303A.svg?style=flat&logo=gradle&logoColor=white)](https://gradle.org/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.4-4479A1.svg?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
 [![Docker](https://img.shields.io/badge/Docker-24.0-2496ED.svg?style=flat&logo=docker&logoColor=white)](https://www.docker.com/)
 
@@ -136,18 +138,17 @@ src/main/java/com/Nguyen/blogplatform/
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | Java | 25 | Primary language |
-| Spring Boot | 4.0.0-SNAPSHOT | Application framework |
-| Spring Security | 6.x | Authentication & authorization |
-| Spring Data JPA | 3.x | Data access layer |
-| Spring WebSocket | 6.x | Real-time messaging |
-| Spring Cache | 4.0.0-M3 | Caching abstraction |
-| Spring Kafka | 3.x | Message streaming |
-| Spring Actuator | 3.x | Health monitoring |
+| Spring Boot | 4.1.2 | Application framework |
+| Spring Security | Spring Boot BOM | Authentication & authorization |
+| Spring Data JPA | Spring Boot BOM | Data access layer |
+| Spring WebSocket | Spring Boot BOM | Real-time messaging |
+| Spring Cache | Spring Boot BOM | Caching abstraction |
+| Spring Kafka | Spring Boot BOM | Dependency declared; no Kafka producer/consumer found |
+| Spring Actuator | Spring Boot BOM | Health monitoring |
 | Thymeleaf | 3.x | Template engine |
 | Lombok | 1.18+ | Code generation |
-| ModelMapper | 3.2.6 | DTO mapping |
-| Flyway | 12.4.0 | Database migrations |
-| Swagger/OpenAPI | 2.8.14 | API documentation |
+| Flyway | 13.10.3 | Database migrations |
+| springdoc/OpenAPI | 3.2.0 | API documentation |
 
 ### Database & Storage
 

@@ -43,6 +43,7 @@ public class UserDetailsImpl implements UserDetails {
 
 
     private Collection<? extends GrantedAuthority> authorities;
+    private boolean banned;
 
     public UserDetailsImpl(String id, String username, String email, String password,  String slug, String avatar,
                            List<Role> roles, Collection<? extends GrantedAuthority> authorities) {
@@ -64,11 +65,14 @@ public class UserDetailsImpl implements UserDetails {
         if (user.getRoles() != null && !user.getRoles().isEmpty()) {
             roles = new ArrayList<>(user.getRoles());
             authorities = user.getRoles().stream()
-                    .map(role -> new SimpleGrantedAuthority(role.getName().name()))
+                    .map(role -> role.getName().name())
+                    .map(name -> name.startsWith("ROLE_") ? name : "ROLE_" + name)
+                    .distinct()
+                    .map(SimpleGrantedAuthority::new)
                     .collect(Collectors.toList());
         }
 
-        return new UserDetailsImpl(
+        UserDetailsImpl details = new UserDetailsImpl(
                 user.getId(),
                 user.getUsername(),
                 user.getEmail(),
@@ -77,6 +81,8 @@ public class UserDetailsImpl implements UserDetails {
                 user.getAvatar(),
                 roles,
                 authorities);
+        details.banned = user.isBanned();
+        return details;
     }
 
     @Override
@@ -103,7 +109,7 @@ public class UserDetailsImpl implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true;
+        return !banned;
     }
 
     @Override

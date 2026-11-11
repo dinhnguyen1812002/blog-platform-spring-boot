@@ -1,6 +1,8 @@
 package com.Nguyen.blogplatform.domain.post.application;
 
 
+import com.Nguyen.blogplatform.shared.security.SecurityUtils;
+import com.Nguyen.blogplatform.shared.util.HtmlSanitizer;
 import com.Nguyen.blogplatform.domain.notification.application.NotificationService;
 import com.Nguyen.blogplatform.domain.notification.dto.PublicArticleNotification;
 import com.Nguyen.blogplatform.domain.post.domain.model.Category;
@@ -67,7 +69,8 @@ public class AuthorServices {
         Page<Post> postsPage = postRepository.findByAuthorWithFilters(
                 username, keyword, categoryName, tagName, pageable);
 
-        return postsPage.map(post -> postMapper.toPostSummaryResponse(post, getCurrentUser(), Set.of()));
+        var content = postMapper.toPostSummaryList(postsPage.getContent(), getCurrentUser(), bookmarkRepository);
+        return new org.springframework.data.domain.PageImpl<>(content, pageable, postsPage.getTotalElements());
     }
 
     /**
@@ -79,14 +82,8 @@ public class AuthorServices {
         User author = userRepository.findByUsername(username)
                 .orElseThrow(() -> new NotFoundException("User not found: " + username));
 
-        if (postRepository.existsByTitleIgnoreCase(request.title())) {
-            throw new IllegalArgumentException("Title already exists");
-        }
-
-        String slug = SlugUtil.toSlug(request.title());
-        if (postRepository.existsBySlug(slug)) {
-            slug = slug + "-" + UUID.randomUUID().toString().substring(0, 8);
-        }
+        // Titles need not be unique; only the slug (URL identity) is.
+        String slug = generateUniqueSlug(request.title(), null);
 
         Set<Category> categories = getCategoriesFromIds(request.categories());
         Set<Tags> tags = getTagsFromIds(request.tags());
@@ -94,21 +91,24 @@ public class AuthorServices {
         PublishStatus visibility = request.visibility() != null ? request.visibility() : PublishStatus.DRAFT;
         LocalDateTime publishedAt = resolvePublishedAt(visibility, request);
 
+        String content = HtmlSanitizer.sanitizePostContent(request.content());
+
         String excerpt = request.excerpt();
         if (excerpt == null || excerpt.isBlank()) {
-            excerpt = ExcerptUtil.excerpt(request.content());
+            excerpt = ExcerptUtil.excerpt(content);
         }
 
         Post post = Post.builder()
                 .title(request.title())
                 .slug(slug)
                 .excerpt(excerpt)
-                .content(request.content())
+                .content(content)
                 .thumbnail(request.thumbnail())
                 .author(author)
                 .categories(categories)
                 .tags(tags)
-                .featured(request.featured() != null && request.featured())
+                // Only admins may feature posts; authors can not self-promote
+                .featured(isCurrentUserAdmin() && Boolean.TRUE.equals(request.featured()))
                 .visibility(visibility)
                 .isPublish(PublishStatus.PUBLISHED.equals(visibility))
                 .publishedAt(publishedAt)
@@ -135,38 +135,58 @@ public class AuthorServices {
         
         validateOwnership(post);
 
-        boolean previouslyPublished = post.isPublished();
+        // First real publication date. A SCHEDULED post's publishedAt is only the planned time.
+        LocalDateTime firstPublishedAt =
+                PublishStatus.SCHEDULED.equals(post.getVisibility()) ? null : post.getPublishedAt();
 
-        if (!post.getTitle().equalsIgnoreCase(request.title()) && postRepository.existsByTitleIgnoreCase(request.title())) {
-            throw new IllegalArgumentException("Title already exists");
+        // Slug is the post's URL identity: once published it never changes, so shared links
+        // keep working. Unpublished drafts follow their title.
+        if (firstPublishedAt == null && !post.getTitle().equals(request.title())) {
+            post.setSlug(generateUniqueSlug(request.title(), post.getId()));
         }
-
         post.setTitle(request.title());
-        post.setSlug(SlugUtil.toSlug(request.title()));
+
+        String content = HtmlSanitizer.sanitizePostContent(request.content());
 
         String excerpt = request.excerpt();
         if (excerpt == null || excerpt.isBlank()) {
-            excerpt = ExcerptUtil.excerpt(request.content());
+            excerpt = ExcerptUtil.excerpt(content);
         }
         post.setExcerpt(excerpt);
 
-        post.setContent(request.content());
+        post.setContent(content);
         post.setThumbnail(request.thumbnail());
         post.setCategories(getCategoriesFromIds(request.categories()));
         post.setTags(getTagsFromIds(request.tags()));
-        post.setFeatured(request.featured() != null && request.featured());
+        // Only admins may change featured; for authors the current value is kept
+        if (isCurrentUserAdmin() && request.featured() != null) {
+            post.setFeatured(request.featured());
+        }
         
         if (request.visibility() != null) {
-            post.setVisibility(request.visibility());
-            post.setIsPublish(PublishStatus.PUBLISHED.equals(request.visibility()));
-            post.setPublishedAt(resolvePublishedAt(request.visibility(), request));
-            post.setScheduledPublishAt(PublishStatus.SCHEDULED.equals(request.visibility()) ? request.scheduledPublishAt() : null);
+            PublishStatus visibility = request.visibility();
+            switch (visibility) {
+                // Editing never re-publishes: keep the first publication date
+                case PUBLISHED -> post.setPublishedAt(
+                        firstPublishedAt != null ? firstPublishedAt : resolvePublishedAt(visibility, request));
+                case SCHEDULED -> {
+                    if (firstPublishedAt != null) {
+                        throw new IllegalArgumentException("A post that was already published cannot be scheduled again");
+                    }
+                    post.setPublishedAt(resolvePublishedAt(visibility, request));
+                }
+                // Unpublishing (DRAFT/PRIVATE) keeps the historical first publication date
+                default -> post.setPublishedAt(firstPublishedAt);
+            }
+            post.setVisibility(visibility);
+            post.setIsPublish(PublishStatus.PUBLISHED.equals(visibility));
+            post.setScheduledPublishAt(PublishStatus.SCHEDULED.equals(visibility) ? request.scheduledPublishAt() : null);
         }
 
         Post updatedPost = postRepository.save(post);
 
-        // Send notification if it just became published
-        if (!previouslyPublished && updatedPost.isPublished()) {
+        // Notify followers only on the very first publication, not on edits or re-publishes
+        if (firstPublishedAt == null && updatedPost.isPublished()) {
             sendPublishNotification(updatedPost);
         }
 
@@ -229,13 +249,47 @@ public class AuthorServices {
 
     private void validateOwnership(Post post) {
         String currentUsername = getCurrentUsername();
-        if (!post.getAuthor().getUsername().equals(currentUsername)) {
+        // Authors manage their own posts; admins manage every post
+        if (!post.getAuthor().getUsername().equals(currentUsername) && !SecurityUtils.isCurrentUserAdmin()) {
             throw new ForbiddenException("You don't have permission to modify this post");
         }
     }
 
     private String getCurrentUsername() {
         return SecurityContextHolder.getContext().getAuthentication().getName();
+    }
+
+    /**
+     * Builds a unique slug from the title. Empty results (emoji-only titles) fall back to
+     * "post-xxxxxxxx"; collisions get a short random suffix.
+     */
+    private String generateUniqueSlug(String title, String excludePostId) {
+        String base = SlugUtil.toSlug(title);
+        if (base == null || base.isBlank()) {
+            base = "post";
+        }
+        String slug = base;
+        int attempts = 0;
+        while (isSlugTaken(slug, excludePostId)) {
+            if (++attempts > 5) {
+                throw new IllegalStateException("Could not generate a unique slug");
+            }
+            slug = base + "-" + UUID.randomUUID().toString().substring(0, 8);
+        }
+        if ("post".equals(slug)) {
+            slug = "post-" + UUID.randomUUID().toString().substring(0, 8);
+        }
+        return slug;
+    }
+
+    private boolean isSlugTaken(String slug, String excludePostId) {
+        return excludePostId == null
+                ? postRepository.existsBySlug(slug)
+                : postRepository.existsBySlugAndIdNot(slug, excludePostId);
+    }
+
+    private boolean isCurrentUserAdmin() {
+        return SecurityUtils.isCurrentUserAdmin();
     }
 
     private User getCurrentUser() {

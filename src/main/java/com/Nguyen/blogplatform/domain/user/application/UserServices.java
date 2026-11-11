@@ -2,6 +2,8 @@ package com.Nguyen.blogplatform.domain.user.application;
 
 
 
+import com.Nguyen.blogplatform.infrastructure.security.TokenVersionService;
+import com.Nguyen.blogplatform.domain.auth.infrastructure.repository.RefreshTokenRepository;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.PostRepository;
 import com.Nguyen.blogplatform.domain.user.domain.model.Role;
 import com.Nguyen.blogplatform.domain.user.domain.model.User;
@@ -12,15 +14,10 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.http.ResponseCookie;
+
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -46,8 +43,14 @@ public class UserServices {
 
     @Autowired
     private PostRepository postRepository;
-    @Value("${base-url}")
-    private String bashUrl;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private TokenVersionService tokenVersionService;
+    @Value("${frontend-url}")
+    private String frontendUrl;
 
     // Modify sendResetEmail method
     public void sendResetEmail(String email) throws MessagingException {
@@ -59,7 +62,8 @@ public class UserServices {
         userRepository.save(user);
 
         // Use the base URL for the reset link
-        String resetUrl =  bashUrl +  "/auth/reset-password?token=" + user.getResetToken();
+        // Link to the SPA reset page (frontend reads ?token= and calls POST /api/v1/auth/reset-password)
+        String resetUrl = frontendUrl + "/reset-password?token=" + user.getResetToken();
 
         Context context = new Context();
         context.setVariable("resetUrl", resetUrl);
@@ -85,6 +89,10 @@ public class UserServices {
         user.setResetToken(null);
         user.setResetTokenExpiry(null);
         userRepository.save(user);
+
+        // Whoever had the old password (or a stolen session) must sign in again
+        refreshTokenRepository.deleteAllByUserId(user.getId());
+        tokenVersionService.revokeAll(user.getId());
     }
 
     public void updatePassword(User user, String oldPassword, String newPassword) {
@@ -93,6 +101,9 @@ public class UserServices {
         }
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
+        // Invalidate every access token issued with the old password. The caller issues a
+        // fresh refresh cookie, so the current device silently refreshes and stays signed in.
+        tokenVersionService.revokeAll(user.getId());
     }
 
     public User findByEmail(String email) {
@@ -119,21 +130,19 @@ public class UserServices {
         return user.getRoles();
     }
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<TopUserResponse> getTopUser(int limit) {
-        return userRepository.findAll()
-                .stream()
-                .map(user -> new TopUserResponse(
-                        user.getId(),
-                        user.getUsername(),
-                        user.getEmail(),
-                        user.getAvatar(),
-                        user.getBio(),
-                        postRepository.countByAuthor(user),
-                        user.getSocialMediaLinks()
-                ))
-                .sorted(Comparator.comparingLong(TopUserResponse::postCount).reversed())
-                .limit(limit)
-                .toList();
+        if (limit <= 0) return List.of();
+        var rows = userRepository.findTopUserIdsByPostCount(org.springframework.data.domain.PageRequest.of(0, Math.min(limit, 100)));
+        if (rows.isEmpty()) return List.of();
+        var ids = rows.stream().map(row -> (String) row[0]).toList();
+        var users = userRepository.findAllWithSocialLinksByIdIn(ids).stream()
+                .collect(java.util.stream.Collectors.toMap(User::getId, user -> user));
+        return rows.stream().map(row -> {
+            User user = users.get((String) row[0]);
+            return new TopUserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getAvatar(),
+                    user.getBio(), ((Number) row[1]).longValue(), user.getSocialMediaLinks());
+        }).toList();
     }
 
 }

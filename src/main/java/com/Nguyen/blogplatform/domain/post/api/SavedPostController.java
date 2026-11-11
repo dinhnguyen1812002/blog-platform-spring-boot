@@ -52,7 +52,7 @@ public class SavedPostController {
     public ResponseEntity<Page<SavedPostResponse>> getSavedPosts(
             @Parameter(description = "Page number (0-based)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "Page size") @RequestParam(defaultValue = "10") int size) {
-        Pageable pageable = PageRequest.of(page, size);
+        Pageable pageable = PageRequest.of(com.Nguyen.blogplatform.shared.util.PageLimits.page(page), com.Nguyen.blogplatform.shared.util.PageLimits.size(size));
         Page<SavedPostResponse> savedPosts = savedPostService.getUserSavedPosts(pageable);
         return ResponseEntity.ok(savedPosts);
     }

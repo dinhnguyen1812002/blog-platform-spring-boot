@@ -3,7 +3,7 @@ package com.Nguyen.blogplatform.shared.mapper;
 
 import com.Nguyen.blogplatform.domain.comment.application.CommentService;
 import com.Nguyen.blogplatform.domain.comment.dto.CommentResponse;
-import com.Nguyen.blogplatform.domain.post.domain.model.Bookmark;
+
 import com.Nguyen.blogplatform.domain.post.domain.model.Category;
 import com.Nguyen.blogplatform.domain.post.domain.model.Post;
 import com.Nguyen.blogplatform.domain.post.domain.model.Rating;
@@ -13,6 +13,7 @@ import com.Nguyen.blogplatform.domain.post.dto.PostResponse;
 import com.Nguyen.blogplatform.domain.post.dto.PostSummaryResponse;
 import com.Nguyen.blogplatform.domain.post.dto.TagResponse;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.BookmarkRepository;
+import com.Nguyen.blogplatform.domain.post.infrastructure.repository.PostRepository;
 import com.Nguyen.blogplatform.domain.user.domain.model.User;
 import com.Nguyen.blogplatform.domain.user.dto.UserResponse;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
+import java.util.Map;
+import java.util.HashMap;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -43,6 +46,7 @@ public class PostMapper {
     private static final int DEFAULT_COMMENT_PAGE_SIZE = 10;
 
     private final CommentService commentService;
+    private final PostRepository postRepository;
 
     // -------------------------------------------------------------------------
     // Public API
@@ -57,33 +61,6 @@ public class PostMapper {
         return buildPostResponse(post, currentUser, bookmarkedPostIds, Collections.emptyList());
     }
 
-    /** Summary card — no content body, no comments. */
-    public PostSummaryResponse toPostSummaryResponse(Post post, User currentUser,
-                                                     Set<String> bookmarkedPostIds) {
-        if (post == null) return null;
-
-        return new PostSummaryResponse(
-                post.getId(),
-                post.getTitle(),
-                post.getSlug(),
-                post.getExcerpt(),
-                post.getThumbnail(),
-                post.getCreatedAt(),
-                post.getPublishedAt(),
-                post.getFeatured(),
-                post.getVisibility(),
-                post.getViewCount(),
-                likeCount(post),
-                averageRating(post),
-                toUserResponse(post.getAuthor()),
-                mapCategories(post.getCategories()),
-                mapTags(post.getTags()),
-                post.getComments().size(),
-                isLikedBy(post, currentUser),
-                isBookmarked(post.getId(), bookmarkedPostIds)
-        );
-    }
-
     /** Batch summary list — resolves bookmarks in a single query. */
     public List<PostSummaryResponse> toPostSummaryList(Collection<Post> posts, User currentUser,
                                                        BookmarkRepository bookmarkRepository) {
@@ -91,9 +68,16 @@ public class PostMapper {
 
         Set<String> bookmarkedIds = resolveBookmarks(currentUser, posts, bookmarkRepository);
 
-        return posts.stream()
-                .map(p -> toPostSummaryResponse(p, currentUser, bookmarkedIds))
-                .collect(Collectors.toList());
+        Map<String, Object[]> stats = loadStats(posts, currentUser);
+        return posts.stream().map(p -> {
+            Object[] row = stats.get(p.getId());
+            return new PostSummaryResponse(p.getId(), p.getTitle(), p.getSlug(), p.getExcerpt(),
+                    p.getThumbnail(), p.getCreatedAt(), p.getPublishedAt(), p.getFeatured(), p.getVisibility(),
+                    p.getViewCount(), ((Number) row[1]).longValue(), row[2] == null ? 0.0 : ((Number) row[2]).doubleValue(),
+                    toUserResponse(p.getAuthor()), mapCategories(p.getCategories()), mapTags(p.getTags()),
+                    ((Number) row[3]).intValue(), ((Number) row[4]).longValue() > 0,
+                    bookmarkedIds.contains(p.getId()));
+        }).collect(Collectors.toList());
     }
 
     /**
@@ -108,6 +92,39 @@ public class PostMapper {
         Set<String> bookmarkedIds     = resolveBookmarkSingle(currentUser, post, bookmarkRepository);
 
         return buildPostResponse(post, currentUser, bookmarkedIds, comments);
+    }
+
+    public Map<String, PostResponse> toPostResponsesForSavedPosts(Collection<Post> posts, User currentUser) {
+        return toPostResponses(posts, currentUser, posts.stream().map(Post::getId).collect(Collectors.toSet()), true);
+    }
+
+    public Map<String, PostResponse> toPostResponses(Collection<Post> posts, User currentUser,
+                                                      Set<String> bookmarkedIds, boolean includeComments) {
+        if (posts.isEmpty()) return Map.of();
+        Map<String, Object[]> stats = loadStats(posts, currentUser);
+        List<String> ids = posts.stream().map(Post::getId).toList();
+        Map<String, List<CommentResponse>> comments = includeComments
+                ? commentService.getFirstCommentsForPosts(ids, DEFAULT_COMMENT_PAGE_SIZE) : Map.of();
+        Map<String, PostResponse> result = new HashMap<>();
+        for (Post p : posts) {
+            Object[] row = stats.get(p.getId());
+            result.put(p.getId(), new PostResponse(p.getId(), p.getTitle(), p.getSlug(), p.getExcerpt(), p.getContent(),
+                    p.getThumbnail(), p.getCreatedAt(), p.getUpdatedAt(), p.getPublishedAt(), p.getFeatured(),
+                    p.getVisibility(), p.getScheduledPublishAt(), p.getViewCount(), ((Number) row[1]).longValue(),
+                    row[2] == null ? 0.0 : ((Number) row[2]).doubleValue(), toUserResponse(p.getAuthor()),
+                    mapCategories(p.getCategories()), mapTags(p.getTags()), ((Number) row[4]).longValue() > 0,
+                    bookmarkedIds.contains(p.getId()), row[5] == null ? null : ((Number) row[5]).intValue(), ((Number) row[3]).intValue(),
+                    comments.getOrDefault(p.getId(), Collections.emptyList())));
+        }
+        return result;
+    }
+
+    private Map<String, Object[]> loadStats(Collection<Post> posts, User user) {
+        List<String> ids = posts.stream().map(Post::getId).distinct().toList();
+        postRepository.fetchAuthorsAndCategories(ids);
+        postRepository.fetchTags(ids);
+        return postRepository.findResponseStats(ids, user == null ? null : user.getId()).stream()
+                .collect(Collectors.toMap(row -> (String) row[0], row -> row));
     }
 
     public UserResponse toUserResponse(User user) {

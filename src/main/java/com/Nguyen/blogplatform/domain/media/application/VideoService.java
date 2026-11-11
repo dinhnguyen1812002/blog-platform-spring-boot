@@ -1,5 +1,7 @@
 package com.Nguyen.blogplatform.domain.media.application;
 
+import com.Nguyen.blogplatform.shared.util.FileValidationUtils;
+
 
 
 import com.Nguyen.blogplatform.domain.media.domain.model.Video;
@@ -25,6 +27,9 @@ public class VideoService {
 
     private final String storagePath;
 
+    private static final java.util.Set<String> ALLOWED_VIDEO_TYPES =
+            java.util.Set.of("video/mp4", "video/webm", "video/ogg");
+
     private final Logger logger = Logger.getLogger(VideoService.class.getName());
 
     public VideoService(VideoRepository videoRepository, @Value("${video.storage.path}") String storagePath) {
@@ -36,16 +41,27 @@ public class VideoService {
     public List<Video> uploadVideos(MultipartFile[] files) throws IOException {
         List<Video> savedVideos = new ArrayList<>();
         UrlUtils urlUtils = new UrlUtils();
+        Path storageRoot = Paths.get(storagePath).toAbsolutePath().normalize();
         for (MultipartFile fileItem : files) {
-            String filename = System.currentTimeMillis() + "_" + fileItem.getOriginalFilename();
-            Path path = Paths.get(storagePath, filename);
+            String contentType = fileItem.getContentType();
+            if (fileItem.isEmpty() || contentType == null || !ALLOWED_VIDEO_TYPES.contains(contentType)) {
+                throw new IllegalArgumentException("Only MP4, WebM or Ogg video files are allowed");
+            }
+            String safeName = FileValidationUtils.sanitizeFilename(fileItem.getOriginalFilename());
+            if (safeName == null || safeName.isBlank()) safeName = "video";
+            String filename = System.currentTimeMillis() + "_" + safeName;
+            Path path = storageRoot.resolve(filename).normalize();
+            // Defense in depth: never write outside the storage directory
+            if (!path.startsWith(storageRoot)) {
+                throw new IllegalArgumentException("Invalid file name");
+            }
             Files.write(path, fileItem.getBytes());
             String url =  urlUtils.getBaseEnvLinkURL() + path.toString()  ;
             Video video = new Video();
-            video.setTitle(fileItem.getOriginalFilename());
+            video.setTitle(safeName);
             video.setFilePath(path.toString());
             video.setUrl(url);
-            video.setContentType(fileItem.getContentType());
+            video.setContentType(contentType);
             savedVideos.add(videoRepository.save(video));
             logger.info(path.toString());
         }

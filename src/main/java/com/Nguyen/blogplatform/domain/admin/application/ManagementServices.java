@@ -1,6 +1,11 @@
 package com.Nguyen.blogplatform.domain.admin.application;
 
 
+import org.springframework.security.core.context.SecurityContextHolder;
+import com.Nguyen.blogplatform.shared.exception.BusinessRuleException;
+import com.Nguyen.blogplatform.domain.auth.application.UserDetailsImpl;
+import com.Nguyen.blogplatform.infrastructure.security.TokenVersionService;
+import com.Nguyen.blogplatform.domain.auth.infrastructure.repository.RefreshTokenRepository;
 import com.Nguyen.blogplatform.domain.comment.infrastructure.repository.CommentRepository;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.BookmarkRepository;
 import com.Nguyen.blogplatform.domain.post.infrastructure.repository.PostRepository;
@@ -31,6 +36,8 @@ public class ManagementServices {
     private final CommentRepository commentRepository;
     private final RatingRepository ratingRepository;
     private final BookmarkRepository bookmarkRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+    private final TokenVersionService tokenVersionService;
 
 
     /**
@@ -39,9 +46,23 @@ public class ManagementServices {
      * @param pageable Pagination information (page, size, sort).
      * @return Page of UserAdminResponse objects containing user details and activity counts.
      */
+    @Transactional(readOnly = true)
     public Page<UserAdminResponse> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(this::mapToUserResponse);
+        Page<User> users = userRepository.findAll(pageable);
+        if (users.isEmpty()) return users.map(this::mapToUserResponse);
+        var ids = users.getContent().stream().map(User::getId).toList();
+        var counts = userRepository.findAdminCounts(ids).stream()
+                .collect(Collectors.toMap(row -> (String) row[0], row -> row));
+        return users.map(user -> {
+            Object[] row = counts.get(user.getId());
+            return UserAdminResponse.builder().id(user.getId()).username(user.getUsername())
+                    .email(user.getEmail()).avatar(user.getAvatar())
+                    .postCount(((Number) row[1]).longValue()).commentCount(((Number) row[2]).longValue())
+                    .ratingCount(((Number) row[3]).longValue()).bookmarkCount(((Number) row[4]).longValue())
+                    .likeCount(((Number) row[5]).longValue())
+                    .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
+                    .banned(user.isBanned()).banReason(user.getBanReason()).build();
+        });
     }
 
     @Transactional
@@ -72,9 +93,19 @@ public class ManagementServices {
     @Transactional
     public UserAdminResponse banUser(String userId, BanRequest banRequest) {
         User user = findUserById(userId);
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof UserDetailsImpl current
+                && current.getId().equals(userId)) {
+            throw new BusinessRuleException("You cannot ban yourself");
+        }
         user.setBanned(true);
         user.setBanReason(banRequest.getReason());
         userRepository.save(user);
+
+        // Ban takes effect immediately: no new access tokens via refresh, and every
+        // already-issued access token is rejected on its next request.
+        refreshTokenRepository.deleteAllByUserId(userId);
+        tokenVersionService.revokeAll(userId);
         return mapToUserResponse(user);
     }
     private User findUserById(String userId) {
@@ -90,7 +121,7 @@ public class ManagementServices {
                 .postCount(postRepository.countByAuthor(user))
                 .commentCount(commentRepository.countByUser(user))
                 .ratingCount(ratingRepository.countByUser(user))
-                .likeCount(user.getLike().size())
+                .likeCount(postRepository.countLikesByUserId(user.getId()))
                 .bookmarkCount(bookmarkRepository.countByUser(user))
                 .roles(user.getRoles().stream().map(Role::getName).collect(Collectors.toSet()))
                 .banned(user.isBanned())

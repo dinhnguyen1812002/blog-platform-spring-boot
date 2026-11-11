@@ -27,7 +27,11 @@ public class GlobalSearchService {
     private final SeriesRepository seriesRepository;
     private final UserRepository userRepository;
 
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public GlobalSearchResponse search(String keyword) {
+        if (keyword == null || keyword.isBlank() || keyword.length() > 200)
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST, "Search keyword must contain 1 to 200 characters");
+        keyword = keyword.trim();
         Pageable limitFive = PageRequest.of(0, 5);
 
         // Search Posts
@@ -61,9 +65,7 @@ public class GlobalSearchService {
                 .collect(Collectors.toList());
 
         // Search Users
-        List<SearchItemDTO> users = userRepository.findAll().stream()
-                .filter(u -> u.getUsername().toLowerCase().contains(keyword.toLowerCase()))
-                .limit(5)
+        List<SearchItemDTO> users = userRepository.findByUsernameContainingIgnoreCaseOrderByUsernameAsc(keyword, limitFive).stream()
                 .map(u -> SearchItemDTO.builder()
                         .title(u.getUsername())
                         .slug(u.getSlug())

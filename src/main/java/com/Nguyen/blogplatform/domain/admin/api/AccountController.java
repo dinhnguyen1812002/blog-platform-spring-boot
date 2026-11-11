@@ -3,6 +3,8 @@ package com.Nguyen.blogplatform.domain.admin.api;
 
 
 import com.Nguyen.blogplatform.domain.admin.application.ManagementServices;
+import com.Nguyen.blogplatform.domain.user.application.UserProfileService;
+import com.Nguyen.blogplatform.domain.user.dto.UserProfileResponse;
 import com.Nguyen.blogplatform.domain.user.domain.model.User;
 import com.Nguyen.blogplatform.domain.user.dto.BanRequest;
 import com.Nguyen.blogplatform.domain.user.dto.UserAdminResponse;
@@ -18,9 +20,16 @@ import java.util.Set;
 @RestController
 @RequestMapping("/api/v1/admin/users")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class AccountController {
 
     private final ManagementServices managementServices;
+    private final UserProfileService userProfileService;
+
+    @GetMapping("/{userId}/profile")
+    public ResponseEntity<UserProfileResponse> getUserProfile(@PathVariable String userId) {
+        return ResponseEntity.ok(userProfileService.getUserProfileById(userId));
+    }
 
 
     /**

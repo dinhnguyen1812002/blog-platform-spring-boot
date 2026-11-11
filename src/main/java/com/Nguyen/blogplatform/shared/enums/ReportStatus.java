@@ -26,5 +26,17 @@ public enum ReportStatus {
     /**
      * Report has been reviewed and dismissed as invalid or unfounded
      */
-    DISMISSED
+    DISMISSED;
+
+    /**
+     * Allowed workflow: PENDING → UNDER_REVIEW → (RESOLVED | DISMISSED).
+     * RESOLVED and DISMISSED are terminal; reopening needs its own audited action.
+     */
+    public boolean canTransitionTo(ReportStatus next) {
+        return switch (this) {
+            case PENDING -> next == UNDER_REVIEW;
+            case UNDER_REVIEW -> next == RESOLVED || next == DISMISSED;
+            case RESOLVED, DISMISSED -> false;
+        };
+    }
 }

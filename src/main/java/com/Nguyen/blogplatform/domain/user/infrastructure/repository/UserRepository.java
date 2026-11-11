@@ -23,6 +23,7 @@ import java.util.Optional;
 @Repository
 public interface UserRepository extends JpaRepository<User, String> {
     Optional<User> findByUsername(String username);
+    List<User> findByUsernameContainingIgnoreCaseOrderByUsernameAsc(String username, Pageable pageable);
     @Query("SELECT u FROM User u JOIN FETCH u.roles WHERE u.username = :username")
     Optional<User> findByUsernameWithRoles(@Param("username") String username);
     Optional<User> findByEmail(String email);
@@ -62,6 +63,21 @@ public interface UserRepository extends JpaRepository<User, String> {
 //
 
 
+
+    @Query("SELECT u.id, COUNT(p) FROM User u LEFT JOIN u.posts p GROUP BY u.id ORDER BY COUNT(p) DESC, u.id")
+    List<Object[]> findTopUserIdsByPostCount(Pageable pageable);
+
+    @Query("SELECT DISTINCT u FROM User u LEFT JOIN FETCH u.socialMediaLinks WHERE u.id IN :ids")
+    List<User> findAllWithSocialLinksByIdIn(@Param("ids") List<String> ids);
+
+    @Query("SELECT u.id, (SELECT COUNT(p) FROM Post p WHERE p.author = u), " +
+           "(SELECT COUNT(c) FROM Comment c WHERE c.user = u), " +
+           "(SELECT COUNT(r) FROM Rating r WHERE r.user = u), " +
+           "(SELECT COUNT(b) FROM Bookmark b WHERE b.user = u), " +
+           // Likes live in post_like (Post.likes); the user_like table is never written
+           "(SELECT COUNT(l) FROM Post p2 JOIN p2.likes l WHERE l = u) " +
+           "FROM User u WHERE u.id IN :ids")
+    List<Object[]> findAdminCounts(@Param("ids") List<String> ids);
 
     List<User> findAllByOrderByCreatedAtDesc(Pageable pageable);
     boolean existsByRoles_Name(ERole name);

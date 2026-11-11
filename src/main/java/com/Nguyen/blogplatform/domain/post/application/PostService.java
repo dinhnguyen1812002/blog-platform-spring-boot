@@ -2,6 +2,7 @@ package com.Nguyen.blogplatform.domain.post.application;
 
 
 
+import com.Nguyen.blogplatform.shared.exception.BusinessRuleException;
 import com.Nguyen.blogplatform.domain.analytics.application.ViewCountService;
 import com.Nguyen.blogplatform.domain.auth.application.UserDetailsImpl;
 import com.Nguyen.blogplatform.domain.post.domain.model.Category;
@@ -67,15 +68,15 @@ public class PostService {
     public boolean toggleLike(String postId) {
         Post post = findPostById(postId);
         User user = getCurrentUserOrThrow();
-        boolean isLiked = post.getLikes().contains(user);
+        requireEngageable(post);
 
-        if (isLiked) {
-            post.getLikes().remove(user);
-        } else {
-            post.getLikes().add(user);
+        // Existence query + direct insert/delete: never loads the full likes collection
+        if (postRepository.countLike(postId, user.getId()) > 0) {
+            postRepository.deleteLike(postId, user.getId());
+            return false;
         }
-        postRepository.save(post);
-        return !isLiked;
+        postRepository.insertLike(postId, user.getId());
+        return true;
     }
 
     /**
@@ -89,7 +90,11 @@ public class PostService {
 
         Post post = findPostById(postId);
         User user = getCurrentUserOrThrow();
-        
+        requireEngageable(post);
+        if (post.getAuthor().getId().equals(user.getId())) {
+            throw new BusinessRuleException("You cannot rate your own post");
+        }
+
         Rating rating = ratingRepository.findByPostAndUser(post, user)
                 .orElseGet(() -> {
                     Rating newRating = new Rating(score, post, user);
@@ -169,6 +174,16 @@ public class PostService {
         return postMapper.toPostResponseWithComments(post, getCurrentUser(), bookmarkRepository);
     }
 
+    /**
+     * Likes and ratings are only allowed on posts that are publicly published.
+     * Unpublished posts are reported as "not found" so their existence isn't leaked.
+     */
+    private void requireEngageable(Post post) {
+        if (!post.isPublished()) {
+            throw new NotFoundException("Post not found");
+        }
+    }
+
     private Post findPostById(String postId) {
         return postRepository.findById(postId)
                 .orElseThrow(() -> new NotFoundException("Post not found with id: " + postId));
@@ -198,7 +213,11 @@ public class PostService {
     /**
      * Enforces privacy rules for post access.
      */
-    private void enforcePrivacy(Post post) {
+    void enforcePrivacy(Post post) {
+        enforcePrivacy(post, getCurrentUser());
+    }
+
+    void enforcePrivacy(Post post, User currentUser) {
         // A post is considered public if its visibility is PUBLISHED and its publishedAt time has passed (or is null)
         boolean isPubliclyAvailable = post.isPublished();
 
@@ -206,7 +225,6 @@ public class PostService {
             return;
         }
 
-        User currentUser = getCurrentUser();
         boolean isAuthor = currentUser != null && post.getAuthor() != null &&
                 currentUser.getId().equals(post.getAuthor().getId());
         

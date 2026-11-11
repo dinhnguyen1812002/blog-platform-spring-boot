@@ -1,14 +1,18 @@
 plugins {
     id 'java'
-    id 'org.springframework.boot' version '4.0.0-SNAPSHOT'
+    id 'org.springframework.boot' version '4.1.2'
     id 'io.spring.dependency-management' version '1.1.7'
-    id("org.openapi.generator") version "7.17.0"
+    id("org.openapi.generator") version "7.26.0"
     id "com.google.osdetector" version "1.7.3"
+
 }
 
 group = 'com.Nguyen'
 version = '0.0.1-SNAPSHOT'
 description = 'Demo project for Spring Boot'
+
+// Keep Flyway core and database modules on the same stable release.
+ext['flyway.version'] = '13.10.3'
 
 java {
     toolchain {
@@ -24,7 +28,6 @@ configurations {
 
 repositories {
     mavenCentral()
-    maven { url = 'https://repo.spring.io/snapshot' }
 }
 
 dependencies {
@@ -39,7 +42,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     // Source: https://mvnrepository.com/artifact/org.flywaydb/flyway-mysql
-    implementation 'org.flywaydb:flyway-mysql:12.4.0'
+    // Source: https://mvnrepository.com/artifact/org.flywaydb/flyway-mysql
+    implementation 'org.flywaydb:flyway-mysql'
     compileOnly 'org.projectlombok:lombok'
     runtimeOnly 'com.mysql:mysql-connector-j'
     annotationProcessor 'org.projectlombok:lombok'
@@ -52,10 +56,8 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     testImplementation 'org.springframework.boot:spring-boot-starter-websocket-test'
-    // https://mvnrepository.com/artifact/org.modelmapper/modelmapper
-    implementation 'org.modelmapper:modelmapper:3.2.6'
     // https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-cache
-    implementation 'org.springframework.boot:spring-boot-starter-cache:4.0.0-M3'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
     // https://mvnrepository.com/artifact/de.huxhorn.sulky/de.huxhorn.sulky.ulid
     implementation 'de.huxhorn.sulky:de.huxhorn.sulky.ulid:8.3.0'
     // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-api
@@ -64,20 +66,18 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.13.0'
     // https://mvnrepository.com/artifact/io.jsonwebtoken/jjwt-jackson
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.13.0'
-    // https://mvnrepository.com/artifact/com.github.f4b6a3/ulid-creator
-    implementation 'com.github.f4b6a3:ulid-creator:5.2.3'
     runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.14'
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.2.0'
     implementation 'org.springframework.boot:spring-boot-starter-kafka'
     testImplementation 'org.springframework.boot:spring-boot-starter-kafka-test'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-    implementation group: 'io.valkey', name: 'valkey-glide', version: '2.+', classifier: osdetector.classifier
+    implementation "io.valkey:valkey-glide:2.5.3:$osdetector.classifier"
     // OWASP HTML Sanitizer for XSS prevention
-    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20240325.1'
+    implementation 'com.googlecode.owasp-java-html-sanitizer:owasp-java-html-sanitizer:20261011.1'
 
     // Export dependencies
-    implementation 'org.apache.poi:poi-ooxml:5.2.5'
-    implementation 'com.itextpdf:itext7-core:8.0.3'
+    implementation 'org.apache.poi:poi-ooxml:6.0.0'
+    implementation 'com.itextpdf:itext7-core:9.8.0'
 }
 
 jar {

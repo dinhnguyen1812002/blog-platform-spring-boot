@@ -2,6 +2,7 @@ package com.Nguyen.blogplatform.domain.report.application;
 
 
 
+import com.Nguyen.blogplatform.shared.exception.BusinessRuleException;
 import com.Nguyen.blogplatform.domain.report.domain.model.ArticleReport;
 import com.Nguyen.blogplatform.domain.report.dto.AdminReportResponse;
 import com.Nguyen.blogplatform.domain.report.infrastructure.repository.ArticleReportRepository;
@@ -110,6 +111,11 @@ public class AdminReportService {
         User reviewer = userRepository.findById(reviewerId)
                 .orElseThrow(() -> new NotFoundException("Reviewer not found with ID: " + reviewerId));
         
+        if (!report.getStatus().canTransitionTo(newStatus)) {
+            throw new BusinessRuleException(
+                    "Cannot change report status from " + report.getStatus() + " to " + newStatus);
+        }
+
         report.setStatus(newStatus);
         report.setAdminNotes(adminNotes);
         report.setReviewedBy(reviewer);

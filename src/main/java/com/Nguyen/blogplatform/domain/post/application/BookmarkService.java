@@ -90,20 +90,30 @@ public class BookmarkService {
         return new MessageResponse("Post removed from saved list successfully!");
     }
     
+    @Transactional(readOnly = true)
     public Page<SavedPostResponse> getUserSavedPosts(Pageable pageable) {
         User currentUser = getCurrentUser();
-        return bookmarkRepository.findByUserOrderBySavedAtDesc(currentUser, pageable)
-                .map(this::toSavedPostResponse);
+        Page<Bookmark> page = bookmarkRepository.findByUserOrderBySavedAtDesc(currentUser, pageable);
+        var responses = buildSavedPostResponses(page.getContent(), currentUser);
+        return page.map(bookmark -> responses.get(bookmark.getId()));
     }
-    
+
+    @Transactional(readOnly = true)
     public List<SavedPostResponse> getUserSavedPostsList() {
         User currentUser = getCurrentUser();
-        return bookmarkRepository.findByUserOrderBySavedAtDesc(currentUser)
-                .stream()
-                .map(this::toSavedPostResponse)
-                .collect(Collectors.toList());
+        List<Bookmark> bookmarks = bookmarkRepository.findByUserOrderBySavedAtDesc(currentUser);
+        var responses = buildSavedPostResponses(bookmarks, currentUser);
+        return bookmarks.stream().map(bookmark -> responses.get(bookmark.getId())).toList();
     }
-    
+
+    private java.util.Map<String, SavedPostResponse> buildSavedPostResponses(List<Bookmark> bookmarks, User user) {
+        List<Post> posts = bookmarks.stream().map(Bookmark::getPost).toList();
+        posts.forEach(post -> postService.enforcePrivacy(post, user));
+        var responses = postMapper.toPostResponsesForSavedPosts(posts, user);
+        return bookmarks.stream().collect(Collectors.toMap(Bookmark::getId,
+                bookmark -> toSavedPostResponse(bookmark, responses.get(bookmark.getPost().getId()))));
+    }
+
     public boolean isPostSavedByCurrentUser(String postId) {
         try {
             User currentUser = getCurrentUser();
@@ -152,9 +162,7 @@ public class BookmarkService {
                 .orElseThrow(() -> new NotFoundException("User not found: " + username));
     }
     
-    private SavedPostResponse toSavedPostResponse(Bookmark savedPost) {
-        // Get the full post response using PostService
-        PostResponse postResponse = postService.getPostResponseById(savedPost.getPost().getId());
+    private SavedPostResponse toSavedPostResponse(Bookmark savedPost, PostResponse postResponse) {
 
         return SavedPostResponse.builder()
                 .id(savedPost.getId())

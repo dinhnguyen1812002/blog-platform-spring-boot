@@ -43,7 +43,7 @@ public class PostController {
             @RequestParam(required = false) String tagSlug) {
         
         Sort sort = "views".equalsIgnoreCase(sortBy) ? Sort.by("viewCount").descending() : Sort.by("createdAt").descending();
-        Pageable pageable = PageRequest.of(page, size, sort);
+        Pageable pageable = PageRequest.of(com.Nguyen.blogplatform.shared.util.PageLimits.page(page), com.Nguyen.blogplatform.shared.util.PageLimits.size(size), sort);
         Page<PostSummaryResponse> posts = postService.getFilteredPosts(categorySlug, tagSlug, pageable);
         return ResponseEntity.ok(posts);
     }
@@ -78,6 +78,7 @@ public class PostController {
     }
 
     @Operation(summary = "Toggle featured status (Admin only)")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/{id}/featured")
     public ResponseEntity<PostResponse> toggleFeatured(@PathVariable String id) {
         return ResponseEntity.ok(postService.toggleFeatured(id));

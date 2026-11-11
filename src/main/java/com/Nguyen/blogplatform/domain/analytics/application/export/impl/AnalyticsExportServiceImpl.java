@@ -9,9 +9,7 @@ import com.Nguyen.blogplatform.domain.analytics.dto.MonthlyGrowthDTO;
 import com.Nguyen.blogplatform.domain.analytics.dto.ReportRequestDTO;
 import com.Nguyen.blogplatform.domain.analytics.dto.TopAuthorDTO;
 import com.Nguyen.blogplatform.domain.analytics.dto.TopPostDTO;
-import com.Nguyen.blogplatform.domain.post.domain.model.Post;
 import com.itextpdf.kernel.colors.ColorConstants;
-import com.itextpdf.kernel.font.PdfFontFactory;
 import com.itextpdf.kernel.pdf.PdfWriter;
 import com.itextpdf.layout.Document;
 import com.itextpdf.layout.element.Paragraph;
@@ -87,7 +85,7 @@ public class AnalyticsExportServiceImpl implements AnalyticsExportService {
     }
 
     private void addDashboardSummaryToPdf(Document document, ReportRequestDTO request) {
-        document.add(new Paragraph("Dashboard Summary").setBold().setFontSize(14));
+        document.add(new Paragraph("Dashboard Summary").simulateBold().setFontSize(14));
         DashboardSummaryDTO summary = analyticsService.getDashboardSummary();
 
         Table table = new Table(UnitValue.createPercentArray(new float[]{1, 1}))
@@ -108,7 +106,7 @@ public class AnalyticsExportServiceImpl implements AnalyticsExportService {
 
     private void addMonthlyStatsToPdf(Document document, ReportRequestDTO request) {
         int year = request.year();
-        document.add(new Paragraph("Monthly Statistics - " + year).setBold().setFontSize(14));
+        document.add(new Paragraph("Monthly Statistics - " + year).simulateBold().setFontSize(14));
 
         List<MonthlyGrowthDTO> monthlyGrowth = analyticsService.getMonthlyGrowth(year);
 
@@ -134,7 +132,7 @@ public class AnalyticsExportServiceImpl implements AnalyticsExportService {
     }
 
     private void addTopPostsToPdf(Document document, ReportRequestDTO request) {
-        document.add(new Paragraph("Top Posts").setBold().setFontSize(14));
+        document.add(new Paragraph("Top Posts").simulateBold().setFontSize(14));
 
         List<TopPostDTO> topPosts = analyticsService.getMostViewedPosts(10);
 
@@ -160,7 +158,7 @@ public class AnalyticsExportServiceImpl implements AnalyticsExportService {
     }
 
     private void addTopAuthorsToPdf(Document document, ReportRequestDTO request) {
-        document.add(new Paragraph("Top Authors").setBold().setFontSize(14));
+        document.add(new Paragraph("Top Authors").simulateBold().setFontSize(14));
 
         List<TopAuthorDTO> topAuthors = analyticsService.getTopAuthors(10);
 

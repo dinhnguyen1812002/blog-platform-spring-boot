@@ -5,7 +5,7 @@ package com.Nguyen.blogplatform.domain.user.api;
 import com.Nguyen.blogplatform.domain.auth.application.UserDetailsImpl;
 import com.Nguyen.blogplatform.domain.post.dto.PostResponse;
 import com.Nguyen.blogplatform.domain.user.application.UserStatisticsService;
-import com.Nguyen.blogplatform.domain.user.domain.model.User;
+
 import com.Nguyen.blogplatform.domain.user.dto.UserStatisticsResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,7 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+
 import java.util.List;
 import java.util.Map;
 

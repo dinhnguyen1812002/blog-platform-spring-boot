@@ -65,6 +65,10 @@ public class RefreshTokenService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: " + userId));
 
+        if (user.isBanned()) {
+            throw new TokenRefreshException("", "Account is banned");
+        }
+
         RefreshToken refreshToken = refreshTokenRepository.findByUserIdForUpdate(userId)
                 .orElseGet(() -> RefreshToken.builder().user(user).build());
 
@@ -81,7 +85,20 @@ public class RefreshTokenService {
         return base64Encoder.encodeToString(randomBytes);
     }
 
+    /**
+     * Rotates the token value on refresh but keeps the original expiry, so a
+     * session can't be extended forever by refreshing.
+     */
+    @Transactional
+    public RefreshToken rotateRefreshToken(RefreshToken existing) {
+        existing.setToken(generateSecureToken(32));
+        return refreshTokenRepository.save(existing);
+    }
+
     public RefreshToken verifyExpiration(RefreshToken token) {
+        if (token.getUser().isBanned()) {
+            throw new TokenRefreshException(token.getToken(), "Account is banned");
+        }
         if (token.getExpiryDate().compareTo(Instant.now()) < 0) {
             refreshTokenRepository.delete(token);
             throw new TokenRefreshException(token.getToken(), "Refresh token was expired. Please make a new signin request");

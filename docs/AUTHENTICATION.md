@@ -1,3 +1,21 @@
+## Xác thực trình duyệt bằng cookie
+
+Backend đặt access token và refresh token trong cookie HttpOnly; frontend không cần lưu hoặc gửi JWT thủ công. Với mọi request, dùng `credentials: "include"` (Axios: `withCredentials: true`). Access token hết hạn theo `JWT_EXPIRATION`; dùng `POST /api/v1/auth/refresh-token` để làm mới.
+
+Trước các request POST, PUT, PATCH hoặc DELETE, gọi `GET /api/v1/auth/csrf` với credentials. Giữ session cookie và gửi trường `token` trong header có tên trả về ở `headerName` (thường là `X-CSRF-TOKEN`). Lấy token trước login và lấy lại khi session thay đổi hoặc hết hạn. Bearer/API key không kèm cookie vẫn được hỗ trợ mà không cần CSRF token.
+
+```js
+const base = "http://localhost:8080";
+const csrf = await fetch(`${base}/api/v1/auth/csrf`, { credentials: "include" }).then(r => r.json());
+await fetch(`${base}/api/v1/auth/login`, {
+  method: "POST", credentials: "include",
+  headers: { "Content-Type": "application/json", [csrf.headerName]: csrf.token },
+  body: JSON.stringify({ email: "user@example.com", password: "password" })
+});
+```
+
+Cookie được cấu hình SameSite=Lax; frontend và backend cần cùng site. Production dùng HTTPS và `cookieSecure=true`. CORS phải cho phép chính xác origin của frontend. Nếu frontend và backend ở hai site khác nhau, cần cấu hình cookie và CSRF phù hợp trước khi triển khai.
+
 # Hướng dẫn Xác thực (Authentication)
 
 Hầu hết các API trong hệ thống đều yêu cầu xác thực bằng JWT (JSON Web Token). Để lấy token, bạn cần thực hiện 2 bước: đăng ký tài khoản và đăng nhập.
